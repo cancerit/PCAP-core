@@ -1,11 +1,15 @@
-ICGC-TCGA-PCAP
+PCAP-core
 ==============
 
-NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project.
+NGS reference implementations and helper code for mapping and mapping related stats.
+
+This has been forked from the [ICGC-TCGA-PanCancer/PCAP-core](https://github.com/ICGC-TCGA-PanCancer/PCAP-core)
+repository as this codebase was created by [cancerit](https://github.com/cancerit) and continues to be developed.
+This version strips out PCAWG related elements and incorporates more efficient code.
 
 | Master | Dev |
 |---|---|
-| [![Build Status](https://travis-ci.org/ICGC-TCGA-PanCancer/PCAP-core.svg?branch=master)](https://travis-ci.org/ICGC-TCGA-PanCancer/PCAP-core) |  [![Build Status](https://travis-ci.org/ICGC-TCGA-PanCancer/PCAP-core.svg?branch=dev)](https://travis-ci.org/ICGC-TCGA-PanCancer/PCAP-core) |
+| [![Build Status](https://travis-ci.org/cancerit/PCAP-core.svg?branch=master)](https://travis-ci.org/cancerit/PCAP-core) |  [![Build Status](https://travis-ci.org/cancerit/PCAP-core.svg?branch=dev)](https://travis-ci.org/cancerit/PCAP-core) |
 
 This repository contains code to run genomic alignments of paired end data
 and subsequent calling algorithms.
@@ -13,7 +17,7 @@ and subsequent calling algorithms.
 The intention is to provide reference implementations and simple to execute wrappers
 that are useful for the scientific community who may have little IT/bioinformatic support.
 
-Please see the [wiki](https://github.com/ICGC-TCGA-PanCancer/PCAP-core/wiki) for further details.
+Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for further details.
 
 ---
 
