@@ -21,9 +21,6 @@
 
 
 use ExtUtils::MakeMaker;
-use File::ShareDir::Install;
-
-install_share module => 'PCAP::SRA', 'share';
 
 WriteMakefile(
   NAME          => 'PCAP',
@@ -70,6 +67,3 @@ WriteMakefile(
 
                    }
 );
-
-package MY;
-use File::ShareDir::Install qw( postamble );
