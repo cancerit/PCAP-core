@@ -26,16 +26,9 @@ WriteMakefile(
   NAME          => 'PCAP',
   VERSION_FROM  => 'lib/PCAP.pm',
   LICENSE       => 'gpl_2', # http://search.cpan.org/~dagolden/CPAN-Meta-2.142690/lib/CPAN/Meta/Spec.pm#license
-  EXE_FILES     => [qw( bin/bam_to_sra_sub.pl
-                        bin/bwa_aln.pl
+  EXE_FILES     => [qw( bin/bwa_aln.pl
                         bin/bwa_mem.pl
-                        bin/bam_stats.pl
-                        bin/detectExtremeDepth.pl
-                        bin/diff_bams.pl
-                        bin/monitor.pl
-                        bin/xml_to_bas.pl
                         bin/bamToBw.pl
-                        bin/gnos_pull.pl
                         bin/xam_coverage_bins.pl )],
   PREREQ_PM     => {
                      'Proc::PID::File' => 1.27,
