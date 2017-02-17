@@ -10,10 +10,6 @@ SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.3.2/htslib
 # Bio::DB::HTS
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.3.tar.gz"
 
-# for Bio::DB::BigWig
-SOURCE_KENTSRC="ftp://ftp.sanger.ac.uk/pub/cancer/legacy-dependancies/jksrc.v334.zip"
-SOURCE_BIGFILE="http://www.cpan.org/authors/id/L/LD/LDS/Bio-BigFile-1.07.tar.gz"
-
 # for biobambam
 SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.54-release-20160802163650/biobambam2-2.0.54-release-20160802163650-x86_64-etch-linux-gnu.tar.gz"
 
@@ -108,7 +104,7 @@ fi
 if [ -e $SETUP_DIR/basePerlDeps.success ]; then
   echo "Previously installed base perl deps..."
 else
-  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "File::ShareDir" "File::ShareDir::Install" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version@1.006924")
+  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version@1.006924")
   for i in "${perlmods[@]}" ; do
     $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
   done
@@ -239,38 +235,6 @@ if [[ ",$COMPILE," == *,biobambam,* ]] ; then
   fi
 else
   echo "biobambam - No change between PCAP versions"
-fi
-
-cd $INIT_DIR
-
-echo -n "Building kentsrc + Bio::DB::BigFile ..."
-if [ -e $SETUP_DIR/kentsrc.success ]; then
-  echo " previously installed ...";
-else
-  echo
-  cd $SETUP_DIR
-  rm -rf kent kentsrc.zip
-  get_distro "kentsrc" $SOURCE_KENTSRC
-  unzip -q kentsrc.zip
-  perl -pi -e 's/(\s+CFLAGS=)$/${1}-fPIC/' kent/src/inc/common.mk
-  cd kent/src/lib
-  export MACHTYPE=i686    # for a 64-bit system
-  make -j$CPU
-  cd ../
-  export KENT_SRC=`pwd`
-  cd $SETUP_DIR
-  mkdir -p bigfile
-  get_distro "bigfile" $SOURCE_BIGFILE
-  tar --strip-components 1 -C bigfile -zxf bigfile.tar.gz
-  cd bigfile
-  chmod u+w Build.PL
-  patch -p1 Build.PL < $INIT_DIR/dists/patch/Bio-BigFile_build.patch
-  perl Build.PL --install_base=$INST_PATH
-  ./Build
-  ./Build test
-  ./Build install
-  rm -f kentsrc.zip
-  touch $SETUP_DIR/kentsrc.success
 fi
 
 cd $INIT_DIR
