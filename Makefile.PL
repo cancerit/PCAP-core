@@ -31,11 +31,11 @@ WriteMakefile(
                         bin/bamToBw.pl
                         bin/xam_coverage_bins.pl )],
   PREREQ_PM     => {
-                     'Proc::PID::File' => 1.27,
+                     #'Proc::PID::File' => 1.27,
                      'Module::Build' => 0.42,
                      'IPC::System::Simple' => 1.25,
                      'Capture::Tiny' => 0.24,
-                     'Config::IniFiles' => 2.83,
+                     #'Config::IniFiles' => 2.83,
                      'Const::Fast' => 0.014,
                      'Bio::DB::HTS' => 1.11,
                      'Bio::Root::Version' => 1.006924, # this is the only way to get Bio::Perl to behave
@@ -43,20 +43,20 @@ WriteMakefile(
                      'Try::Tiny' => 0.19,
                      'File::Which' => 0.05,
                      'List::Util' => 1.38,
-                     'Proc::ProcessTable' => 0.50,
+                     #'Proc::ProcessTable' => 0.50,
                      'Data::UUID' => 1.219,
                      'Test::Fatal' => 0.013,
                      'Devel::Cover' => 1.09,
                      'Pod::Coverage' => 0.23,
                      'Term::UI' => 0.42, # currently in core but scheduled for removal 5.17, no alternative recommended
                      'Sub::Exporter::Progressive' => 0.001011,
-                     'XML::Simple' => 2.20,
+                     #'XML::Simple' => 2.20,
                      'version' => 0.9912,
                      'JSON' => 2.90,
                      'JSON::XS' => 3.01,
                      'Test::Warn' => 0.30,
-                     'Template' => 2.26,
-                     'PPI::HTML' => 1.08,
+                     #'Template' => 2.26,
+                     #'PPI::HTML' => 1.08,
 
                    }
 );

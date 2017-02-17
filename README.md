@@ -26,9 +26,6 @@ Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for further de
 Please install the following before running `setup.sh`:
 
 * [cgpBigWig](https://github.com/cancerit/cgpBigWig/releases)
-* Addtional OS packages required by `kentsrc`, in Ubuntu naming
-  * unzip
-  * libpng12-dev (for libpng-config)
 
 Dependancies installed by `setup.sh`:
 
@@ -46,7 +43,7 @@ Please be aware that this expects basic C compilation libraries and tools to be 
 
 ###Programs
 
-Please see the [wiki](https://github.com/ICGC-TCGA-PanCancer/PCAP-core/wiki) for details of programs.
+Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for details of programs.
 
 ---
 
