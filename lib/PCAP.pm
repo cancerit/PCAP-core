@@ -27,12 +27,12 @@ use FindBin qw($Bin);
 use File::Which qw(which);
 # don't use autodie, only core perl in here
 
-our $VERSION = '3.5.2';
+our $VERSION = '4.0.0';
 our @EXPORT = qw($VERSION _which);
 
 const my $LICENSE =>
 "#################
-# PCAP version %s, Copyright (C) 2014-2017 ICGC/TCGA Pan-Cancer Analysis Project
+# PCAP version %s
 # PCAP comes with ABSOLUTELY NO WARRANTY
 # See LICENSE for full details.
 #################";

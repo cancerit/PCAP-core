@@ -1,15 +1,8 @@
 .travis.yml
-bin/bam_stats.pl
-bin/bam_to_sra_sub.pl
 bin/bamToBw.pl
 bin/bwa_aln.pl
 bin/bwa_mem.pl
-bin/detectExtremeDepth.pl
-bin/diff_bams.pl
-bin/gnos_pull.pl
-bin/monitor.pl
 bin/xam_coverage_bins.pl
-bin/xml_to_bas.pl
 c/bam_access.c
 c/bam_access.h
 c/bam_stats.c
@@ -22,7 +15,6 @@ c/c_tests/02_bam_access_tests.c
 c/c_tests/03_bam_stats_calcs_tests.c
 c/c_tests/minunit.h
 c/c_tests/runtests.sh
-c/c_tests/tests_log
 c/dbg.h
 c/diff_bams.c
 c/khash.h
@@ -42,7 +34,6 @@ lib/PCAP/BigWig.pm
 lib/PCAP/Bwa.pm
 lib/PCAP/Bwa/Meta.pm
 lib/PCAP/Cli.pm
-lib/PCAP/SRA.pm
 lib/PCAP/Threaded.pm
 LICENSE
 Makefile.PL
@@ -51,8 +42,6 @@ MANIFEST.SKIP
 prerelease.sh
 README.md
 setup.sh
-share/cv_tables/ICGC/dcc_project_code.txt
-share/cv_tables/ICGC/dcc_specimen_type.txt
 t/1_pm_compile.t
 t/2_pl_compile.t
 t/3_external_progs.t
@@ -95,10 +84,8 @@ t/data/unpaired.bam
 t/pcap.t
 t/pcapBam.t
 t/pcapBamBas.t
-t/pcapBamStats.t
 t/pcapBwa.t
 t/pcapBwaMeta.t
 t/pcapCli.t
 t/pcapCoverage.t
-t/pcapSra.t
 t/pcapThreaded.t
