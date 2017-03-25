@@ -273,7 +273,7 @@ sub _create_script {
 
   my $script = "$stub.sh";
 
-  if(exists $ENV{PCAP_THREADED_NO_SCRIPT} && -e $script) {
+  if($ENV{PCAP_THREADED_NO_SCRIPT} && -e $script) {
     die "ERROR: Script already present, delete to proceed: $script";
   }
   my $SH = IO::File->new($script, 'w');
@@ -282,7 +282,7 @@ sub _create_script {
   print $SH join qq{\n}, @{$commands}, q{} or die "Write to $script failed";
   undef $SH;
   autoflush STDOUT 1;
-  system('sync') if(exists $ENV{PCAP_THREADED_FORCE_SYNC});
+  system('sync') if($ENV{PCAP_THREADED_FORCE_SYNC});
 
   chmod $SCRIPT_OCT_MODE, $script or die "Failed to set executable flag on: $script";
 
