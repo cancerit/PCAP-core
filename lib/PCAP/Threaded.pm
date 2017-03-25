@@ -97,7 +97,7 @@ sub need_backoff {
     my($uptime, $se, $ex) = capture { system('uptime'); };
     chomp $uptime;
     # probably only need 1-min but grab them all
-    my ($one_min, $five_min, $fifteen_min) = $uptime =~ /load average: ([[:digit:]+.[:digit:]+]), ([[:digit:]+.[:digit:]+]), ([[:digit:]+.[:digit:]+])$/;
+    my ($one_min, $five_min, $fifteen_min) = $uptime =~ m/load average: ([[:digit:]]+\.[[:digit:]]+), ([[:digit:]]+\.[[:digit:]]+), ([[:digit:]]+\.[[:digit:]]+)$/;
     $ret = 1 if($one_min > $self->{'system_cpus'});
   }
   return $ret;
