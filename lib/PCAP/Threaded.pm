@@ -97,7 +97,7 @@ sub need_backoff {
     my($uptime, $se, $ex) = capture { system('uptime'); };
     chomp $uptime;
     # probably only need 1-min but grab them all
-    my ($one_min, $five_min, $fifteen_min) = $uptime =~ /load average: ([[:digit:]+.[:digit:]+]), ([[:digit:]+.[:digit:]+]), ([[:digit:]+.[:digit:]+])$/;
+    my ($one_min, $five_min, $fifteen_min) = $uptime =~ m/load average: ([[:digit:]]+\.[[:digit:]]+), ([[:digit:]]+\.[[:digit:]]+), ([[:digit:]]+\.[[:digit:]]+)$/;
     $ret = 1 if($one_min > $self->{'system_cpus'});
   }
   return $ret;
@@ -150,6 +150,7 @@ sub run {
         }
         threads->create($function_ref, $index++, @params);
         last if($index > $iterations);
+        sleep 2;
       }
       sleep $self->thread_join_interval while(threads->list(threads::joinable()) == 0);
       for my $thr(threads->list(threads::joinable())) {
@@ -272,7 +273,7 @@ sub _create_script {
 
   my $script = "$stub.sh";
 
-  if(exists $ENV{PCAP_THREADED_NO_SCRIPT} && -e $script) {
+  if($ENV{PCAP_THREADED_NO_SCRIPT} && -e $script) {
     die "ERROR: Script already present, delete to proceed: $script";
   }
   my $SH = IO::File->new($script, 'w');
@@ -281,7 +282,7 @@ sub _create_script {
   print $SH join qq{\n}, @{$commands}, q{} or die "Write to $script failed";
   undef $SH;
   autoflush STDOUT 1;
-  system('sync') if(exists $ENV{PCAP_THREADED_FORCE_SYNC});
+  system('sync') if($ENV{PCAP_THREADED_FORCE_SYNC});
 
   chmod $SCRIPT_OCT_MODE, $script or die "Failed to set executable flag on: $script";
 
