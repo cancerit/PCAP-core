@@ -150,6 +150,7 @@ sub run {
         }
         threads->create($function_ref, $index++, @params);
         last if($index > $iterations);
+        sleep 2;
       }
       sleep $self->thread_join_interval while(threads->list(threads::joinable()) == 0);
       for my $thr(threads->list(threads::joinable())) {
