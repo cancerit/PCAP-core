@@ -263,6 +263,10 @@ sub external_process_handler {
     catch { die $_; };
 
     unlink $script; # only leave scripts if we fail
+    if($ENV{PCAP_THREADED_REM_LOGS}) {
+      unlink $err;
+      unlink $out;
+    }
   }
 
   return 1;
