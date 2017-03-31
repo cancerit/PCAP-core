@@ -138,6 +138,11 @@ sub run {
   my $thread_count = $self->{'functions'}->{$function_name}->{'threads'};
 
   my $start_interval = 6; # initial scaling
+  if($self->{'threads'} >= 8) {
+    # when core count is higher spread the scaling up over 2 minutes
+    $start_interval = int 120 / $self->{'threads'};
+    $start_interval = 6 if($start_interval < 6);
+  }
 
   # uncoverable branch true
   if($thread_count > 1 && $CAN_USE_THREADS) {
