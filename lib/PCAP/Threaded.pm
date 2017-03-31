@@ -137,6 +137,13 @@ sub run {
   my $function_ref = $self->{'functions'}->{$function_name}->{'code'};
   my $thread_count = $self->{'functions'}->{$function_name}->{'threads'};
 
+  my $start_interval = 6; # initial scaling
+  if($self->{'threads'} >= 8) {
+    # when core count is higher spread the scaling up over 2 minutes
+    $start_interval = int 120 / $self->{'threads'};
+    $start_interval = 6 if($start_interval < 6);
+  }
+
   # uncoverable branch true
   if($thread_count > 1 && $CAN_USE_THREADS) {
     # reserve 0 for when people want to use 'success_exists/touch_success' for non-threaded steps
@@ -146,12 +153,13 @@ sub run {
       while(threads->list(threads::all()) < $thread_count && $index <= $iterations) {
         while($self->need_backoff) {
           warn "Excessive load average, take a break... have a Kit-Kat!\n";
-          sleep 20;
+          sleep 30;
         }
         threads->create($function_ref, $index++, @params);
         last if($index > $iterations);
-        sleep 2;
+        sleep $start_interval;
       }
+      $start_interval = 2; # once the initial scale up is complete start interval can be shorter.
       sleep $self->thread_join_interval while(threads->list(threads::joinable()) == 0);
       for my $thr(threads->list(threads::joinable())) {
         $thr->join;
@@ -263,6 +271,10 @@ sub external_process_handler {
     catch { die $_; };
 
     unlink $script; # only leave scripts if we fail
+    if($ENV{PCAP_THREADED_REM_LOGS}) {
+      unlink $err;
+      unlink $out;
+    }
   }
 
   return 1;

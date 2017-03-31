@@ -83,7 +83,7 @@ SETUP_DIR=$INIT_DIR/install_tmp
 mkdir -p $SETUP_DIR
 
 # check for cgpBigWig
-if [ -e "$INST_PATH/bin/bwjoin" ]; then
+if [ -e "$INST_PATH/bin/detectExtremeDepth" ]; then
   echo -e "\tcgpBigWig installation found";
 else
   echo -e "\tERROR: Please see README.md and install cgpBigWig";
