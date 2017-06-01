@@ -180,7 +180,7 @@ sub files_to_meta {
   my @meta_files;
 
   my $link_tmp = File::Spec->catdir($tmp, 'links');
-  if(! -e $link_tmp) mkdir $link_tmp;
+  mkdir($link_tmp) unless(-e $link_tmp);
   my @linked_files;
   for my $file(@{$files}) {
     my $fname = fileparse($file);
