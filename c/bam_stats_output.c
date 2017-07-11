@@ -42,7 +42,7 @@ int bam_stats_output_print_results(rg_info_t **grps,int grps_size,stats_rd_t*** 
   //Iterate through each RG
   int i=0;
   for(i=0;i<grps_size;i++){
-    if(grp_stats[i][0]->count==0 && grp_stats[i][1]->count==0) continue; // Skip empty read groups stats
+
     uint64_t unmapped_r1 = grp_stats[i][0]->umap;
     uint64_t unmapped_r2 = grp_stats[i][1]->umap;
     uint64_t unmapped =  grp_stats[i][0]->umap + grp_stats[i][1]->umap;

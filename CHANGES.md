@@ -1,3 +1,6 @@
+### 4.0.5
+* bam_stats now outputs a line of zeroes for bam files with zero reads
+
 ### 3.5.0
 * Adds RNA downloads to PanCancer download tool `gnos_pull.pl`
 * Hardening of external process handling in `PCAP::Threaded`
