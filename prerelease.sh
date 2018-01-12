@@ -41,7 +41,8 @@ prove -w -j 9 -I ./lib
 
 echo -e '\n\n### Generating test/pod coverage reports ###\n'
 # removed 'condition' from coverage as '||' 'or' doesn't work properly
-cover -coverage branch,subroutine,pod -report_c0 50 -report_c1 85 -report_c2 100 -report html_basic reports -silent
+cover -coverage branch,subroutine,pod -report_c0 50 -report_c1 85 -report_c2 100 -report html_basic reports -silent |& grep -v '^Perltidy' | grep -v '^##' | grep -v '^1:'
+# grep on last command to cleanup an oddity in perltidy
 cover -coverage branch,subroutine,pod -report text reports -silent > docs/reports_text/coverage.txt
 rm -rf reports/structure reports/digests reports/cover.13 reports/runs
 cp reports/coverage.html reports/index.html
