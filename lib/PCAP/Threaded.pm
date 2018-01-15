@@ -36,8 +36,7 @@ use Const::Fast qw(const);
 use Scalar::Util qw(looks_like_number);
 use Time::HiRes qw(usleep);
 
-our $CAN_USE_THREADS = 0;
-$CAN_USE_THREADS = eval 'use threads; 1';
+our $CAN_USE_THREADS = eval 'use threads; 1' || 0;
 
 const my $SCRIPT_OCT_MODE => 0777;
 
