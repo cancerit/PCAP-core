@@ -317,9 +317,9 @@ sub _file_complete {
   while(1) {
     $tries++;
     croak "Failed to confirm write complete after 30 attempts ($microsec us delays): $script" if($tries >= 30);
-    my ($stdout, $stderr, $exit) = capture { system([0,1], 'lsof', $script); };
+    my ($stdout, $stderr, $exit) = capture { system([0,1], 'fuser', $script); };
     if($exit > 1) {
-      croak sprintf "ERROR: lsof output\n\tSTDOUT: %s\n\tSTDERR: %s\n\tEXIT: %d\n", $stdout, $stderr, $exit;
+      croak sprintf "ERROR: fuser output\n\tSTDOUT: %s\n\tSTDERR: %s\n\tEXIT: %d\n", $stdout, $stderr, $exit;
     }
     printf STDERR "OUT : %s\nERR : %s\nEXIT: %s\n", $stdout,$stderr,$exit if($exit == 0);
     last if($exit == 1);
