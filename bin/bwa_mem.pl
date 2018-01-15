@@ -105,6 +105,7 @@ sub setup {
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
+              'g|groupinfo=s' => \$opts{'groupinfo'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -215,6 +216,7 @@ bwa_mem.pl [options] [file(s)...]
     -bwa         -b     Single quoted string of additional parameters to pass to BWA
                          - '-t,-p,-R' are used internally and should not be provided
     -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use[6]
+    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml).
 
   Targeted processing:
     -process     -p   Only process this step then exit, optionally set -index

@@ -33,25 +33,27 @@ use List::Util qw(first);
 use File::Spec;
 use Data::UUID;
 use File::Basename;
+use YAML qw(LoadFile);
 
 use PCAP::Bam;
 
 const my @INIT_KEYS => qw(in temp fastq paired_fq cram bam);
 const my @REQUIRED_KEYS => qw(in temp);
 const my @REQUIRED_RG_ELEMENTS => qw(SM);
+const my @ALLOWED_RG_ELEMENTS => qw(ID CN DS DT FO KS LB PG PI PL PM PU SM);
 
 our $rg_index = 1;
 
 sub new {
-  my ($class, $opts) = @_;
+  my ($class, $opts, $rg_info) = @_;
   my $self = {};
   bless $self, $class;
-  $self->_init($opts);
+  $self->_init($opts, $rg_info);
   return $self;
 }
 
 sub _init {
-  my ($self, $opts) = @_;
+  my ($self, $opts, $rg_info) = @_;
   croak "'rg' is auto-populated, to initialise a start value see PCAP::Bwa::Meta::set_rg_index"
     if(exists $opts->{'rg'});
   for my $key(keys %{$opts}) {
@@ -61,6 +63,7 @@ sub _init {
   }
 
   $self->rg; # initialise RG as used by tsub and must correlate
+  $self->rg_header('.', $rg_info) if($rg_info);
 
   for my $required(@REQUIRED_KEYS) {
     croak "'$required' must be exist" unless(exists $opts->{$required});
@@ -131,12 +134,24 @@ sub rg_header {
       croak "'$required' is manditory for RG header" unless(exists $elements->{$required} || exists $bam_elements->{$required});
     }
 
-    my @elements = ('@RG');
-    push @elements, 'ID:'.$self->rg;
-
     my %all_keys;
     for my $key(sort keys %{$bam_elements}){ $all_keys{$key} = 1; }
     for my $key(sort keys %{$elements}){ $all_keys{$key} = 1; }
+
+    my @elements = ('@RG');
+    my %ids_seen;
+    if(exists $elements->{'ID'}) {
+      push @elements, 'ID:'.$elements->{'ID'};
+    }
+    else {
+      if(exists $ids_seen{$self->rg}) {
+        push @elements, 'ID:'._getuuid_for_rg();
+      }
+      else {
+        push @elements, 'ID:'.$self->rg;
+      }
+    }
+    $ids_seen{$elements[-1]} = 1;
 
     for my $key(sort keys %all_keys) {
       next if($key eq 'ID');
@@ -147,9 +162,9 @@ sub rg_header {
         push @elements, sprintf '%s:%s', $key, $bam_elements->{$key};
       }
     }
+
     $self->{'rg_header'} = \@elements;
   }
-
   return join $separator, @{$self->{'rg_header'}};
 }
 
@@ -167,8 +182,51 @@ sub reset_rg_index {
   return set_rg_index(1);
 }
 
+sub _getuuid_for_rg {
+  my $ug = Data::UUID->new;
+  $ug->create_str() =~ m/^([^-]+)/;
+  return lc $1;
+}
+
+sub _validate_yaml {
+  my ($meta_yaml) = @_;
+  my $yaml_obj = LoadFile( $meta_yaml );
+  # if all ID's aren't unique we generate time based UUID and take the first section as the new ID
+  # this will not prevent universal clash but will within a BAM file.
+  my %ids;
+  for my $rg_key(keys $yaml_obj->{'READGRPS'}) {
+    my $rg_rec = $yaml_obj->{'READGRPS'}->{$rg_key};
+
+    for my $ele_key(keys %{$rg_rec}) {
+      my $uc_key = uc $ele_key;
+      unless(first {$uc_key eq $_} @ALLOWED_RG_ELEMENTS) {
+        croak sprintf q{Key '%s' is not a valid RG field}, $ele_key;
+      }
+      if($ele_key ne $uc_key) {
+        # upper/lower mismatch
+        $rg_rec->{$uc_key} = $rg_rec->{$ele_key};
+        delete $rg_rec->{$ele_key};
+      }
+
+      # replace any tabs with space:
+      $rg_rec->{$uc_key} =~ s/\t/ /g;
+    }
+
+    # common error, force upper
+    if(exists $rg_rec->{'PL'}) {
+      $rg_rec->{'PL'} = uc $rg_rec->{'PL'};
+    }
+
+    if(! exists $rg_rec->{'ID'} || exists $ids{$rg_rec->{'ID'}} ) {
+      $rg_rec->{'ID'} = _getuuid_for_rg();
+    }
+    $ids{$rg_rec->{'ID'}} = 1;
+  }
+  return $yaml_obj;
+}
+
 sub files_to_meta {
-  my ($tmp, $files, $sample) = @_;
+  my ($tmp, $files, $sample, $meta_yaml) = @_;
   croak "Requires tmpdir and array-ref of files" unless(defined $tmp && defined $files);
   croak "Directory must exist: $tmp" unless(-d $tmp);
   croak '\$files must be an array-ref' unless(ref $files eq 'ARRAY');
@@ -190,8 +248,20 @@ sub files_to_meta {
     push @linked_files, $link;
   }
 
-  for my $file(@linked_files) {
+  my $yaml_obj;
+  if($meta_yaml) {
+    $yaml_obj = _validate_yaml( $meta_yaml );
+  }
 
+  if($yaml_obj && exists $yaml_obj->{'SM'} && $sample ne $yaml_obj->{'SM'}) {
+    croak sprintf q{Sample name provided at command line (%s) doesn't match metadata entry for 'SM' ()}, $sample, $yaml_obj->{'SM'};
+  }
+
+  # ensure ordered in way that makes end 1 of fastq first in list
+  @linked_files = sort {fileparse($a) cmp fileparse($a)} @linked_files;
+
+  for my $file(@linked_files) {
+    my $fname = fileparse($file);
     my $meta = {'temp' => $tmp};
 
     my ($fq, $fq_ext) = is_fastq_ext($file);
@@ -240,10 +310,19 @@ sub files_to_meta {
       die "ERROR: BAM|CRAM, paired FASTQ and interleaved FASTQ file types cannot be mixed, please choose one type\n";
     }
 
-    my $meta_ob = PCAP::Bwa::Meta->new($meta);
+    my $rg_rec;
+    if($yaml_obj) {
+      $rg_rec = $yaml_obj->{'READGRPS'}->{$fname};
+      unless($rg_rec) {
+        croak sprintf q{No readgroup info defined for input data %s in file %s}, $fname, $meta_yaml;
+      }
+      $rg_rec->{'SM'} = $sample;
+    }
+
+    my $meta_ob = PCAP::Bwa::Meta->new($meta, $rg_rec);
     push @meta_files, $meta_ob;
 
-    if(exists $meta_ob->{'fastq'}) {
+    unless($yaml_obj) {
       # until we have proper meta file support need to add sample
       $meta_ob->rg_header('.', { 'SM' => $sample }) if(defined $sample);
     }

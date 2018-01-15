@@ -1,0 +1,33 @@
+# abstracted as has to be same for all records
+SM: sample
+# the actual readgroups
+READGRPS:
+  1_1.fq:
+      ID: 9
+      CN: centre
+      DS: Please don't use multiline
+      DT: NOT VALIDATED
+      FO: flow order
+      KS: .
+      LB: .
+      PG: .
+      PI: NUMERIC
+      PL: FORCE TO UPPER
+      PM: .
+      PU: .
+  1.fq:
+      ID: 9
+      CN: .
+      DS: .
+      DT: .
+      FO: .
+      KS: .
+      LB: .
+      PG: .
+      PI: .
+      pl: ZZZ
+      PM: .
+      PU: .
+  2.fq:
+      LB: .
+      #ID can be ommitted, partial UUID introduced.

@@ -85,7 +85,7 @@ sub mem_setup {
 
 sub mem_prepare {
   my $options = shift;
-  $options->{'meta_set'} = PCAP::Bwa::Meta::files_to_meta($options->{'tmp'}, $options->{'raw_files'}, $options->{'sample'});
+  $options->{'meta_set'} = PCAP::Bwa::Meta::files_to_meta($options->{'tmp'}, $options->{'raw_files'}, $options->{'sample'}, $options->{'groupinfo'});
   $options->{'max_split'} = scalar @{$options->{'meta_set'}};
   return $options->{'max_split'};
 }
