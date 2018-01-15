@@ -1,3 +1,22 @@
+##########LICENCE##########
+# PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not see:
+#   http://www.gnu.org/licenses/gpl-2.0.html
+##########LICENCE##########
+
 #VERSION=1.10.0
 VERSION=$(shell perl -I../lib -MPCAP -e 'print PCAP->VERSION;')
 
@@ -56,6 +75,7 @@ MD := mkdir
 BAM_STATS_TARGET=../bin/bam_stats
 SQ_TARGET=../bin/reheadSQ
 BAM_DIFF=../bin/diff_bams
+MISMATCHQC=../bin/mismatchQc
 
 #
 # The following part of the makefile is generic; it can be used to
@@ -79,6 +99,8 @@ $(SQ_TARGET):
 $(BAM_DIFF):
 	$(CC) $(CFLAGS) $(INCLUDES) $(CAT_INCLUDES) -o $(BAM_DIFF) $(OBJS) $(LFLAGS) $(CAT_LFLAGS) $(LIBS) ./diff_bams.c
 
+$(MISMATCHQC):
+	$(CC) $(CFLAGS) $(INCLUDES) $(CAT_INCLUDES) -o $(BAM_STATS_TARGET) $(OBJS) $(LFLAGS) $(CAT_LFLAGS) $(LIBS) ./mismatchQC.c
 
 #Unit Tests
 test: $(BAM_STATS_TARGET)
