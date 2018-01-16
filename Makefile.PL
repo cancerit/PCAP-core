@@ -51,6 +51,6 @@ WriteMakefile(
                      'JSON' => 2.90,
                      'JSON::XS' => 3.01,
                      'Test::Warn' => 0.30,
-                     'YAML::Tiny' => 1.70,
+                     'YAML' => 1.24,
                    }
 );
