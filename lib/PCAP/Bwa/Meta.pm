@@ -254,7 +254,7 @@ sub files_to_meta {
   }
 
   if($yaml_obj && exists $yaml_obj->{'SM'} && $sample ne $yaml_obj->{'SM'}) {
-    croak sprintf q{Sample name provided at command line (%s) doesn't match metadata entry for 'SM' ()}, $sample, $yaml_obj->{'SM'};
+    croak sprintf q{Sample name provided at command line (%s) doesn't match metadata entry for 'SM' (%s)}, $sample, $yaml_obj->{'SM'};
   }
 
   # ensure ordered in way that makes end 1 of fastq first in list

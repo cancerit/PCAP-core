@@ -6,7 +6,6 @@ use File::Spec;
 use FindBin qw($Bin);
 use File::Temp qw(tempdir);
 use File::Path qw(make_path);
-use YAML::Tiny;
 
 my $test_data = "$Bin/data";
 
