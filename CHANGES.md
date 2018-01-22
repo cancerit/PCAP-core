@@ -2,6 +2,9 @@
 
 ## NEXT
 
+* `bam_stats` now calculates number of `qc_fail` reads (flag 512/0x200).
+* `bwa_mem.pl` accepts readgroup information from a `yaml` file when fastq used as input.
+
 ## 4.0.5
 
 * bam_stats now outputs a line of zeroes for bam files with zero reads
