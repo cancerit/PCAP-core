@@ -5,7 +5,7 @@ SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.15.tar.gz"
 SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2"
 
 # for bamstats and Bio::DB::HTS
-SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.3.2/htslib-1.3.2.tar.bz2"
+SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.4/htslib-1.4.tar.bz2"
 
 # Bio::DB::HTS
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.3.tar.gz"
@@ -250,6 +250,7 @@ else
   cp bin/bam_stats $INST_PATH/bin/.
   cp bin/reheadSQ $INST_PATH/bin/.
   cp bin/diff_bams $INST_PATH/bin/.
+  cp bin/mismatchQc $INST_PATH/bin/.
   touch $SETUP_DIR/bam_stats.success
   make -C c clean
 fi
