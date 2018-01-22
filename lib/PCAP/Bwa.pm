@@ -285,9 +285,8 @@ sub bwa_mem {
     # uncoverable branch false
     $interleaved_fq = q{ -p}, unless($input->paired_fq);
 
-    my $add_options = q{};
+    my $add_options = q{-v 1}; # minimise output
     $add_options = $options->{'bwa'} if(exists $options->{'bwa'});
-
     $bwa .= sprintf $BWA_MEM, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
 
     # uncoverable branch true
