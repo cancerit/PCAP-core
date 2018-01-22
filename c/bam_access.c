@@ -129,6 +129,7 @@ rg_info_t **bam_access_parse_header(bam_hdr_t *head, int *grps_size, stats_rd_t 
     (*grp_stats)[j][0]->divergent= 0;
     (*grp_stats)[j][0]->mapped_bases= 0;
     (*grp_stats)[j][0]->proper= 0;
+    (*grp_stats)[j][0]->qc_fail= 0;
     (*grp_stats)[j][0]->mapped_pairs= 0;
     (*grp_stats)[j][0]->inter_chr_pairs= 0;
     (*grp_stats)[j][0]->inserts = kh_init(ins);
@@ -142,6 +143,7 @@ rg_info_t **bam_access_parse_header(bam_hdr_t *head, int *grps_size, stats_rd_t 
     (*grp_stats)[j][1]->divergent= 0;
     (*grp_stats)[j][1]->mapped_bases= 0;
     (*grp_stats)[j][1]->proper= 0;
+    (*grp_stats)[j][1]->qc_fail= 0;
   }
   *grps_size = size;
 	return groups;
@@ -164,7 +166,6 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
   int ret;
   while((ret = sam_read1(input, head, b)) >= 0){
     if (b->core.flag & BAM_FSECONDARY && rna == 0) continue; //skip secondary hits so no double counts
-    if (b->core.flag & BAM_FQCFAIL) continue; // skip vendor fail as generally aren't considered
     if (b->core.flag & BAM_FSUPPLEMENTARY) continue; // skip supplimentary
 
     uint8_t read = 1; //second read
@@ -181,6 +182,8 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
 
     // grp_stats[rg_index][read]; Stats for this RG/read order combination
     if((*grp_stats)[rg_index][read]->length == 0) (*grp_stats)[rg_index][read]->length = b->core.l_qseq;
+
+    if (b->core.flag & BAM_FQCFAIL) (*grp_stats)[rg_index][read]->qc_fail++;
 
     (*grp_stats)[rg_index][read]->count++;
     if(b->core.flag & BAM_FDUP) (*grp_stats)[rg_index][read]->dups++;
@@ -267,4 +270,3 @@ uint64_t bam_access_get_mapped_base_count_from_cigar(bam1_t *b){
   }
   return count;
 }
-
