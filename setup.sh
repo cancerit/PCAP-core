@@ -2,13 +2,13 @@
 
 SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.15.tar.gz"
 
-SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2"
+SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.5/samtools-1.5.tar.bz2"
 
 # for bamstats and Bio::DB::HTS
-SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.4/htslib-1.4.tar.bz2"
+SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1.5.tar.bz2"
 
 # Bio::DB::HTS
-SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.3.tar.gz"
+SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
 
 # for biobambam
 SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.54-release-20160802163650/biobambam2-2.0.54-release-20160802163650-x86_64-etch-linux-gnu.tar.gz"
@@ -129,30 +129,6 @@ else
   touch $SETUP_DIR/htslibGet.success
 fi
 
-echo -n "Building Bio::DB::HTS ..."
-if [ -e $SETUP_DIR/biohts.success ]; then
-  echo " previously installed ...";
-else
-  echo
-  cd $SETUP_DIR
-  rm -rf bioDbHts
-  get_distro "bioDbHts" $SOURCE_BIOBDHTS
-  mkdir -p bioDbHts/htslib
-  tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
-  tar --strip-components 1 -C bioDbHts/htslib -jxf $SETUP_DIR/htslib.tar.bz2
-  cd bioDbHts/htslib
-  perl -pi -e 'if($_ =~ m/^CFLAGS/ && $_ !~ m/\-fPIC/i){chomp; s/#.+//; $_ .= " -fPIC -Wno-unused -Wno-unused-result\n"};' Makefile
-  make -j$CPU
-  rm -f libhts.so*
-  cd ../
-  env HTSLIB_DIR=$SETUP_DIR/bioDbHts/htslib perl Build.PL --install_base=$INST_PATH
-  ./Build test
-  ./Build install
-  cd $SETUP_DIR
-  rm -f bioDbHts.tar.gz
-  touch $SETUP_DIR/biohts.success
-fi
-
 echo -n "Building htslib ..."
 if [ -e $SETUP_DIR/htslib.success ]; then
   echo " previously installed ...";
@@ -169,6 +145,26 @@ else
 fi
 
 export HTSLIB=$INST_PATH
+
+echo -n "Building Bio::DB::HTS ..."
+if [ -e $SETUP_DIR/biohts.success ]; then
+  echo " previously installed ...";
+else
+  echo
+  cd $SETUP_DIR
+  rm -rf bioDbHts
+  get_distro "bioDbHts" $SOURCE_BIOBDHTS
+  mkdir -p bioDbHts
+  tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
+  cd bioDbHts
+  perl Build.PL --htslib=$HTSLIB --install_base=$INST_PATH
+  ./Build
+  ./Build test
+  ./Build install
+  cd $SETUP_DIR
+  rm -f bioDbHts.tar.gz
+  touch $SETUP_DIR/biohts.success
+fi
 
 cd $INIT_DIR
 

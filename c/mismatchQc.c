@@ -32,13 +32,14 @@ char *fn_ref = NULL;
 int nthreads = 0;
 int wflags = 0;
 int clevel = -1;
+int is_index = 0;
 char* prog_id="PCAP-core-mismatchQC";
 char* prog_name="mismatchQc";
 char* prog_desc="Marks a read as QCFAIL where the mismatch rate higher than the threshold";
 char* prog_cl = NULL;
 float mismatch_frac = 0.05;
 int debug=0;
-const char mm_tag[2] = "mm";
+const char mm_tag[2] = "ZM";
 const char *MD_TAG = "MD";
 const char YES = 'Y';
 long long int marked_count = 0;
@@ -51,7 +52,7 @@ long long int marked_count = 0;
   read fails platform/vendor quality checks,
   read is PCR or optical duplicate
 */
-const int BAD_FLAGS = 4 + 8 + 512 + 1024 + 256 + 2048;
+const int BAD_FLAGS = BAM_FUNMAP | BAM_FMUNMAP | BAM_FQCFAIL | BAM_FDUP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY;
 
 enum rw_opts {
   W_CRAM        = 1,
@@ -80,8 +81,9 @@ void print_usage (int exit_code){
   printf ("Optional:\n");
   printf ("-@ --threads                File path to reference index (.fai) file.\n");
   printf ("-C --cram                   Use CRAM compression for output [default: bam].\n");
-  printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n\n");
-
+  printf ("-x --index                  Generate an index alongside output file (invalid when output is to stdout).\n");
+  printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
+  printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
   printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
 	printf ("Other:\n");
 	printf ("-h --help      Display this usage information.\n");
@@ -100,6 +102,7 @@ void options(int argc, char *argv[]){
             {"input",required_argument,0,'i'},
             {"output",required_argument,0,'o'},
             {"cram",no_argument,0,'C'},
+            {"index",no_argument,0,'x'},
             {"threads",required_argument,0,'@'},
             {"compression-level",required_argument,0,'l'},
             {"reference",required_argument,0,'r'},
@@ -112,7 +115,7 @@ void options(int argc, char *argv[]){
  int iarg = 0;
 
  //Iterate through options
-  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:@:Cvdh", long_opts, &index)) != -1){
+  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:@:Cvxdh", long_opts, &index)) != -1){
    switch(iarg){
      case 'i':
        input_file = optarg;
@@ -145,6 +148,11 @@ void options(int argc, char *argv[]){
      case 'C':
        wflags |= W_CRAM;
        strcat(prog_cl," -C");
+       break;
+
+     case 'x':
+       is_index = 1;
+       strcat(prog_cl," -x");
        break;
 
      case 'l':
@@ -194,6 +202,7 @@ void options(int argc, char *argv[]){
    }
    if (output_file==NULL || strcmp(output_file,"/dev/stdout")==0) {
     output_file = "-";   // we recognise this as a special case
+    check(is_index==0,"Cannot output an index file when stdout is used for output.");
    }
    strcat(prog_cl," -o ");
    strcat(prog_cl,output_file);
@@ -271,7 +280,7 @@ int checkMismatchStatus(bam1_t *b){
     //Add QC fail flag
     b->core.flag = b->core.flag | BAM_FQCFAIL;
     //Add mm tag
-    int chk = bam_aux_append(b, mm_tag, 'A', sizeof('Y'), &YES);
+    int chk = bam_aux_append(b, mm_tag, 'Z', sizeof('Y'), &YES);
     check(chk==0,"Error adding mismatch tag to read.");
     marked_count = marked_count+1;
   }
@@ -371,9 +380,11 @@ int main(int argc, char *argv[]){
   hts_close(output);
   if(debug==1) fprintf(stderr,"Processed %lld reads in total, marked %lld as qc_failed.",count,marked_count);
   //Finally we create the index file
-  if(debug==1) fprintf(stderr,"Building index.");
-  int chk_idx = sam_index_build(output_file,NULL);
-  check(chk_idx==0,"Error writing index file.");
+  if(is_index==1){
+    if(debug==1) fprintf(stderr,"Building index.");
+    int chk_idx = sam_index_build(output_file,NULL);
+    check(chk_idx==0,"Error writing index file.");
+  }
 
   if(debug==1) fprintf(stderr,"Done.");
 
