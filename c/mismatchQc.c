@@ -39,7 +39,8 @@ char* prog_desc="Marks a read as QCFAIL where the mismatch rate higher than the 
 char* prog_cl = NULL;
 float mismatch_frac = 0.05;
 int debug=0;
-const char mm_tag[2] = "ZM";
+const char mm_tag[2] = "mm";
+const char tag_type = 'A';
 const char *MD_TAG = "MD";
 const char YES = 'Y';
 long long int marked_count = 0;
@@ -272,16 +273,21 @@ error:
   return -1;
 }
 
-int checkMismatchStatus(bam1_t *b){
-  if (b->core.flag & BAD_FLAGS) return 0; //Ignore bad flags
-  float mm_rate = infer_mis_match_rate(b);
+int checkMismatchStatus(bam1_t **b){
+  if ((*b)->core.flag & BAD_FLAGS) return 0; //Ignore bad flags
+  float mm_rate = infer_mis_match_rate(*b);
   check(mm_rate>=0,"Error inferring mismatch rate for read.");
   if(mm_rate>mismatch_frac){
     //Add QC fail flag
-    b->core.flag = b->core.flag | BAM_FQCFAIL;
+    (*b)->core.flag = (*b)->core.flag | BAM_FQCFAIL;
     //Add mm tag
-    int chk = bam_aux_append(b, mm_tag, 'Z', sizeof('Y'), &YES);
-    check(chk==0,"Error adding mismatch tag to read.");
+    int chk = bam_aux_append(*b, mm_tag, tag_type, sizeof(YES), (uint8_t *) &YES);
+
+    check(chk==0,"Error adding mismatch tag to read %s.",bam_get_qname(*b));
+    uint8_t *p;
+    if((p = bam_aux_get(*b, mm_tag)) && bam_aux2A(p)!=YES){
+     sentinel("Error adding new tag to read %s.",bam_get_qname(*b));
+    }
     marked_count = marked_count+1;
   }
   return 0;
@@ -294,6 +300,7 @@ int main(int argc, char *argv[]){
   htsFile *output = NULL;
   hts_idx_t *index = NULL;
 	bam_hdr_t *head = NULL;
+  bam_hdr_t *new_head = NULL;
   char modew[800];
   bam1_t *b = NULL;
   prog_cl = malloc(sizeof(char)*2000);
@@ -317,6 +324,7 @@ int main(int argc, char *argv[]){
   if(wflags & W_CRAM){
     strcat(modew, "c");
   }
+  if(debug==1) fprintf(stderr,"Outputting data to %s using mode %s.\n",output_file,modew);
   output = hts_open(output_file,modew);
   check(output != NULL, "Error opening hts file for writing '%s' in mode %s.",output_file,modew);
 
@@ -351,8 +359,8 @@ int main(int argc, char *argv[]){
     hts_set_opt(output, HTS_OPT_THREAD_POOL, &p);
   }
 
-  head = cram_header_to_bam(cram_head);
-  int hd_chk = sam_hdr_write(output, head);
+  new_head = cram_header_to_bam(cram_head);
+  int hd_chk = sam_hdr_write(output, new_head);
   check(hd_chk!=-1,"Error writing header to output file.");
 
   //Headers and setup now sorted. Now we can perform mismatch QC
@@ -361,7 +369,7 @@ int main(int argc, char *argv[]){
   //Iterate through each read in bam file.
   b = bam_init1();
   int ret;
-  while((ret = sam_read1(input, head, b)) >= 0){
+  while((ret = sam_read1(input, new_head, b)) >= 0){
     count = count+1;
     if(debug == 1 && count % 10000000 == 0){ //Every 10 Mil reads
       time_t curr_time = time(NULL);
@@ -372,13 +380,15 @@ int main(int argc, char *argv[]){
       time_start = time(NULL);
     }
     int rd_check = 0;
-    rd_check = checkMismatchStatus(b);
+    rd_check = checkMismatchStatus(&b);
     check(rd_check==0,"Error checking mismatch status of reads.");
-    int res = sam_write1(output,head,b);
+    int res = sam_write1(output,new_head,b);
     check(res>=0,"Error writing read to output file.");
   }
-  hts_close(output);
-  if(debug==1) fprintf(stderr,"Processed %lld reads in total, marked %lld as qc_failed.",count,marked_count);
+
+  int out = hts_close(output);
+  check(out>=0,"Error closing output file.");
+  if(debug==1) fprintf(stderr,"Processed %lld reads in total, marked %lld as qc_failed.\n",count,marked_count);
   //Finally we create the index file
   if(is_index==1){
     if(debug==1) fprintf(stderr,"Building index.");
@@ -386,11 +396,15 @@ int main(int argc, char *argv[]){
     check(chk_idx==0,"Error writing index file.");
   }
 
-  if(debug==1) fprintf(stderr,"Done.");
+  if(debug==1) fprintf(stderr,"Done.\n");
 
   bam_destroy1(b);
   bam_hdr_destroy(head);
-  hts_close(input);
+  bam_hdr_destroy(new_head);
+  sam_hdr_free(cram_head);
+  free(prog_cl);
+  int in = hts_close(input);
+  check(in>=0,"Error closing input file.");
 
   if (p.pool) hts_tpool_destroy(p.pool);
 
@@ -399,8 +413,10 @@ int main(int argc, char *argv[]){
   error:
     if(b) bam_destroy1(b);
     if(head) bam_hdr_destroy(head);
+    if(new_head) bam_hdr_destroy(new_head);
     if(input) hts_close(input);
-
+    if(cram_head) sam_hdr_free(cram_head);
+    if(prog_cl) free(prog_cl);
     if(output) hts_close(output);
     if (p.pool) hts_tpool_destroy(p.pool);
 
