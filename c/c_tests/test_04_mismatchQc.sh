@@ -45,6 +45,28 @@ compare_sam () {
   return 0
 }
 
+#Ensure valid format produced
+../bin/mismatchQc -i ../t/data/mismatch_test.bam | bamvalidate
+if [ "$?" != "0" ];
+then
+  echo "ERROR running ../bin/mismatchQc -i ../t/data/mismatch_test.bam. Invalid output"
+  exit 1;
+fi
+
+../bin/mismatchQc -i ../t/data/mismatch_test.bam -l 2| bamvalidate
+if [ "$?" != "0" ];
+then
+  echo "ERROR running ../bin/mismatchQc -i ../t/data/mismatch_test.bam -l 2. Invalid output with compression levels"
+  exit 1;
+fi
+
+../bin/mismatchQc -i ../t/data/mismatch_test.bam -C | bamvalidate inputformat=cram
+if [ "$?" != "0" ];
+then
+  echo "ERROR running ../bin/mismatchQc -i ../t/data/mismatch_test.bam -C. Invalid output cram compression"
+  exit 1;
+fi
+
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam | bamcollate2 inputformat=bam outputformat=sam collate=0 resetaux=0 > ../t/data/mismatch_test_out.sam;
 if [ "$?" != "0" ];
 then
