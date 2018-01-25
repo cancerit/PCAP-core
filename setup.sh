@@ -2,8 +2,6 @@
 
 SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.15.tar.gz"
 
-SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.5/samtools-1.5.tar.bz2"
-
 # for bamstats and Bio::DB::HTS
 SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1.5.tar.bz2"
 
@@ -164,31 +162,6 @@ else
   cd $SETUP_DIR
   rm -f bioDbHts.tar.gz
   touch $SETUP_DIR/biohts.success
-fi
-
-cd $INIT_DIR
-
-if [[ ",$COMPILE," == *,samtools,* ]] ; then
-  echo -n "Building samtools ..."
-  if [ -e $SETUP_DIR/samtools.success ]; then
-    echo " previously installed ...";
-  else
-  echo
-    cd $SETUP_DIR
-    rm -rf samtools
-    get_distro "samtools" $SOURCE_SAMTOOLS
-    mkdir -p samtools
-    tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
-    cd samtools
-    ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
-    make -j$CPU all all-htslib
-    make install all all-htslib
-    cd $SETUP_DIR
-    rm -f samtools.tar.bz2
-    touch $SETUP_DIR/samtools.success
-  fi
-else
-  echo "samtools - No change between PCAP versions"
 fi
 
 cd $SETUP_DIR
