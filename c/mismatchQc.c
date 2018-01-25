@@ -80,7 +80,7 @@ void print_usage (int exit_code){
   printf ("-i --input                  [bc]ram File path to read input [stdin].\n");
   printf ("-o --output                 Path to output [stdout].\n\n");
   printf ("Optional:\n");
-  printf ("-@ --threads                File path to reference index (.fai) file.\n");
+  printf ("-@ --threads                number of BAM/CRAM compression threads.\n");
   printf ("-C --cram                   Use CRAM compression for output [default: bam].\n");
   printf ("-x --index                  Generate an index alongside output file (invalid when output is to stdout).\n");
   printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
