@@ -74,3 +74,5 @@ then
 	rm ../t/data/mismatch_test_out.sam
   exit 1
 fi
+
+rm ../t/data/mismatch_test_out.sam
