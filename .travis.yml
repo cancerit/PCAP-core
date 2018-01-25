@@ -41,7 +41,6 @@ before_script:
 
 script:
  - ./setup.sh ~/wtsi-opt
- - $HOME/wtsi-opt/bin/samtools view # dump usage to show intact
  - $HOME/wtsi-opt/bin/diff_bams -h
  - $HOME/wtsi-opt/bin/reheadSQ -h
  - $HOME/wtsi-opt/bin/bam_stats -h
