@@ -107,7 +107,7 @@ subtest 'completion utility checks (legacy)' => sub {
   is(PCAP::Threaded::success_exists($dir, 1), 1, 'Success file present');
 };
 
-subtest 'expternal process handling' => sub {
+subtest 'external process handling' => sub {
   my $dir = tempdir( CLEANUP => 1 );
   ok(PCAP::Threaded::external_process_handler($dir, 'ls', 1), 'External process executes');
 };

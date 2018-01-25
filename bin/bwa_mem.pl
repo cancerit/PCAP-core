@@ -105,6 +105,7 @@ sub setup {
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
+              'g|groupinfo=s' => \$opts{'groupinfo'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -213,8 +214,10 @@ bwa_mem.pl [options] [file(s)...]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
                       - '-I,-O' are used internally and should not be provided
     -bwa         -b     Single quoted string of additional parameters to pass to BWA
-                         - '-t,-p,-R' are used internally and should not be provided
+                         - '-t,-p,-R' are used internally and should not be provided.
+                         - '-v' is set to 1 unless '-bwa' is set.
     -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use[6]
+    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml).
 
   Targeted processing:
     -process     -p   Only process this step then exit, optionally set -index
@@ -287,6 +290,58 @@ Number of threads to be used in processing.
 
 If perl is not compiled with threading some steps will not run in parallel, however much of the
 script calls other tools that will still utilise this appropriately.
+
+This also impacts the number of threads used by BWA mapping steps.
+
+=back
+
+=head2 OPTIONAL parameters
+
+=over 4
+
+=item B<-fragment>
+
+Split input into fragements of X million repairs.  To prevent variability in data processing either
+set this to a very large number or ensure that it is not changed.
+
+=item B<-nomarkdup>
+
+Disables duplicate marking, switching bammarkduplicates2 for bammerge.
+
+=item B<-cram>
+
+Final output file will be a CRAM file instead of BAM.  To tune the the compression methods see then
+B<-scramble> option.
+
+=item B<-scramble>
+
+Single quoted string of parameters to pass to Scramble when '-c' used.  Please see the Scramble
+documentation for details.
+
+Please note: '-I,-O' are used internally and should not be provided.
+
+=item B<-bwa>
+
+Single quoted string of additional parameters to pass to BWA.  Please see the 'bwa mem'
+documentation for details.
+
+Please note: '-t,-p,-R' are used internally and should not be provided.
+
+If you want the default verbosity of BWA set '-v 3'.
+
+=item B<-map_threads>
+
+Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use.
+
+e.g. -t 8, -mt 4 results in 2x 4*thread mapping jobs when possible.
+
+Recommend leaving this as the default and using increments of 6 for '-threads'.
+
+=item B<-groupinfo>
+
+Readgroup information metadata file, please see the PCAP wiki for format:
+
+https://github.com/cancerit/PCAP-core/wiki/File-Formats-groupinfo.yaml
 
 =back
 

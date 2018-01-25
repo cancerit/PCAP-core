@@ -187,6 +187,37 @@ subtest 'Objects from file list' => sub {
       , 'Fail when bam is empty');
 };
 
+subtest 'Meta with YAML' => sub {
+  my $tmp = tempdir( CLEANUP => 1 );
+  make_path(File::Spec->catdir($tmp,'links')) unless(-d File::Spec->catdir($tmp,'links'));
+  is(&PCAP::Bwa::Meta::reset_rg_index, -1, q{Reset of rg_index}); # the rest will fail if this hasn't worked
+
+  ok(PCAP::Bwa::Meta::files_to_meta($tmp, [ File::Spec->catfile($test_data, '1_1.fq')
+                                        , File::Spec->catfile($test_data, '1_2.fq')]
+                                        , 'sample', File::Spec->catfile($test_data, 'good.yaml'))
+                                        , 'Paired fastq meta works');
+
+
+  like(
+    exception {
+      PCAP::Bwa::Meta::files_to_meta($tmp,
+                                     [File::Spec->catfile($test_data, '1.fq')],
+                                     'giggidy',
+                                     File::Spec->catfile($test_data, 'good.yaml'))
+    },
+    qr/Sample name provided at command line (.*) doesn't match metadata entry for 'SM' (.*)/m,
+    'Fail when sample name mismatch'
+  );
+
+  ok(PCAP::Bwa::Meta::files_to_meta($tmp,
+                                 [File::Spec->catfile($test_data, '1.fq')],
+                                 'sample',
+                                 File::Spec->catfile($test_data, 'good.yaml')),
+    'Pass on matched sample name')
+
+
+};
+
 my $meta; # for reuse
 subtest 'Accessors' => sub {
   my $tmp = tempdir( CLEANUP => 1 );

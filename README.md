@@ -1,5 +1,4 @@
-PCAP-core
-==============
+# PCAP-core
 
 NGS reference implementations and helper code for mapping and mapping related stats.
 
@@ -19,9 +18,9 @@ that are useful for the scientific community who may have little IT/bioinformati
 
 Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for further details.
 
----
+## Dependencies/Install
 
-###Dependencies/Install
+Please be aware that this expects basic C compilation libraries and tools to be available, most are listed in `INSTALL`.
 
 Please install the following before running `setup.sh`:
 
@@ -37,27 +36,24 @@ And various perl modules.
 
 Please see the respective licence for each before use.
 
-Please be aware that this expects basic C compilation libraries and tools to be available, most are listed in `INSTALL`.
-
----
-
-###Programs
+## Programs
 
 Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for details of programs.
 
----
+## Creating a release
 
-##Creating a release
-####Preparation
+### Preparation
+
 * Commit/push all relevant changes.
 * Pull a clean version of the repo and use this for the following steps.
 
-####Cutting the release
+### Cutting the release
+
 1. Update `lib/PCAP.pm` to the correct version.
-2. Ensure upgrade path for new version number is added to `lib/PCAP.pm`.
-3. Update `CHANGES.md` to show major items.
-4. Run `./prerelease.sh`
-5. Check all tests and coverage reports are acceptable.
-6. Commit the updated docs tree and updated module/version.
-7. Push commits.
-8. Use the GitHub tools to draft a release.
+1. Ensure upgrade path for new version number is added to `lib/PCAP.pm`.
+1. Update `CHANGES.md` to show major items.
+1. Run `./prerelease.sh`
+1. Check all tests and coverage reports are acceptable.
+1. Commit the updated docs tree and updated module/version.
+1. Push commits.
+1. Use the GitHub tools to draft a release.

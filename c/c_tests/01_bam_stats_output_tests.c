@@ -21,14 +21,15 @@
 #include "minunit.h"
 #include "bam_stats_output.h"
 
-char err[100];
+char err[200];
 char *exp_file = "../t/data/Stats.c.bam.bas";
 char *input_file = "../t/data/Stats.bam";
 
 int compare_files(char *file1, char *file2){
   FILE *fp1;
   FILE *fp2;
-  char c1[500], c2[500];
+  int buffer_size = 600;
+  char c1[buffer_size], c2[buffer_size];
   int cmp;
   fp1 = fopen(file1, "r");
   fp2 = fopen(file2, "r");
@@ -36,9 +37,9 @@ int compare_files(char *file1, char *file2){
   if((fp1 == NULL) || (fp2 == NULL)){
     return -1;
   }else{
-    while((fgets(c1 , 500, fp1) != NULL) && (fgets(c2 , 500, fp2) != NULL)){
+    while((fgets(c1 , buffer_size, fp1) != NULL) && (fgets(c2 , buffer_size, fp2) != NULL)){
       if((cmp = strcmp(c1, c2)) != 0){
-        fprintf(stderr,"Expected: '%s'\nGot: '%s'",c1,c2);
+        fprintf(stderr,"Expected: '%s'\nGot     : '%s'",c1,c2);
         fclose(fp1);
         fclose(fp2);
         return -1;

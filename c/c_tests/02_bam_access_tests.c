@@ -61,7 +61,7 @@ char *exp_platform_unit_1 = "5178_6";
 char *exp_rgid_2 = "29978";
 char *exp_platform_unit_2 = "5085_6";
 uint32_t exp_rd_length = 20;
-uint64_t exp_rg1_rd1_tot_count = 7;
+uint64_t exp_rg1_rd1_tot_count = 8;
 uint64_t exp_rg1_rd2_tot_count = 3;
 uint64_t exp_rg2_rd1_tot_count = 4;
 uint64_t exp_rg2_rd2_tot_count = 4;
@@ -69,7 +69,7 @@ uint64_t exp_rg1_rd1_dups = 4;
 uint64_t exp_rg1_rd2_dups = 0;
 uint64_t exp_rg2_rd1_dups = 0;
 uint64_t exp_rg2_rd2_dups = 0;
-uint64_t exp_rg1_rd1_gc = 63;
+uint64_t exp_rg1_rd1_gc = 72;
 uint64_t exp_rg1_rd2_gc = 27;
 uint64_t exp_rg2_rd1_gc = 71;
 uint64_t exp_rg2_rd2_gc = 74;
@@ -77,18 +77,22 @@ uint64_t exp_rg1_rd1_umap = 1;
 uint64_t exp_rg1_rd2_umap = 1;
 uint64_t exp_rg2_rd1_umap = 2;
 uint64_t exp_rg2_rd2_umap = 2;
-uint64_t exp_rg1_rd1_divergent = 30;
+uint64_t exp_rg1_rd1_divergent = 31;
 uint64_t exp_rg1_rd2_divergent = 18;
 uint64_t exp_rg2_rd1_divergent = 12;
 uint64_t exp_rg2_rd2_divergent = 12;
-uint64_t exp_rg1_rd1_mapped_bases = 115;
+uint64_t exp_rg1_rd1_mapped_bases = 135;
 uint64_t exp_rg1_rd2_mapped_bases = 37;
 uint64_t exp_rg2_rd1_mapped_bases = 95;
 uint64_t exp_rg2_rd2_mapped_bases = 95;
-uint64_t exp_rg1_rd1_proper = 6;
+uint64_t exp_rg1_rd1_proper = 7;
 uint64_t exp_rg1_rd2_proper = 0;
 uint64_t exp_rg2_rd1_proper = 2;
 uint64_t exp_rg2_rd2_proper = 0;
+uint64_t exp_rg1_rd1_qc_fail = 1;
+uint64_t exp_rg1_rd2_qc_fail = 0;
+uint64_t exp_rg2_rd1_qc_fail = 0;
+uint64_t exp_rg2_rd2_qc_fail = 0;
 
 char err[100];
 
@@ -323,7 +327,16 @@ char *test_bam_access_process_reads_rna(){ // rna flag in this method includes s
     sprintf(err,"RG 1, read_2 proper count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg1_rd2_proper,grp_stats[0][1]->proper);
     return err;
   }
-
+  //qc_fail 1
+  if(grp_stats[0][0]->qc_fail!=exp_rg1_rd1_qc_fail){
+    sprintf(err,"RG 1, read_1 qc_fail count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg1_rd1_qc_fail,grp_stats[0][0]->qc_fail);
+    return err;
+  }
+  //qc_fail 2
+  if(grp_stats[0][1]->qc_fail!=exp_rg1_rd2_qc_fail){
+    sprintf(err,"RG 1, read_2 qc_fail count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg1_rd2_qc_fail,grp_stats[0][1]->qc_fail);
+    return err;
+  }
 
 
 
@@ -394,6 +407,16 @@ char *test_bam_access_process_reads_rna(){ // rna flag in this method includes s
   //proper 2
   if(grp_stats[1][1]->proper!=exp_rg2_rd2_proper){
     sprintf(err,"RG 2, read_2 proper count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg2_rd2_proper,grp_stats[1][1]->proper);
+    return err;
+  }
+  //qc_fail 1
+  if(grp_stats[1][0]->qc_fail!=exp_rg2_rd1_qc_fail){
+    sprintf(err,"RG 2, read_1 qc_fail count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg2_rd1_qc_fail,grp_stats[1][0]->qc_fail);
+    return err;
+  }
+  //qc_fail 2
+  if(grp_stats[1][1]->qc_fail!=exp_rg2_rd2_qc_fail){
+    sprintf(err,"RG 2, read_2 qc_fail count incorrect. Expected %"PRIu64" but got %"PRIu64"\n",exp_rg2_rd2_qc_fail,grp_stats[1][1]->qc_fail);
     return err;
   }
 

@@ -85,7 +85,7 @@ sub mem_setup {
 
 sub mem_prepare {
   my $options = shift;
-  $options->{'meta_set'} = PCAP::Bwa::Meta::files_to_meta($options->{'tmp'}, $options->{'raw_files'}, $options->{'sample'});
+  $options->{'meta_set'} = PCAP::Bwa::Meta::files_to_meta($options->{'tmp'}, $options->{'raw_files'}, $options->{'sample'}, $options->{'groupinfo'});
   $options->{'max_split'} = scalar @{$options->{'meta_set'}};
   return $options->{'max_split'};
 }
@@ -285,9 +285,8 @@ sub bwa_mem {
     # uncoverable branch false
     $interleaved_fq = q{ -p}, unless($input->paired_fq);
 
-    my $add_options = q{};
+    my $add_options = q{-v 1}; # minimise output
     $add_options = $options->{'bwa'} if(exists $options->{'bwa'});
-
     $bwa .= sprintf $BWA_MEM, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
 
     # uncoverable branch true
