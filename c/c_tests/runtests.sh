@@ -35,4 +35,17 @@ do
 	fi
 done
 
+echo "Running script tests:"
+
+for j in c_tests/test_*.sh
+do
+  if ./$j 2>> c_tests/tests_log
+   then echo $j PASS
+  else
+    echo "ERROR in "$j": here's c_tests/tests_log"
+    echo "------"
+    tail c_tests/tests_log
+    exit 1
+  fi
+done
 echo ""
