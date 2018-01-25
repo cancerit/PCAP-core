@@ -319,10 +319,11 @@ int main(int argc, char *argv[]){
   //Setup output. Either match input format or bam/cram depending on commandline flag
 
   strcpy(modew, "w");
-  strcat(modew, "b");
   if (clevel >= 0 && clevel <= 9) sprintf(modew + 1, "%d", clevel);
   if(wflags & W_CRAM){
     strcat(modew, "c");
+  }else{
+    strcat(modew, "b");
   }
   if(debug==1) fprintf(stderr,"Outputting data to %s using mode %s.\n",output_file,modew);
   output = hts_open(output_file,modew);
