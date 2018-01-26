@@ -144,24 +144,29 @@ fi
 
 export HTSLIB=$INST_PATH
 
-echo -n "Building Bio::DB::HTS ..."
-if [ -e $SETUP_DIR/biohts.success ]; then
-  echo " previously installed ...";
+CHK=`perl -le 'eval "require $ARGV[0]" and print $ARGV[0]->VERSION' Bio::DB::HTS`
+if [[ "x$CHK" == "x" ]] ; then
+  echo -n "Building Bio::DB::HTS ..."
+  if [ -e $SETUP_DIR/biohts.success ]; then
+    echo " previously installed ...";
+  else
+    echo
+    cd $SETUP_DIR
+    rm -rf bioDbHts
+    get_distro "bioDbHts" $SOURCE_BIOBDHTS
+    mkdir -p bioDbHts
+    tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
+    cd bioDbHts
+    perl Build.PL --htslib=$HTSLIB --install_base=$INST_PATH
+    ./Build
+    ./Build test
+    ./Build install
+    cd $SETUP_DIR
+    rm -f bioDbHts.tar.gz
+    touch $SETUP_DIR/biohts.success
+  fi
 else
-  echo
-  cd $SETUP_DIR
-  rm -rf bioDbHts
-  get_distro "bioDbHts" $SOURCE_BIOBDHTS
-  mkdir -p bioDbHts
-  tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
-  cd bioDbHts
-  perl Build.PL --htslib=$HTSLIB --install_base=$INST_PATH
-  ./Build
-  ./Build test
-  ./Build install
-  cd $SETUP_DIR
-  rm -f bioDbHts.tar.gz
-  touch $SETUP_DIR/biohts.success
+  echo "Bio::DB::HTS already installed ..."
 fi
 
 cd $SETUP_DIR
