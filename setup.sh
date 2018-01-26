@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.15.tar.gz"
+SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.17.tar.gz"
 
 # for bamstats and Bio::DB::HTS
 SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1.5.tar.bz2"
@@ -9,14 +9,15 @@ SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
 
 # for biobambam
-SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.54-release-20160802163650/biobambam2-2.0.54-release-20160802163650-x86_64-etch-linux-gnu.tar.gz"
+SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.83-release-20180105121132/biobambam2-2.0.83-release-20180105121132-x86_64-etch-linux-gnu.tar.gz"
 
 get_distro () {
   EXT=""
   if [[ $2 == *.tar.bz2* ]] ; then
     EXT="tar.bz2"
   elif [[ $2 == *.zip* ]] ; then
-    EXT="zip"
+    echo "ERROR: zip archives are not supported by default, if pulling from github replace .zip with .tar.gz"
+    exit 1
   elif [[ $2 == *.tar.gz* ]] ; then
     EXT="tar.gz"
   else
@@ -27,7 +28,8 @@ get_distro () {
   if hash curl 2>/dev/null; then
     curl --retry 10 -sS -o $1.$EXT -L $2
   else
-    wget --tries=10 -nv -O $1.$EXT $2
+    echo "ERROR: curl not found"
+    exit 1
   fi
 }
 
@@ -102,7 +104,7 @@ fi
 if [ -e $SETUP_DIR/basePerlDeps.success ]; then
   echo "Previously installed base perl deps..."
 else
-  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version@1.006924")
+  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version>=1.006924")
   for i in "${perlmods[@]}" ; do
     $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
   done
@@ -236,12 +238,12 @@ if [ -e $SETUP_DIR/PCAP_perlPrereq.success ]; then
   echo "PCAP_perlPrereq previously installed ...";
 else
   echo
-  $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org --notest -l $INST_PATH --installdeps .
+  $CPANM --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org --notest -l $INST_PATH --installdeps .
   touch $SETUP_DIR/PCAP_perlPrereq.success
 fi
 
 echo -n "Installing PCAP ..."
-$CPANM -v --no-interactive --mirror http://cpan.metacpan.org -l $INST_PATH .
+$CPANM --no-wget -v --no-interactive --mirror http://cpan.metacpan.org -l $INST_PATH .
 echo
 
 # cleanup all junk
