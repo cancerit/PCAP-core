@@ -3,7 +3,8 @@
 SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.17.tar.gz"
 
 # for bamstats and Bio::DB::HTS
-SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1.5.tar.bz2"
+SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.7/htslib-1.7.tar.bz2"
+SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2"
 
 # Bio::DB::HTS
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
@@ -171,6 +172,32 @@ else
   echo "Bio::DB::HTS already installed ..."
 fi
 
+cd $INIT_DIR
+
+if [[ ",$COMPILE," == *,samtools,* ]] ; then
+  echo -n "Building samtools ..."
+  if [ -e $SETUP_DIR/samtools.success ]; then
+    echo " previously installed ...";
+  else
+  echo
+    cd $SETUP_DIR
+    rm -rf samtools
+    get_distro "samtools" $SOURCE_SAMTOOLS
+    mkdir -p samtools
+    tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
+    cd samtools
+    ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
+    make -j$CPU all all-htslib
+    make install all all-htslib
+    cd $SETUP_DIR
+    rm -f samtools.tar.bz2
+    touch $SETUP_DIR/samtools.success
+  fi
+else
+  echo "samtools - No change between PCAP versions"
+fi
+
+
 cd $SETUP_DIR
 if [[ ",$COMPILE," == *,bwa,* ]] ; then
   echo -n "Building BWA ..."
@@ -222,6 +249,11 @@ else
   echo
   cd $INIT_DIR
   make -C c clean
+  if [ -z ${REF_PATH+x} ]; then
+    mkdir -p /tmp/$USER
+    export REF_PATH=/tmp/$USER/cache/%2s/%2s/%s:http://www.ebi.ac.uk/ena/cram/md5/%s
+    export REF_CACHE=/tmp/$USER/cache/%2s/%2s/%s
+  fi
   env HTSLIB=$SETUP_DIR/htslib make -C c -j$CPU prefix=$INST_PATH
   cp bin/bam_stats $INST_PATH/bin/.
   cp bin/reheadSQ $INST_PATH/bin/.
