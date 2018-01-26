@@ -87,7 +87,11 @@ sub cleanup {
 }
 
 sub setup {
-  my %opts;
+  my %opts = ('map_threads' => &PCAP::Bwa::bwa_mem_max_cores,
+              'mmqcfrac' => 0.05,
+              'threads' => 1,
+             );
+
   GetOptions( 'h|help' => \$opts{'h'},
               'm|man' => \$opts{'m'},
               'v|version' => \$opts{'v'},
@@ -106,6 +110,8 @@ sub setup {
               'sc|scramble=s' => \$opts{'scramble'},
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
               'g|groupinfo=s' => \$opts{'groupinfo'},
+              'q|mmqc' => \$opts{'mmqc'},
+              'qf|mmqcfrag:f' => \$opts{'mmqcfrac'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -138,13 +144,9 @@ sub setup {
   delete $opts{'bwa'} unless(defined $opts{'bwa'});
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
-
-  $opts{'map_threads'} = &PCAP::Bwa::bwa_mem_max_cores unless(defined $opts{'map_threads'});
+  delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
-
-  # now safe to apply defaults
-  $opts{'threads'} = 1 unless(defined $opts{'threads'});
 
   my $tmpdir = File::Spec->catdir($opts{'outdir'}, 'tmpMap_'.$opts{'sample'});
   make_path($tmpdir) unless(-d $tmpdir);
@@ -209,15 +211,18 @@ bwa_mem.pl [options] [file(s)...]
 
   Optional parameters:
     -fragment    -f   Split input into fragements of X million repairs [10]
-    -nomarkdup   -n   Don't mark duplicates
-    -cram        -c   Output cram, see '-sc'
+    -nomarkdup   -n   Don't mark duplicates [flag]
+    -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
                       - '-I,-O' are used internally and should not be provided
     -bwa         -b     Single quoted string of additional parameters to pass to BWA
                          - '-t,-p,-R' are used internally and should not be provided.
                          - '-v' is set to 1 unless '-bwa' is set.
-    -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use[6]
-    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml).
+    -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value
+                      and '-i' is not in use [6]
+    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml) [file]
+    -mmqc        -q   Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
+    -mmqcfrac    -qf  Mismatch fraction for -mmqc [0.05]
 
   Targeted processing:
     -process     -p   Only process this step then exit, optionally set -index
