@@ -199,7 +199,7 @@ if [[ ",$COMPILE," == *,biobambam,* ]] ; then
     cd $SETUP_DIR
     get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
     mkdir -p biobambam2
-    tar --strip-components 1 -C biobambam2 -zxf biobambam2.tar.gz
+    tar --strip-components 3 -C biobambam2 -zxf biobambam2.tar.gz
     mkdir -p $INST_PATH/bin $INST_PATH/etc $INST_PATH/lib $INST_PATH/share
     rm -f biobambam2/bin/curl # don't let this file in SSL doesn't work
     cp -r biobambam2/bin/* $INST_PATH/bin/.
