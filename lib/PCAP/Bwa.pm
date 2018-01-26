@@ -33,6 +33,7 @@ use Capture::Tiny qw(capture);
 use File::Copy qw(copy);
 
 use PCAP::Bwa::Meta;
+use PCAP::Bam;
 
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
@@ -80,6 +81,9 @@ sub mem_setup {
       copy("$options->{reference}.fai", "$options->{tmp}/decomp.fa.fai") unless(-e "$options->{decomp_ref}.fai");
     }
   }
+  # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
+  # if it has check for use of at least bammaskflags
+  PCAP::Bam::mismatchQc_checks($options->{'raw_files'});
   return 1;
 }
 

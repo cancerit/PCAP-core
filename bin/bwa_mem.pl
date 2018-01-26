@@ -222,6 +222,7 @@ bwa_mem.pl [options] [file(s)...]
                       and '-i' is not in use [6]
     -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml) [file]
     -mmqc        -q   Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
+                       - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf  Mismatch fraction for -mmqc [0.05]
 
   Targeted processing:
@@ -347,6 +348,23 @@ Recommend leaving this as the default and using increments of 6 for '-threads'.
 Readgroup information metadata file, please see the PCAP wiki for format:
 
 https://github.com/cancerit/PCAP-core/wiki/File-Formats-groupinfo.yaml
+
+=item B<-mmqc>
+
+Mark reads as QCFAIL (0x200, 512) using the mismatchQc program, also adds aux tag 'mm:A:Y'.
+
+WARNING:
+bwa_mem.pl will exclude all QCFAIL reads from mapping. If a BAM/CRAM file has been created using
+this option please ensure that you pre-process the file to remove the flag 512 if you intend to
+reprocess based on that output.
+
+e.g.
+
+cat YOUR.bam | bammaskflags maskneg=512 > cleaned.bam
+
+=item B<-mmqcfrac>
+
+Mismatch fraction to pass through to mismatchQc
 
 =back
 

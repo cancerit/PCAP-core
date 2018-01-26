@@ -396,6 +396,31 @@ sub check_paired {
   return 1;
 }
 
+sub mismatchQc_checks {
+  my $raw_files = shift;
+  for my $to_chk(@{$raw_files}) {
+    next if($to_chk !~ m/\.[bc]r?am$/i);
+    my ($mismatchQc, $bammaskflag) = (0, 0);
+    my $sam = sam_ob($to_chk);
+    my @header_lines = split /\n/, $sam->header->text;
+    while(my $line = shift @header_lines) {
+      next if($line !~ m/^\@PG/);
+      if($line =~ m/\tPN:PCAP-core-mismatchQC/) {
+        $mismatchQc = 1;
+        $bammaskflag = 0; # reset each time we see mismatchQc
+      }
+      $bammaskflag = 1 if($mismatchQc == 1 && $line =~ m/\tPN:bammaskflags/ && $line =~ m/maskflags=512/);
+    }
+    if($mismatchQc == 1 && $bammaskflag == 0) {
+      die <<ERRORDOC;
+ERROR:
+      This input file appears to have been processed with mismatchQc and has not been cleaned with
+      bammaskflags.  Please see the long description for '-mmqc' via 'bwa_mem.pl -m' for more details.
+ERRORDOC
+    }
+  }
+}
+
 1;
 
 __END__
@@ -531,5 +556,12 @@ The SAM object is also returned should it be useful for other calls
   my $sam_ob = sam_ob('file.bam');
 
 Generate a Bio::DB::HTS object from the provided BAM|CRAM file.
+
+=item mismatchQc_checks
+
+  mismatchQc_checks($array_ref_of_files);
+
+Checks BAM/CRAM file headers for presence of mismatchQc PG line.  If found errors if subsequent
+bammaskflags to clean flag 512 is not found.
 
 =back
