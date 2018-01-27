@@ -93,7 +93,7 @@ fi
 
 ## grab cpanm and stick in workspace, then do a self upgrade into bin:
 get_file $SETUP_DIR/cpanm https://cpanmin.us/
-perl $SETUP_DIR/cpanm -l $INST_PATH App::cpanminus
+perl $SETUP_DIR/cpanm --no-wget -l $INST_PATH App::cpanminus
 CPANM=`which cpanm`
 echo $CPANM
 
@@ -107,7 +107,7 @@ if [ -e $SETUP_DIR/basePerlDeps.success ]; then
 else
   perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version~1.006924")
   for i in "${perlmods[@]}" ; do
-    $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
+    $CPANM --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
   done
   touch $SETUP_DIR/basePerlDeps.success
 fi
