@@ -280,7 +280,6 @@ echo
 
 # cleanup all junk
 rm -rf $SETUP_DIR
-rm -rf $INIT_DIR/bin/biobambam
 
 echo
 echo
