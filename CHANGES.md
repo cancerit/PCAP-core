@@ -8,7 +8,6 @@ threshold.
 * `bwa_mem.pl` has new options:
   * readgroup information can be loaded from a `yaml` file when fastq used as input.
   * Options to enable use of `mismatchQc` in processing
-* `samtools` is no longer installed by `setup.sh` or a prerequisite for PCAP-core.
 
 ## 4.0.5
 
