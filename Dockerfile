@@ -16,7 +16,7 @@
 # nettle-dev
 # wget
 # zlib1g-dev
-FROM leukgen/cgp-bigwig:0.4.4
+FROM cancerit/cgp-bigwig:0.4.4
 
 # Set maintainer labels.
 LABEL maintainer Keiran M. Raine <kr2@sanger.ac.uk>
