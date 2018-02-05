@@ -6,7 +6,7 @@
 # ENV LC_ALL en_US.UTF-8
 # ENV LANG en_US.UTF-8
 
-# Finally PCAP-core these dependencies are provided:
+# PCAP-core system dependencies are:
 # build-essential
 # libbz2-dev
 # libcurl4-gnutls-dev
@@ -16,6 +16,10 @@
 # nettle-dev
 # wget
 # zlib1g-dev
+# libexpat1-dev             | Missing in cgp-bigwig
+# libgoogle-perftools-dev   | Missing in cgp-bigwig
+# lsof                      | Missing in cgp-bigwig
+# time                      | Missing in cgp-bigwig
 FROM cancerit/cgp-bigwig:0.4.4
 
 # Set maintainer labels.
