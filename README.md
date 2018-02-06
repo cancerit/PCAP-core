@@ -2,13 +2,13 @@
 
 NGS reference implementations and helper code for mapping and mapping related stats.
 
-This has been forked from the [ICGC-TCGA-PanCancer/PCAP-core](https://github.com/ICGC-TCGA-PanCancer/PCAP-core)
-repository as this codebase was created by [cancerit](https://github.com/cancerit) and continues to be developed.
+This has been forked from the [ICGC-TCGA-PanCancer/PCAP-core][PCAP-core]
+repository as this codebase was created by [cancerit](cancerit_github) and continues to be developed.
 This version strips out PCAWG related elements and incorporates more efficient code.
 
-| Master | Dev |
-|---|---|
-| [![Build Status](https://travis-ci.org/cancerit/PCAP-core.svg?branch=master)](https://travis-ci.org/cancerit/PCAP-core) |  [![Build Status](https://travis-ci.org/cancerit/PCAP-core.svg?branch=dev)](https://travis-ci.org/cancerit/PCAP-core) |
+| Master                                        | Develop                                         |
+| --------------------------------------------- | ----------------------------------------------- |
+| [![Master Badge][travis-master]][travis-base] | [![Develop Badge][travis-develop]][travis-base] |
 
 This repository contains code to run genomic alignments of paired end data
 and subsequent calling algorithms.
@@ -16,7 +16,13 @@ and subsequent calling algorithms.
 The intention is to provide reference implementations and simple to execute wrappers
 that are useful for the scientific community who may have little IT/bioinformatic support.
 
-Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for further details.
+Please see the [wiki][wiki] for further details and available programs.
+
+## Docker and Singularity
+
+There are docker and dockstore.org wrappers for this project at [dockstore-cgpmap][dockstore-cgpmap].
+
+It is know to work correctly after import into a singularity image.
 
 ## Dependencies/Install
 
@@ -24,21 +30,17 @@ Please be aware that this expects basic C compilation libraries and tools to be 
 
 Please install the following before running `setup.sh`:
 
-* [cgpBigWig](https://github.com/cancerit/cgpBigWig/releases)
+* [cgpBigWig][cgpBigWig]
 
 Dependancies installed by `setup.sh`:
 
-* [biobambam](https://github.com/gt1/biobambam)
-* [bwa](https://github.com/lh3/bwa)
-* [samtools](https://github.com/samtools/samtools)
+* [biobambam][biobambam]
+* [bwa][bwa]
+* [samtools][samtools]
 
 And various perl modules.
 
 Please see the respective licence for each before use.
-
-## Programs
-
-Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for details of programs.
 
 ## Creating a release
 
@@ -57,3 +59,19 @@ Please see the [wiki](https://github.com/cancerit/PCAP-core/wiki) for details of
 1. Commit the updated docs tree and updated module/version.
 1. Push commits.
 1. Use the GitHub tools to draft a release.
+
+<!-- References -->
+
+[cgpBigWig]: https://github.com/cancerit/cgpBigWig/releases
+[biobambam]: https://github.com/gt1/biobambam
+[bwa]: https://github.com/lh3/bwa
+[samtools]: https://github.com/samtools/samtools
+[wiki]: https://github.com/cancerit/PCAP-core/wiki
+[cancerit_github]: https://github.com/cancerit
+[old_repo]: https://github.com/ICGC-TCGA-PanCancer/PCAP-core
+[dockstore-cgpmap]: https://github.com/cancerit/dockstore-cgpmap
+
+<!-- Travis -->
+[travis-base]: https://travis-ci.org/cancerit/PCAP-core
+[travis-master]: https://travis-ci.org/cancerit/PCAP-core.svg?branch=master
+[travis-develop]: https://travis-ci.org/cancerit/PCAP-core.svg?branch=develop
