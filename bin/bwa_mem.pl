@@ -111,7 +111,7 @@ sub setup {
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
               'g|groupinfo=s' => \$opts{'groupinfo'},
               'q|mmqc' => \$opts{'mmqc'},
-              'qf|mmqcfrag:f' => \$opts{'mmqcfrac'},
+              'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
