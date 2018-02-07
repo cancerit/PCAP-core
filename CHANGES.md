@@ -8,6 +8,7 @@ threshold.
 * `bwa_mem.pl` has new options:
   * readgroup information can be loaded from a `yaml` file when fastq used as input.
   * Options to enable use of `mismatchQc` in processing
+* Docs point to dockstore wrapper and image.
 
 ## 4.0.5
 

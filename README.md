@@ -22,7 +22,15 @@ Please see the [wiki][wiki] for further details and available programs.
 
 There are docker and dockstore.org wrappers for this project at [dockstore-cgpmap][dockstore-cgpmap].
 
-It is know to work correctly after import into a singularity image.
+The docker image is held on [quay.io][quay-io-cgpmap].
+
+The CWL bindings of `dockstore-cgpmap` specifically target execution of the BWA mem mapping flow,
+however all tools are contained in the image and can be used if you construct the relevant docker
+commands.
+
+The docker image is know to work correctly after import into a singularity image
+
+See the [dockstore-cgpmap][dockstore-cgpmap] documentation for more detail.
 
 ## Dependencies/Install
 
@@ -70,6 +78,7 @@ Please see the respective licence for each before use.
 [cancerit_github]: https://github.com/cancerit
 [old_repo]: https://github.com/ICGC-TCGA-PanCancer/PCAP-core
 [dockstore-cgpmap]: https://github.com/cancerit/dockstore-cgpmap
+[quay-io-cgpmap]: https://quay.io/repository/wtsicgp/dockstore-cgpmap
 
 <!-- Travis -->
 [travis-base]: https://travis-ci.org/cancerit/PCAP-core
