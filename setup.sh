@@ -77,7 +77,7 @@ unset PERL5LIB
 ARCHNAME=`perl -e 'use Config; print $Config{archname};'`
 PERLROOT=$INST_PATH/lib/perl5
 export PERL5LIB="$PERLROOT"
-export PATH="$INST_PATH/bin:$PATH"
+export PATH="$INST_PATH/bin:$INST_PATH/biobambam2/bin:$PATH"
 
 #create a location to build dependencies
 SETUP_DIR=$INIT_DIR/install_tmp
@@ -225,14 +225,9 @@ if [[ ",$COMPILE," == *,biobambam,* ]] ; then
   echo
     cd $SETUP_DIR
     get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
-    mkdir -p biobambam2
-    tar -m --strip-components 3 -C biobambam2 -zxf biobambam2.tar.gz
-    mkdir -p $INST_PATH/bin $INST_PATH/etc $INST_PATH/lib $INST_PATH/share
-    rm -f biobambam2/bin/curl # don't let this file in SSL doesn't work
-    cp -r biobambam2/bin/* $INST_PATH/bin/.
-    cp -r biobambam2/etc/* $INST_PATH/etc/.
-    cp -r biobambam2/lib/* $INST_PATH/lib/.
-    cp -r biobambam2/share/* $INST_PATH/share/.
+    mkdir -p $INST_PATH/biobambam2
+    tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
+    rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
     rm -f biobambam2.tar.gz
     touch $SETUP_DIR/biobambam2.success
   fi
@@ -284,7 +279,7 @@ rm -rf $SETUP_DIR
 echo
 echo
 echo "Please add the following to beginning of path:"
-echo "  $INST_PATH/bin"
+echo "  $INST_PATH/bin:$INST_PATH/biobambam2/bin:"
 echo "Please add the following to beginning of PERL5LIB:"
 echo "  $PERLROOT"
 echo

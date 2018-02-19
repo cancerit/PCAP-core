@@ -9,6 +9,7 @@ threshold.
   * readgroup information can be loaded from a `yaml` file when fastq used as input.
   * Options to enable use of `mismatchQc` in processing
 * Docs point to dockstore wrapper and image.
+* `biobambam2` now installed to a subfolder so need to extend `PATH` appropriately.
 
 ## 4.0.5
 

@@ -18,7 +18,7 @@ that are useful for the scientific community who may have little IT/bioinformati
 
 Please see the [wiki][wiki] for further details and available programs.
 
-## Docker and Singularity
+## Docker, Singularity and Dockstore
 
 There are docker and dockstore.org wrappers for this project at [dockstore-cgpmap][dockstore-cgpmap].
 
@@ -28,7 +28,7 @@ The CWL bindings of `dockstore-cgpmap` specifically target execution of the BWA 
 however all tools are contained in the image and can be used if you construct the relevant docker
 commands.
 
-The docker image is know to work correctly after import into a singularity image
+The docker image is know to work correctly after import into a singularity image.
 
 See the [dockstore-cgpmap][dockstore-cgpmap] documentation for more detail.
 
