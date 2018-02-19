@@ -1,6 +1,6 @@
 /*       LICENCE
 * PCAP - NGS reference implementations and helper code for mapping (originally part of ICGC/TCGA PanCancer)
-# Copyright (C) 2014-2018 OWNER HERE
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License

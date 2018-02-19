@@ -2,7 +2,7 @@ package PCAP::Threaded;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2017 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
