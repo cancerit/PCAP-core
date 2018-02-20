@@ -2,7 +2,7 @@ package PCAP::Threaded;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2017 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,8 +36,7 @@ use Const::Fast qw(const);
 use Scalar::Util qw(looks_like_number);
 use Time::HiRes qw(usleep);
 
-our $CAN_USE_THREADS = 0;
-$CAN_USE_THREADS = eval 'use threads; 1';
+our $CAN_USE_THREADS = eval 'use threads; 1' || 0;
 
 const my $SCRIPT_OCT_MODE => 0777;
 
@@ -318,9 +317,9 @@ sub _file_complete {
   while(1) {
     $tries++;
     croak "Failed to confirm write complete after 30 attempts ($microsec us delays): $script" if($tries >= 30);
-    my ($stdout, $stderr, $exit) = capture { system([0,1], 'lsof', $script); };
+    my ($stdout, $stderr, $exit) = capture { system([0,1], 'fuser', $script); };
     if($exit > 1) {
-      croak sprintf "ERROR: lsof output\n\tSTDOUT: %s\n\tSTDERR: %s\n\tEXIT: %d\n", $stdout, $stderr, $exit;
+      croak sprintf "ERROR: fuser output\n\tSTDOUT: %s\n\tSTDERR: %s\n\tEXIT: %d\n", $stdout, $stderr, $exit;
     }
     printf STDERR "OUT : %s\nERR : %s\nEXIT: %s\n", $stdout,$stderr,$exit if($exit == 0);
     last if($exit == 1);

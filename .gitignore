@@ -13,3 +13,8 @@ c/*.o
 examples/cgp_gnos_pull.ini
 /MYMETA.*
 /c/c_tests/tests_log
+/bin/diff_bams
+/bin/reheadSQ
+/c/c_tests/01_bam_stats_output_tests
+/c/c_tests/02_bam_access_tests
+/c/c_tests/03_bam_stats_calcs_tests
