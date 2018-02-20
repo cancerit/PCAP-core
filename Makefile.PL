@@ -2,7 +2,7 @@
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2016 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -51,5 +51,6 @@ WriteMakefile(
                      'JSON' => 2.90,
                      'JSON::XS' => 3.01,
                      'Test::Warn' => 0.30,
+                     'YAML' => 1.24,
                    }
 );

@@ -2,7 +2,7 @@
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2017 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -87,7 +87,11 @@ sub cleanup {
 }
 
 sub setup {
-  my %opts;
+  my %opts = ('map_threads' => &PCAP::Bwa::bwa_mem_max_cores,
+              'mmqcfrac' => 0.05,
+              'threads' => 1,
+             );
+
   GetOptions( 'h|help' => \$opts{'h'},
               'm|man' => \$opts{'m'},
               'v|version' => \$opts{'v'},
@@ -105,6 +109,9 @@ sub setup {
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
+              'g|groupinfo=s' => \$opts{'groupinfo'},
+              'q|mmqc' => \$opts{'mmqc'},
+              'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -137,13 +144,9 @@ sub setup {
   delete $opts{'bwa'} unless(defined $opts{'bwa'});
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
-
-  $opts{'map_threads'} = &PCAP::Bwa::bwa_mem_max_cores unless(defined $opts{'map_threads'});
+  delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
-
-  # now safe to apply defaults
-  $opts{'threads'} = 1 unless(defined $opts{'threads'});
 
   my $tmpdir = File::Spec->catdir($opts{'outdir'}, 'tmpMap_'.$opts{'sample'});
   make_path($tmpdir) unless(-d $tmpdir);
@@ -208,13 +211,19 @@ bwa_mem.pl [options] [file(s)...]
 
   Optional parameters:
     -fragment    -f   Split input into fragements of X million repairs [10]
-    -nomarkdup   -n   Don't mark duplicates
-    -cram        -c   Output cram, see '-sc'
+    -nomarkdup   -n   Don't mark duplicates [flag]
+    -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
                       - '-I,-O' are used internally and should not be provided
     -bwa         -b     Single quoted string of additional parameters to pass to BWA
-                         - '-t,-p,-R' are used internally and should not be provided
-    -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use[6]
+                         - '-t,-p,-R' are used internally and should not be provided.
+                         - '-v' is set to 1 unless '-bwa' is set.
+    -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value
+                      and '-i' is not in use [6]
+    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml) [file]
+    -mmqc        -q   Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
+                       - Please see 'bwa_mem.pl -m'
+    -mmqcfrac    -qf  Mismatch fraction for -mmqc [0.05]
 
   Targeted processing:
     -process     -p   Only process this step then exit, optionally set -index
@@ -287,6 +296,75 @@ Number of threads to be used in processing.
 
 If perl is not compiled with threading some steps will not run in parallel, however much of the
 script calls other tools that will still utilise this appropriately.
+
+This also impacts the number of threads used by BWA mapping steps.
+
+=back
+
+=head2 OPTIONAL parameters
+
+=over 4
+
+=item B<-fragment>
+
+Split input into fragements of X million repairs.  To prevent variability in data processing either
+set this to a very large number or ensure that it is not changed.
+
+=item B<-nomarkdup>
+
+Disables duplicate marking, switching bammarkduplicates2 for bammerge.
+
+=item B<-cram>
+
+Final output file will be a CRAM file instead of BAM.  To tune the the compression methods see then
+B<-scramble> option.
+
+=item B<-scramble>
+
+Single quoted string of parameters to pass to Scramble when '-c' used.  Please see the Scramble
+documentation for details.
+
+Please note: '-I,-O' are used internally and should not be provided.
+
+=item B<-bwa>
+
+Single quoted string of additional parameters to pass to BWA.  Please see the 'bwa mem'
+documentation for details.
+
+Please note: '-t,-p,-R' are used internally and should not be provided.
+
+If you want the default verbosity of BWA set '-v 3'.
+
+=item B<-map_threads>
+
+Number of cores applied to each parallel BWA job when '-t' exceeds this value and '-i' is not in use.
+
+e.g. -t 8, -mt 4 results in 2x 4*thread mapping jobs when possible.
+
+Recommend leaving this as the default and using increments of 6 for '-threads'.
+
+=item B<-groupinfo>
+
+Readgroup information metadata file, please see the PCAP wiki for format:
+
+https://github.com/cancerit/PCAP-core/wiki/File-Formats-groupinfo.yaml
+
+=item B<-mmqc>
+
+Mark reads as QCFAIL (0x200, 512) using the mismatchQc program, also adds aux tag 'mm:A:Y'.
+
+WARNING:
+bwa_mem.pl will exclude all QCFAIL reads from mapping. If a BAM/CRAM file has been created using
+this option please ensure that you pre-process the file to remove the flag 512 if you intend to
+reprocess based on that output.
+
+e.g.
+
+cat YOUR.bam | bammaskflags maskneg=512 > cleaned.bam
+
+=item B<-mmqcfrac>
+
+Mismatch fraction to pass through to mismatchQc
 
 =back
 

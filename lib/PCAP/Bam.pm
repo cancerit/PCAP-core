@@ -2,7 +2,7 @@ package PCAP::Bam;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2016 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,10 +36,11 @@ use Data::UUID;
 use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
-const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.bai | tee %s | %s -o %s.bas};
-const my $BAMBAM_MERGE => q{%s %s tmpfile=%s md5filename=%s.md5 indexfilename=%s.bai index=1 md5=1 > %s};
-const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
-const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
+const my $MISMATCHQC => q{| %s -l 0 -t %.2f };
+const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.bai | tee %s | %s -o %s.bas};
+const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.bai | tee %s | %s -o %s.bas};
+const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
+const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s};
 
@@ -135,10 +136,18 @@ sub merge_and_mark_dup {
   $input_str = ' I='.join(' I=', sort @sorted_bams);
 
   my $bbb_tmp = File::Spec->catfile($tmp, 'biormdup');
+  my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
 
   my %tools;
-  for my $tool(qw(bammerge bammarkduplicates2 bamrecompress scramble samtools bam_stats)) {
+  for my $tool(qw(bammerge bammarkduplicates2 bamrecompress scramble samtools bam_stats mismatchQc)) {
     $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
+  }
+
+  my $mismatchQc = q{};
+  if(defined $options->{'mmqc'}) {
+    $mismatchQc = sprintf $MISMATCHQC,
+                      $tools{'mismatchQc'},
+                      $options->{'mmqcfrac'};
   }
 
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
@@ -148,6 +157,7 @@ sub merge_and_mark_dup {
                               $tools{'bammerge'},
                               $input_str,
                               $bbb_tmp,
+                              $mismatchQc,
                               $tools{'scramble'},
                               $options->{'reference'},
                               $helper_threads,
@@ -161,8 +171,14 @@ sub merge_and_mark_dup {
                               $tools{'bammerge'},
                               $input_str,
                               $bbb_tmp,
+                              $mismatchQc,
+                              $tools{'bamrecompress'},
+                              $brc_tmp,
+                              $helper_threads,
                               $marked,
                               $marked,
+                              $marked,
+                              $tools{'bam_stats'},
                               $marked;
     }
   }
@@ -176,6 +192,7 @@ sub merge_and_mark_dup {
                               $bbb_tmp,
                               $marked,
                               $helper_threads,
+                              $mismatchQc,
                               $tools{'scramble'},
                               $options->{'reference'},
                               $helper_threads,
@@ -185,7 +202,6 @@ sub merge_and_mark_dup {
                               $marked;
     }
     else {
-      my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
       $commands[0] = sprintf $BAMBAM_DUP,
                               $tools{'bammerge'},
                               $input_str,
@@ -193,6 +209,7 @@ sub merge_and_mark_dup {
                               $bbb_tmp,
                               $helper_threads,
                               $marked,
+                              $mismatchQc,
                               $tools{'bamrecompress'},
                               $brc_tmp,
                               $helper_threads,
@@ -224,8 +241,8 @@ sub bam_stats {
   my $xam = File::Spec->catdir($options->{'outdir'}, $options->{'sample'}).$ext;
   my $bas = "$xam.bas";
   return $bas if PCAP::Threaded::success_exists(File::Spec->catdir($tmp, 'progress'), 0);
-  if($options->{'nomarkdup'} || $options->{'cram'}) {
-    # BAM with marked duplicates does this in streaming manner now
+  if($options->{'cram'}) {
+    # Only needed for cram output
     my $command = _which('bam_stats') || die "Unable to find 'bam_stats' in path";
     $command .= sprintf $BAM_STATS, $xam, $bas;
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, 0);
@@ -379,6 +396,31 @@ sub check_paired {
   return 1;
 }
 
+sub mismatchQc_checks {
+  my $raw_files = shift;
+  for my $to_chk(@{$raw_files}) {
+    next if($to_chk !~ m/\.[bc]r?am$/i);
+    my ($mismatchQc, $bammaskflag) = (0, 0);
+    my $sam = sam_ob($to_chk);
+    my @header_lines = split /\n/, $sam->header->text;
+    while(my $line = shift @header_lines) {
+      next if($line !~ m/^\@PG/);
+      if($line =~ m/\tPN:PCAP-core-mismatchQC/) {
+        $mismatchQc = 1;
+        $bammaskflag = 0; # reset each time we see mismatchQc
+      }
+      $bammaskflag = 1 if($mismatchQc == 1 && $line =~ m/\tPN:bammaskflags/ && $line =~ m/maskflags=512/);
+    }
+    if($mismatchQc == 1 && $bammaskflag == 0) {
+      die <<ERRORDOC;
+ERROR:
+      This input file appears to have been processed with mismatchQc and has not been cleaned with
+      bammaskflags.  Please see the long description for '-mmqc' via 'bwa_mem.pl -m' for more details.
+ERRORDOC
+    }
+  }
+}
+
 1;
 
 __END__
@@ -514,5 +556,12 @@ The SAM object is also returned should it be useful for other calls
   my $sam_ob = sam_ob('file.bam');
 
 Generate a Bio::DB::HTS object from the provided BAM|CRAM file.
+
+=item mismatchQc_checks
+
+  mismatchQc_checks($array_ref_of_files);
+
+Checks BAM/CRAM file headers for presence of mismatchQc PG line.  If found errors if subsequent
+bammaskflags to clean flag 512 is not found.
 
 =back

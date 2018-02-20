@@ -1,3 +1,22 @@
+##########LICENCE##########
+# PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not see:
+#   http://www.gnu.org/licenses/gpl-2.0.html
+##########LICENCE##########
+
 use strict;
 use Test::More;
 use Test::Fatal;
@@ -166,6 +185,37 @@ subtest 'Objects from file list' => sub {
                                                       , 'sample') }
       , qr/File is empty: /
       , 'Fail when bam is empty');
+};
+
+subtest 'Meta with YAML' => sub {
+  my $tmp = tempdir( CLEANUP => 1 );
+  make_path(File::Spec->catdir($tmp,'links')) unless(-d File::Spec->catdir($tmp,'links'));
+  is(&PCAP::Bwa::Meta::reset_rg_index, -1, q{Reset of rg_index}); # the rest will fail if this hasn't worked
+
+  ok(PCAP::Bwa::Meta::files_to_meta($tmp, [ File::Spec->catfile($test_data, '1_1.fq')
+                                        , File::Spec->catfile($test_data, '1_2.fq')]
+                                        , 'sample', File::Spec->catfile($test_data, 'good.yaml'))
+                                        , 'Paired fastq meta works');
+
+
+  like(
+    exception {
+      PCAP::Bwa::Meta::files_to_meta($tmp,
+                                     [File::Spec->catfile($test_data, '1.fq')],
+                                     'giggidy',
+                                     File::Spec->catfile($test_data, 'good.yaml'))
+    },
+    qr/Sample name provided at command line (.*) doesn't match metadata entry for 'SM' (.*)/m,
+    'Fail when sample name mismatch'
+  );
+
+  ok(PCAP::Bwa::Meta::files_to_meta($tmp,
+                                 [File::Spec->catfile($test_data, '1.fq')],
+                                 'sample',
+                                 File::Spec->catfile($test_data, 'good.yaml')),
+    'Pass on matched sample name')
+
+
 };
 
 my $meta; # for reuse
