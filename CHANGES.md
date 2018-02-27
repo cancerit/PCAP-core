@@ -1,6 +1,10 @@
 # CHANGES
 
-## NEXT
+## 4.1.1
+
+* Expose `-a|overlap` option in `bamToBw.pl`.
+
+## 4.1.0
 
 * `bam_stats` now calculates number of `qc_fail` reads (flag 512/0x200).
 * `mismatchQc` script added to set flag 512 and aux tag 'mm:A:Y' when a read exceeds a mismatch
