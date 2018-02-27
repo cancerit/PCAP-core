@@ -55,7 +55,7 @@ sub bamToBw {
     $command .= q{ -i }.$options->{'bam'};
     $command .= q{ -o }.$outfile;
     $command .= q{ -r }.$options->{'reference'};
-    $command .= q{ -a} if(exists $options->{'overlap'};
+    $command .= q{ -a} if(exists $options->{'overlap'});
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
 
