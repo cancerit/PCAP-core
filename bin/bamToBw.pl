@@ -2,7 +2,7 @@
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -86,6 +86,7 @@ sub setup {
               'i|index=i' => \$opts{'index'},
               'f|filter=i' => \$opts{'filter'},
               'j|jobs' => \$opts{'jobs'},
+              'a|overlap' => \$opts{'overlap'},
   ) or pod2usage(2);
 
   pod2usage(-message => PCAP::license, -verbose => 1) if(defined $opts{'h'});
@@ -110,6 +111,7 @@ sub setup {
   delete $opts{'process'} unless(defined $opts{'process'});
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'filter'} unless(defined $opts{'filter'});
+  delete $opts{'overlap'} unless(defined $opts{'overlap'});
 
   # now safe to apply defaults
   $opts{'threads'} = 1 unless(defined $opts{'threads'});
@@ -164,10 +166,10 @@ bamToBw.pl [options] [file(s)...]
   Required parameters:
     -bam       -b   BAM/CRAM file to be processed.
     -outdir    -o   Folder to output result to.
-    -reference -r   Path to genome.fa.
-                     - Actually using fa.fai but for convention just provide '.fa' file
+    -reference -r   Path to genome.fa and genome.fa.fai.
 
   Optional parameters:
+    -overlap   -a   Cleanup overlaping read fragment counts.
     -threads   -t   Number of threads to use. [1]
     -filter    -f   Ignore reads with the filter flags [int]
 
@@ -200,6 +202,10 @@ bamToBw.pl [options] [file(s)...]
 
 =over 8
 
+=item B<-bam>
+
+Path to BAM or CRAM file to be processed.
+
 =item B<-outdir>
 
 Directory to write output to.  During processing a temp folder will be generated in this area,
@@ -207,11 +213,25 @@ should the process fail B<only delete this if> you are unable to resume the proc
 
 Final output files include: <SAMPLE>.bam, <SAMPLE>.bam.bai, <SAMPLE>.md5, <SAMPLE>.met
 
+=item B<-reference>
+
+Path to genome.fa file and associated .fai file.
+
+=item B<-overlap>
+
+Use fragment based counting rather than read based counting.  Gives better represetation
+of unique sequence coverage when reads in pair overlap.
+
 =item B<-threads>
 
 Number of threads to be used in processing.
 
 If perl is not compiled with threading some steps will not run in parallel..
+
+=item B<-filter>
+
+Filter input data based on these flags.
+See https://broadinstitute.github.io/picard/explain-flags.html
 
 =item B<-help>
 
@@ -225,13 +245,32 @@ Prints the manual page and exits.
 
 =head2 TARGETED PROCESSING
 
+If you want to run the code in a more efficient manner then this allows each procesing type and
+element to be executed in isolation.
+
 =over 8
 
 =item B<-process>
 
-If you want to run the code in a more efficient manner then this allows each procesing type to be
-executed in isolation.  You can restrict to a single process within the block by specifying
-B<-index> as well.
+Limit processing to a single element of the process flow.  Work elements within this will
+"round-robin" using the available cores until complete (unless B<-index> is defined).
+
+Elements include:
+  bamToBw: jobs = number of chromosomes
+  generateBw: 1 job
+
+=item B<-index>
+
+Can be used in conjunction with B<-process> to send individual elements for parallel processing.
+
+e.g. bamToBw.pl .... -t 1 -p bamToBw -i 1
+
+Will process the first chromosome only.
+
+=item B<-jobs>
+
+Reports the number of jobs required for a step to complete.  Use this to determine range of
+values required for B<-index>.
 
 =back
 
@@ -240,4 +279,3 @@ B<-index> as well.
 B<bamToBw.pl> will attempt to generate a BigWig file per chromosome and then concatenate them into a single file.
 
 =cut
-
