@@ -179,7 +179,7 @@ sub merge_and_mark_dup {
                               $brc_tmp,
                               $helper_threads,
                               $marked,
-                              $marked.$idx_type,
+                              $marked, $idx_type,
                               $marked,
                               $tools{'bam_stats'},
                               $marked;
@@ -217,7 +217,7 @@ sub merge_and_mark_dup {
                               $brc_tmp,
                               $helper_threads,
                               $marked,
-                              $marked.$idx_type,
+                              $marked, $idx_type,
                               $marked,
                               $tools{'bam_stats'},
                               $marked;
