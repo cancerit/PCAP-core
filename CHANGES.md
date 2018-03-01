@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.1.3
+
+Some issues with indexing slipped through
+
 ## 4.1.2
 
 * Clean up the biobambam2 version test
