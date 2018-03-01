@@ -16,7 +16,20 @@ and subsequent calling algorithms.
 The intention is to provide reference implementations and simple to execute wrappers
 that are useful for the scientific community who may have little IT/bioinformatic support.
 
-Please see the [wiki][wiki] for further details and available programs.
+<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [General usage](#general-usage)
+- [Docker, Singularity and Dockstore](#docker-singularity-and-dockstore)
+- [Dependencies/Install](#dependenciesinstall)
+- [Creating a release](#creating-a-release)
+	- [Preparation](#preparation)
+	- [Cutting the release](#cutting-the-release)
+
+<!-- /TOC -->
+
+## General usage
+
+Available programs are described in the [wiki][wiki].
 
 ## Docker, Singularity and Dockstore
 
