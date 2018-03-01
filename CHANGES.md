@@ -1,5 +1,12 @@
 # CHANGES
 
+## 4.1.2
+
+* Clean up the biobambam2 version test
+* Bump biobambam2 version, primarily to include script for cleaning mmqc processed data
+* Add version option to reheadSQ
+* Change travis tests to output version so less verbose
+
 ## 4.1.1
 
 * Expose `-a|overlap` option in `bamToBw.pl`.

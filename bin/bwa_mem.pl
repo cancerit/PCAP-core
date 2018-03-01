@@ -90,6 +90,7 @@ sub setup {
   my %opts = ('map_threads' => &PCAP::Bwa::bwa_mem_max_cores,
               'mmqcfrac' => 0.05,
               'threads' => 1,
+              'csi' => undef,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -106,6 +107,7 @@ sub setup {
               'p|process=s' => \$opts{'process'},
               'i|index=i' => \$opts{'index'},
               'b|bwa=s' => \$opts{'bwa'},
+              'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
               'l|bwa_pl=s' => \$opts{'bwa_pl'},
@@ -145,6 +147,7 @@ sub setup {
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
+  delete $opts{'csi'} unless(defined $opts{'csi'});
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
 
@@ -212,6 +215,7 @@ bwa_mem.pl [options] [file(s)...]
   Optional parameters:
     -fragment    -f   Split input into fragements of X million repairs [10]
     -nomarkdup   -n   Don't mark duplicates [flag]
+    -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
                       - '-I,-O' are used internally and should not be provided
@@ -314,6 +318,10 @@ set this to a very large number or ensure that it is not changed.
 
 Disables duplicate marking, switching bammarkduplicates2 for bammerge.
 
+=item B<-csi>
+
+User CSI style index for final BAM file instead of default BAI.
+
 =item B<-cram>
 
 Final output file will be a CRAM file instead of BAM.  To tune the the compression methods see then
@@ -360,7 +368,7 @@ reprocess based on that output.
 
 e.g.
 
-cat YOUR.bam | bammaskflags maskneg=512 > cleaned.bam
+bammaskflags maskneg=512 auxexists=mm < mmqc.bam > cleaned.bam
 
 =item B<-mmqcfrac>
 

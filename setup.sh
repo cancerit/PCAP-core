@@ -10,7 +10,7 @@ SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.7/samt
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
 
 # for biobambam
-SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.83-release-20180105121132/biobambam2-2.0.83-release-20180105121132-x86_64-etch-linux-gnu.tar.gz"
+SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.86-release-20180228171821/biobambam2-2.0.86-release-20180228171821-x86_64-etch-linux-gnu.tar.gz"
 
 get_distro () {
   EXT=""
