@@ -37,8 +37,8 @@ use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
 const my $MISMATCHQC => q{| %s -l 0 -t %.2f };
-const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.bai | tee %s | %s -o %s.bas};
-const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.bai | tee %s | %s -o %s.bas};
+const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas};
+const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas};
 const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
@@ -150,6 +150,9 @@ sub merge_and_mark_dup {
                       $options->{'mmqcfrac'};
   }
 
+  my $idx_type = 'bai';
+  $idx_type = 'csi' if(exists $options->{'csi'});
+
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
     if($options->{'cram'}) {
       my $add_sc = $options->{'scramble'} || q{};
@@ -176,7 +179,7 @@ sub merge_and_mark_dup {
                               $brc_tmp,
                               $helper_threads,
                               $marked,
-                              $marked,
+                              $marked.$idx_type,
                               $marked,
                               $tools{'bam_stats'},
                               $marked;
@@ -214,7 +217,7 @@ sub merge_and_mark_dup {
                               $brc_tmp,
                               $helper_threads,
                               $marked,
-                              $marked,
+                              $marked.$idx_type,
                               $marked,
                               $tools{'bam_stats'},
                               $marked;

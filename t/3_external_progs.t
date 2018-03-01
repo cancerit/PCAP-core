@@ -32,26 +32,26 @@ use Data::Dumper;
 use version 0.77;
 
 const my @REQUIRED_PROGRAMS => qw(bamcollate2 bammarkduplicates2 bamsort bwa samtools);
-const my $BIOBAMBAM2_VERSION => '2.0.42';
+const my $BIOBAMBAM2_VERSION => '2.0.86';
 const my $BWA_VERSION => '0.7.12';
 const my $SAMTOOLS_VERSION => '1.7';
 
 # can't put regex in const
 my %EXPECTED_VERSION = (
                         'bamcollate2'       => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
                               'version'       => version->parse($BIOBAMBAM2_VERSION),
                               'out' => 'stderr',
                             },
                         'bammarkduplicates2' => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
                               'version'       => version->parse($BIOBAMBAM2_VERSION),
                               'out' => 'stderr',
                             },
                         'bamsort'           => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
                               'version'       => version->parse($BIOBAMBAM2_VERSION),
                               'out' => 'stderr',
