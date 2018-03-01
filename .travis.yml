@@ -40,9 +40,10 @@ before_script:
  - cd ../
 
 script:
+ - set -e
  - ./setup.sh ~/wtsi-opt
- - $HOME/wtsi-opt/bin/diff_bams -h
- - $HOME/wtsi-opt/bin/reheadSQ -h
- - $HOME/wtsi-opt/bin/bam_stats -h
- - $HOME/wtsi-opt/bin/mismatchQc -h
- - perl -I $HOME/wtsi-opt/lib/perl5 ~/wtsi-opt/bin/bwa_mem.pl -h
+ - $HOME/wtsi-opt/bin/diff_bams --version
+ - $HOME/wtsi-opt/bin/reheadSQ --version
+ - $HOME/wtsi-opt/bin/bam_stats --version
+ - $HOME/wtsi-opt/bin/mismatchQc --version
+ - perl -I $HOME/wtsi-opt/lib/perl5 ~/wtsi-opt/bin/bwa_mem.pl --version
