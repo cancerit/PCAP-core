@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.1.4
+
+* Ensure `sentinel` calls exit with non-zero exit code. Fixes #16
+
 ## NEXT
 
 * `bam_stats` now calculates number of `qc_fail` reads (flag 512/0x200).
