@@ -1,22 +1,24 @@
 #!/bin/bash
 
-SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.15.tar.gz"
+SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.17.tar.gz"
 
 # for bamstats and Bio::DB::HTS
-SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.5/htslib-1.5.tar.bz2"
+SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.7/htslib-1.7.tar.bz2"
+SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2"
 
 # Bio::DB::HTS
 SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
 
 # for biobambam
-SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.54-release-20160802163650/biobambam2-2.0.54-release-20160802163650-x86_64-etch-linux-gnu.tar.gz"
+SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.86-release-20180228171821/biobambam2-2.0.86-release-20180228171821-x86_64-etch-linux-gnu.tar.gz"
 
 get_distro () {
   EXT=""
   if [[ $2 == *.tar.bz2* ]] ; then
     EXT="tar.bz2"
   elif [[ $2 == *.zip* ]] ; then
-    EXT="zip"
+    echo "ERROR: zip archives are not supported by default, if pulling from github replace .zip with .tar.gz"
+    exit 1
   elif [[ $2 == *.tar.gz* ]] ; then
     EXT="tar.gz"
   else
@@ -27,7 +29,8 @@ get_distro () {
   if hash curl 2>/dev/null; then
     curl --retry 10 -sS -o $1.$EXT -L $2
   else
-    wget --tries=10 -nv -O $1.$EXT $2
+    echo "ERROR: curl not found"
+    exit 1
   fi
 }
 
@@ -74,7 +77,7 @@ unset PERL5LIB
 ARCHNAME=`perl -e 'use Config; print $Config{archname};'`
 PERLROOT=$INST_PATH/lib/perl5
 export PERL5LIB="$PERLROOT"
-export PATH="$INST_PATH/bin:$PATH"
+export PATH="$INST_PATH/bin:$INST_PATH/biobambam2/bin:$PATH"
 
 #create a location to build dependencies
 SETUP_DIR=$INIT_DIR/install_tmp
@@ -90,7 +93,7 @@ fi
 
 ## grab cpanm and stick in workspace, then do a self upgrade into bin:
 get_file $SETUP_DIR/cpanm https://cpanmin.us/
-perl $SETUP_DIR/cpanm -l $INST_PATH App::cpanminus
+perl $SETUP_DIR/cpanm --no-wget -l $INST_PATH App::cpanminus
 CPANM=`which cpanm`
 echo $CPANM
 
@@ -102,9 +105,9 @@ fi
 if [ -e $SETUP_DIR/basePerlDeps.success ]; then
   echo "Previously installed base perl deps..."
 else
-  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version@1.006924")
+  perlmods=( "ExtUtils::CBuilder" "Module::Build~0.42" "Const::Fast" "File::Which" "LWP::UserAgent" "Bio::Root::Version~1.006924")
   for i in "${perlmods[@]}" ; do
-    $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
+    $CPANM --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH $i
   done
   touch $SETUP_DIR/basePerlDeps.success
 fi
@@ -144,25 +147,56 @@ fi
 
 export HTSLIB=$INST_PATH
 
-echo -n "Building Bio::DB::HTS ..."
-if [ -e $SETUP_DIR/biohts.success ]; then
-  echo " previously installed ...";
+CHK=`perl -le 'eval "require $ARGV[0]" and print $ARGV[0]->VERSION' Bio::DB::HTS`
+if [[ "x$CHK" == "x" ]] ; then
+  echo -n "Building Bio::DB::HTS ..."
+  if [ -e $SETUP_DIR/biohts.success ]; then
+    echo " previously installed ...";
+  else
+    echo
+    cd $SETUP_DIR
+    rm -rf bioDbHts
+    get_distro "bioDbHts" $SOURCE_BIOBDHTS
+    mkdir -p bioDbHts
+    tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
+    cd bioDbHts
+    perl Build.PL --htslib=$HTSLIB --install_base=$INST_PATH
+    ./Build
+    ./Build test
+    ./Build install
+    cd $SETUP_DIR
+    rm -f bioDbHts.tar.gz
+    touch $SETUP_DIR/biohts.success
+  fi
 else
-  echo
-  cd $SETUP_DIR
-  rm -rf bioDbHts
-  get_distro "bioDbHts" $SOURCE_BIOBDHTS
-  mkdir -p bioDbHts
-  tar --strip-components 1 -C bioDbHts -zxf bioDbHts.tar.gz
-  cd bioDbHts
-  perl Build.PL --htslib=$HTSLIB --install_base=$INST_PATH
-  ./Build
-  ./Build test
-  ./Build install
-  cd $SETUP_DIR
-  rm -f bioDbHts.tar.gz
-  touch $SETUP_DIR/biohts.success
+  echo "Bio::DB::HTS already installed ..."
 fi
+
+cd $INIT_DIR
+
+if [[ ",$COMPILE," == *,samtools,* ]] ; then
+  echo -n "Building samtools ..."
+  if [ -e $SETUP_DIR/samtools.success ]; then
+    echo " previously installed ...";
+  else
+  echo
+    cd $SETUP_DIR
+    rm -rf samtools
+    get_distro "samtools" $SOURCE_SAMTOOLS
+    mkdir -p samtools
+    tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
+    cd samtools
+    ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
+    make -j$CPU all all-htslib
+    make install all all-htslib
+    cd $SETUP_DIR
+    rm -f samtools.tar.bz2
+    touch $SETUP_DIR/samtools.success
+  fi
+else
+  echo "samtools - No change between PCAP versions"
+fi
+
 
 cd $SETUP_DIR
 if [[ ",$COMPILE," == *,bwa,* ]] ; then
@@ -191,14 +225,9 @@ if [[ ",$COMPILE," == *,biobambam,* ]] ; then
   echo
     cd $SETUP_DIR
     get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
-    mkdir -p biobambam2
-    tar --strip-components 1 -C biobambam2 -zxf biobambam2.tar.gz
-    mkdir -p $INST_PATH/bin $INST_PATH/etc $INST_PATH/lib $INST_PATH/share
-    rm -f biobambam2/bin/curl # don't let this file in SSL doesn't work
-    cp -r biobambam2/bin/* $INST_PATH/bin/.
-    cp -r biobambam2/etc/* $INST_PATH/etc/.
-    cp -r biobambam2/lib/* $INST_PATH/lib/.
-    cp -r biobambam2/share/* $INST_PATH/share/.
+    mkdir -p $INST_PATH/biobambam2
+    tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
+    rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
     rm -f biobambam2.tar.gz
     touch $SETUP_DIR/biobambam2.success
   fi
@@ -215,6 +244,11 @@ else
   echo
   cd $INIT_DIR
   make -C c clean
+  if [ -z ${REF_PATH+x} ]; then
+    mkdir -p /tmp/$USER
+    export REF_PATH=/tmp/$USER/cache/%2s/%2s/%s:http://www.ebi.ac.uk/ena/cram/md5/%s
+    export REF_CACHE=/tmp/$USER/cache/%2s/%2s/%s
+  fi
   env HTSLIB=$SETUP_DIR/htslib make -C c -j$CPU prefix=$INST_PATH
   cp bin/bam_stats $INST_PATH/bin/.
   cp bin/reheadSQ $INST_PATH/bin/.
@@ -231,22 +265,21 @@ if [ -e $SETUP_DIR/PCAP_perlPrereq.success ]; then
   echo "PCAP_perlPrereq previously installed ...";
 else
   echo
-  $CPANM --no-interactive --notest --mirror http://cpan.metacpan.org --notest -l $INST_PATH --installdeps .
+  $CPANM --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org --notest -l $INST_PATH --installdeps .
   touch $SETUP_DIR/PCAP_perlPrereq.success
 fi
 
 echo -n "Installing PCAP ..."
-$CPANM -v --no-interactive --mirror http://cpan.metacpan.org -l $INST_PATH .
+$CPANM --no-wget -v --no-interactive --mirror http://cpan.metacpan.org -l $INST_PATH .
 echo
 
 # cleanup all junk
 rm -rf $SETUP_DIR
-rm -rf $INIT_DIR/bin/biobambam
 
 echo
 echo
 echo "Please add the following to beginning of path:"
-echo "  $INST_PATH/bin"
+echo "  $INST_PATH/bin:$INST_PATH/biobambam2/bin:"
 echo "Please add the following to beginning of PERL5LIB:"
 echo "  $PERLROOT"
 echo

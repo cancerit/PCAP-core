@@ -2,7 +2,7 @@ package PCAP::BigWig;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2016 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -55,6 +55,7 @@ sub bamToBw {
     $command .= q{ -i }.$options->{'bam'};
     $command .= q{ -o }.$outfile;
     $command .= q{ -r }.$options->{'reference'};
+    $command .= q{ -a} if(exists $options->{'overlap'});
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
 

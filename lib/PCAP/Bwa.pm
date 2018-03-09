@@ -2,7 +2,7 @@ package PCAP::Bwa;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2017 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ use Capture::Tiny qw(capture);
 use File::Copy qw(copy);
 
 use PCAP::Bwa::Meta;
+use PCAP::Bam;
 
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
@@ -80,6 +81,9 @@ sub mem_setup {
       copy("$options->{reference}.fai", "$options->{tmp}/decomp.fa.fai") unless(-e "$options->{decomp_ref}.fai");
     }
   }
+  # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
+  # if it has check for use of at least bammaskflags
+  PCAP::Bam::mismatchQc_checks($options->{'raw_files'});
   return 1;
 }
 
@@ -167,7 +171,7 @@ sub split_in {
       if($input->paired_fq) {
         my $fq1 = $input->in.'_1.'.$input->fastq;
         my $fq2 = $input->in.'_2.'.$input->fastq;
-        if($input->fastq =~ m/[.]gz$/) {
+        if($input->fastq =~ m/[.]gz$/ || $options->{'fragment'} > 5000) {
           symlink $fq1, File::Spec->catfile($split_folder, 'pairedfq1.0.'.$input->fastq);
           symlink $fq2, File::Spec->catfile($split_folder, 'pairedfq2.0.'.$input->fastq);
         }
@@ -185,7 +189,7 @@ sub split_in {
       # interleaved FQ
       else {
         my $fq_i = $input->in.'.'.$input->fastq;
-        if($input->fastq =~ m/[.]gz$/) {
+        if($input->fastq =~ m/[.]gz$/ || $options->{'fragment'} > 5000) {
           symlink $fq_i, File::Spec->catfile($split_folder, 'i.'.$input->fastq);
         }
         else {
@@ -311,7 +315,7 @@ sub bwa_mem {
     my $helpers = 1;
     # uncoverable branch true
     # uncoverable branch false
-    $helpers = $options->{'threads'} - 1 if($options->{'threads'} > 1);
+    $helpers = $threads - 1 if($threads > 1);
 
     my $sorted_bam_stub = $split;
     $sorted_bam_stub =~ s|/split/([[:digit:]]+)/(.+)$|/sorted/$1_$2|;

@@ -4,10 +4,31 @@
 
 * Ensure `sentinel` calls exit with non-zero exit code. Fixes #16
 
-## NEXT
+## 4.1.3
+
+* Some issues with indexing slipped through
+
+## 4.1.2
+
+* Clean up the biobambam2 version test
+* Bump biobambam2 version, primarily to include script for cleaning mmqc processed data
+* Add version option to reheadSQ
+* Change travis tests to output version so less verbose
+
+## 4.1.1
+
+* Expose `-a|overlap` option in `bamToBw.pl`.
+
+## 4.1.0
 
 * `bam_stats` now calculates number of `qc_fail` reads (flag 512/0x200).
-* `bwa_mem.pl` accepts readgroup information from a `yaml` file when fastq used as input.
+* `mismatchQc` script added to set flag 512 and aux tag 'mm:A:Y' when a read exceeds a mismatch
+threshold.
+* `bwa_mem.pl` has new options:
+  * readgroup information can be loaded from a `yaml` file when fastq used as input.
+  * Options to enable use of `mismatchQc` in processing
+* Docs point to dockstore wrapper and image.
+* `biobambam2` now installed to a subfolder so need to extend `PATH` appropriately.
 
 ## 4.0.5
 

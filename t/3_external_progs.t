@@ -32,27 +32,42 @@ use Data::Dumper;
 use version 0.77;
 
 const my @REQUIRED_PROGRAMS => qw(bamcollate2 bammarkduplicates2 bamsort bwa samtools);
-const my $BIOBAMBAM2_VERSION => '2.0.42';
+const my $BIOBAMBAM2_VERSION => '2.0.86';
 const my $BWA_VERSION => '0.7.12';
+const my $SAMTOOLS_VERSION => '1.7';
 
 # can't put regex in const
 my %EXPECTED_VERSION = (
                         'bamcollate2'       => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
-                              'version'       => version->parse($BIOBAMBAM2_VERSION)},
+                              'version'       => version->parse($BIOBAMBAM2_VERSION),
+                              'out' => 'stderr',
+                            },
                         'bammarkduplicates2' => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
-                              'version'       => version->parse($BIOBAMBAM2_VERSION)},
+                              'version'       => version->parse($BIOBAMBAM2_VERSION),
+                              'out' => 'stderr',
+                            },
                         'bamsort'           => {
-                              'get'   => q{ -h},
+                              'get'   => q{ --version},
                               'match' => qr/This is biobambam2 version ([[:digit:]\.]+)\./,
-                              'version'       => version->parse($BIOBAMBAM2_VERSION)},
+                              'version'       => version->parse($BIOBAMBAM2_VERSION),
+                              'out' => 'stderr',
+                            },
                         'bwa'           => {
                               'get'   => q{},
                               'match' => qr/Version: ([[:digit:]\.]+[[:alpha:]]?)/, # we don't care about the revision number
-                              'version'       => version->parse($BWA_VERSION)},
+                              'version'       => version->parse($BWA_VERSION),
+                              'out' => 'stderr',
+                            },
+                        'samtools'           => {
+                              'get'   => q{ --version},
+                              'match' => qr/samtools ([[:digit:]\.]+)/,
+                              'version' => version->parse($SAMTOOLS_VERSION),
+                              'out' => 'stdout',
+                            },
                         );
 
 subtest 'External programs exist on PATH' => sub {
@@ -68,11 +83,16 @@ subtest 'External programs have expected version' => sub {
     my $details = $EXPECTED_VERSION{$prog};
     my $command = $path.$details->{'get'};
     my ($stdout, $stderr, $exit) = capture{ system($command); };
+    my $stream = $stderr;
+    if($details->{'out'} eq 'stdout') {
+      $stream = $stdout;
+    }
+
     my $reg = $details->{'match'};
-    my ($version) = $stderr =~ /$reg/m;
+    my ($version) = $stream =~ /$reg/m;
     version->parse($version);
 
-    ok(version->parse($version) >= $details->{'version'}, sprintf 'Expect minimum version of %s for %s', $details->{'version'}, $prog);
+    ok(version->parse($version) >= $details->{'version'}, sprintf 'Expect minimum version of %s for %s, got %s', $details->{'version'}, $prog, $version);
   }
 };
 
