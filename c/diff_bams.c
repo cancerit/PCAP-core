@@ -180,14 +180,14 @@ int main(int argc, char *argv[]){
   check(headb != NULL, "Error reading header from opened hts file 'b' '%s'.",bam_b_loc);
 
   if(heada->n_targets != headb->n_targets ){
-    sentinel("Reference sequence count is different\n");
+    sentinel("Reference sequence count is different\n",1);
   }
   fprintf(stdout,"Reference sequence count passed\n");
 
   int i=0;
   for(i=0;i<heada->n_targets;i++){
     if(strcmp(heada->target_name[i],headb->target_name[i])!=0){
-      sentinel("Reference sequences in different order\n");
+      sentinel("Reference sequences in different order\n",1);
     }
   }
   fprintf(stdout,"Reference sequence order passed\n");
@@ -219,11 +219,11 @@ int main(int argc, char *argv[]){
       break;
     }
     if((chka>=0 && chkb <0) || (chkb>=0 && chka<0)){
-      sentinel("Files have different number of records\n");
+      sentinel("Files have different number of records\n",1);
     }
 
     if(reada->core.tid != readb->core.tid || reada->core.pos != readb->core.pos || strcmp(bam_get_qname(reada),bam_get_qname(readb))!=0){
-      sentinel("Files differ at record %"PRIu64" (qname) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb));
+      sentinel("Files differ at record %"PRIu64" (qname) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb),1);
     }
 
     if(reada->core.flag != readb->core.flag){
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]){
         }
         last_coord = pos;
       }else{
-        sentinel("Files differ at record %"PRIu64" (flags) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb));
+        sentinel("Files differ at record %"PRIu64" (flags) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb),1);
       }
     }//End of if flags don't match
     if(count % 5000000 == 0) {
