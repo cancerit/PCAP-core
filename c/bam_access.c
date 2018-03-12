@@ -228,10 +228,10 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
         // only assess read 1 as size is a factor of the pair
         if(b->core.flag & BAM_FPROPER_PAIR){
           (*grp_stats)[rg_index][read]->proper++;
-          uint32_t ins = b->core.isize;
+          uint32_t ins = abs(b->core.isize);
           int res;
           khint_t k;
-          k = kh_put(ins,(*grp_stats)[rg_index][read]->inserts,abs(ins),&res);
+          k = kh_put(ins,(*grp_stats)[rg_index][read]->inserts,ins,&res);
           if(res){
             kh_value((*grp_stats)[rg_index][read]->inserts,k) = 1;
           }else{

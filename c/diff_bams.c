@@ -20,6 +20,7 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include "htslib/sam.h"
+#include "htslib/thread_pool.h"
 #include "khash.h"
 #include "dbg.h"
 
@@ -63,7 +64,7 @@ void print_usage (int exit_code){
   exit(exit_code);
 }
 
-void options(int argc, char *argv[]){
+int options(int argc, char *argv[]){
 
   const struct option long_opts[] =
     {
@@ -114,9 +115,7 @@ void options(int argc, char *argv[]){
         break;
 
 			case '@':
-				if(sscanf(optarg, "%i", &nthreads) != 1){
-      		sentinel("Error parsing -@ argument '%s'. Should be an integer > 0",optarg,1);
-      	}
+				check(sscanf(optarg, "%i", &nthreads)==1, "Error parsing -@ argument '%s'. Should be an integer > 0", optarg);
 				break;
 
       case '?':
@@ -158,7 +157,10 @@ void options(int argc, char *argv[]){
     print_usage(1);
   }
 
-   return;
+	return 0;
+
+error:
+	return 1;
 }
 
 int main(int argc, char *argv[]){
@@ -170,8 +172,9 @@ int main(int argc, char *argv[]){
   bam1_t *reada = NULL;
   bam1_t *readb = NULL;
 	htsThreadPool p = {NULL, 0};
-  options(argc, argv);
-  //Open bam file a
+  int err = options(argc, argv);
+	check(err==0,"Error parsing options.");
+	//Open bam file a
   htsa = hts_open(bam_a_loc,"r");
   check(htsa != NULL, "Error opening hts file 'a' for reading '%s'.",bam_a_loc);
   //Open bam file b
@@ -205,13 +208,9 @@ int main(int argc, char *argv[]){
 	// Create and share the thread pool
   if (nthreads > 0) {
       p.pool = hts_tpool_init(nthreads);
-      if (!p.pool) {
-          fprintf(stderr, "Error creating thread pool\n");
-          exit_code = 1;
-      } else {
-          hts_set_opt(htsa,  HTS_OPT_THREAD_POOL, &p);
-          hts_set_opt(htsb, HTS_OPT_THREAD_POOL, &p);
-      }
+			check(p.pool != NULL, "Error creating thread pool");
+      hts_set_opt(htsa,  HTS_OPT_THREAD_POOL, &p);
+			hts_set_opt(htsb, HTS_OPT_THREAD_POOL, &p);
   }
 
   uint64_t count = 0;

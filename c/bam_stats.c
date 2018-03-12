@@ -26,6 +26,7 @@
 #include <string.h>
 #include "dbg.h"
 #include "bam_access.h"
+#include "htslib/thread_pool.h"
 #include "bam_stats_output.h"
 
 #include "khash.h"
@@ -68,7 +69,7 @@ void print_usage (int exit_code){
   exit(exit_code);
 }
 
-void options(int argc, char *argv[]){
+int options(int argc, char *argv[]){
 
   ref_file = NULL;
 
@@ -108,9 +109,7 @@ void options(int argc, char *argv[]){
         break;
 
 			case '@':
-				if(sscanf(optarg, "%i", &nthreads) != 1){
-					sentinel("Error parsing -@ argument '%s'. Should be an integer > 0",optarg,1);
-				}
+				check(sscanf(optarg, "%i", &nthreads)==1, "Error parsing -@ argument '%s'. Should be an integer > 0", optarg);
 				break;
 
    		case 'h':
@@ -152,11 +151,14 @@ void options(int argc, char *argv[]){
      }
    }
 
-   return;
+   return 0;
+error:
+	return 1;
 }
 
 int main(int argc, char *argv[]){
-	options(argc, argv);
+	int err = options(argc, argv);
+	check(err==0,"Error parsing options");
 	htsFile *input = NULL;
 	bam_hdr_t *head = NULL;
   rg_info_t **grps = NULL;
@@ -179,12 +181,8 @@ int main(int argc, char *argv[]){
 	// Create and share the thread pool
 	if (nthreads > 0) {
 			p.pool = hts_tpool_init(nthreads);
-			if (!p.pool) {
-					fprintf(stderr, "Error creating thread pool\n");
-					exit_code = 1;
-			} else {
-					hts_set_opt(input,  HTS_OPT_THREAD_POOL, &p);
-			}
+			check(p.pool != NULL, "Error creating thread pool");
+			hts_set_opt(input,  HTS_OPT_THREAD_POOL, &p);
 	}
 
   grps = bam_access_parse_header(head, &grps_size, &grp_stats);
