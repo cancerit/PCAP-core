@@ -140,7 +140,7 @@ void options(int argc, char *argv[]){
 
      case '@':
        if(sscanf(optarg, "%i", &nthreads) != 1){
-          sentinel("Error parsing -@ nThreads) argument '%s'. Should be an integer",optarg);
+          sentinel("Error parsing -@ nThreads) argument '%s'. Should be an integer",optarg,1);
        }
        strcat(prog_cl," -@ ");
        strcat(prog_cl,optarg);
@@ -158,7 +158,7 @@ void options(int argc, char *argv[]){
 
      case 'l':
       if(sscanf(optarg, "%i", &clevel) != 1){
-         sentinel("Error parsing -l (compression level) argument '%s'. Should be an integer",optarg);
+         sentinel("Error parsing -l (compression level) argument '%s'. Should be an integer",optarg,1);
       }
       strcat(prog_cl," -l ");
       strcat(prog_cl,optarg);
@@ -172,7 +172,7 @@ void options(int argc, char *argv[]){
 
      case 't':
       if(sscanf(optarg, "%f", &mismatch_frac) != 1){
-         sentinel("Error parsing -t argument '%s'. Should be a 1.0 >= float >= 0.0.",optarg);
+         sentinel("Error parsing -t argument '%s'. Should be a 1.0 >= float >= 0.0.",optarg,1);
       }
       strcat(prog_cl," -t ");
       strcat(prog_cl,optarg);
@@ -286,7 +286,7 @@ int checkMismatchStatus(bam1_t **b){
     check(chk==0,"Error adding mismatch tag to read %s.",bam_get_qname(*b));
     uint8_t *p;
     if((p = bam_aux_get(*b, mm_tag)) && bam_aux2A(p)!=YES){
-     sentinel("Error adding new tag to read %s.",bam_get_qname(*b));
+     sentinel("Error adding new tag to read %s.",bam_get_qname(*b),1);
     }
     marked_count = marked_count+1;
   }
