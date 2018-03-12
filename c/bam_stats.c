@@ -35,6 +35,7 @@ static char *output_file = NULL;
 static char *ref_file = NULL;
 static int rna = 0;
 int grps_size = 0;
+int nthreads = 0; // shared pool
 stats_rd_t*** grp_stats;
 
 int check_exist(char *fname){
@@ -54,16 +55,16 @@ void print_version (int exit_code){
 void print_usage (int exit_code){
 
 	printf ("Usage: bam_stats -i file -o file [-p plots] [-r reference.fa.fai] [-h] [-v]\n\n");
-  printf ("-i --input     File path to read in.\n");
-  printf ("-o --output    File path to output.\n\n");
+  printf ("-i --input          File path to read in.\n");
+  printf ("-o --output         File path to output.\n\n");
 	printf ("Optional:\n");
-	printf ("-r --ref-file  File path to reference index (.fai) file.\n");
-	printf ("               NB. If cram format is supplied via -b and the reference listed in the cram header can't be found bam_stats may fail to work correctly.\n");
-	printf ("-a --rna       Uses the RNA method of calculating insert size (ignores anything outside ± ('sd'*standard_dev) of the mean in calculating a new mean)\n");
-
+	printf ("-r --ref-file       File path to reference index (.fai) file.\n");
+	printf ("                    NB. If cram format is supplied via -b and the reference listed in the cram header can't be found bam_stats may fail to work correctly.\n");
+	printf ("-a --rna            Uses the RNA method of calculating insert size (ignores anything outside ± ('sd'*standard_dev) of the mean in calculating a new mean)\n");
+	printf ("-@ --num_threads    Use thread pool with specified number of threads.\n\n");
 	printf ("Other:\n");
-	printf ("-h --help      Display this usage information.\n");
-	printf ("-v --version   Prints the version number.\n\n");
+	printf ("-h --help           Display this usage information.\n");
+	printf ("-v --version        Prints the version number.\n\n");
   exit(exit_code);
 }
 
@@ -79,6 +80,7 @@ void options(int argc, char *argv[]){
               {"ref-file",required_argument,0,'r'},
               {"output",required_argument,0,'o'},
               {"rna",no_argument,0, 'a'},
+							{"num_threads",required_argument,0,'@'},
               { NULL, 0, NULL, 0}
 
    }; //End of declaring opts
@@ -87,7 +89,7 @@ void options(int argc, char *argv[]){
    int iarg = 0;
 
    //Iterate through options
-   while((iarg = getopt_long(argc, argv, "i:o:r:vha", long_opts, &index)) != -1){
+   while((iarg = getopt_long(argc, argv, "i:o:r:@:vha", long_opts, &index)) != -1){
    	switch(iarg){
    		case 'i':
         input_file = optarg;
@@ -104,6 +106,12 @@ void options(int argc, char *argv[]){
    		case 'a':
         rna = 1;
         break;
+
+			case '@':
+				if(sscanf(optarg, "%i", &nthreads) != 1){
+					sentinel("Error parsing -@ argument '%s'. Should be an integer > 0",optarg,1);
+				}
+				break;
 
    		case 'h':
         print_usage(0);
@@ -152,6 +160,7 @@ int main(int argc, char *argv[]){
 	htsFile *input = NULL;
 	bam_hdr_t *head = NULL;
   rg_info_t **grps = NULL;
+	htsThreadPool p = {NULL, 0};
   //Open bam file as object
   input = hts_open(input_file,"r");
   check(input != NULL, "Error opening hts file for reading '%s'.",input_file);
@@ -167,6 +176,16 @@ int main(int argc, char *argv[]){
   head = sam_hdr_read(input);
   check(head != NULL, "Error reading header from opened hts file '%s'.",input_file);
 
+	// Create and share the thread pool
+	if (nthreads > 0) {
+			p.pool = hts_tpool_init(nthreads);
+			if (!p.pool) {
+					fprintf(stderr, "Error creating thread pool\n");
+					exit_code = 1;
+			} else {
+					hts_set_opt(input,  HTS_OPT_THREAD_POOL, &p);
+			}
+	}
 
   grps = bam_access_parse_header(head, &grps_size, &grp_stats);
   check(grps != NULL, "Error fetching read groups from header.");
@@ -180,6 +199,7 @@ int main(int argc, char *argv[]){
 
   bam_hdr_destroy(head);
   hts_close(input);
+	if (p.pool) hts_tpool_destroy(p.pool);
 
   return 0;
 
@@ -187,6 +207,6 @@ int main(int argc, char *argv[]){
     if(grps) free(grps);
     if(head) bam_hdr_destroy(head);
     if(input) hts_close(input);
+		if (p.pool) hts_tpool_destroy(p.pool);
     return 1;
 }
-

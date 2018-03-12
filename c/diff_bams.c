@@ -31,7 +31,7 @@ char *bam_b_loc = NULL;
 char *ref_file = NULL;
 int skip_z = 0;
 int count_flag_diff = 0;
-
+int nthreads = 0; // shared pool
 
 int check_exist(char *fname){
 	FILE *fp;
@@ -56,6 +56,7 @@ void print_usage (int exit_code){
 	printf ("Other:\n");
   printf ("-r --ref            Required for CRAM, genome.fa with co-located fai.\n");
   printf ("-c --count          Count flag differences.\n");
+	printf ("-@ --num_threads    Use thread pool with specified number of threads.\n");
   printf ("-s --skip           Don't include reads with MAPQ=0 in comparison.\n\n");
   printf ("-h --help           Display this usage information.\n");
 	printf ("-v --version        Prints the version number.\n\n");
@@ -73,6 +74,7 @@ void options(int argc, char *argv[]){
               {"bam_b",required_argument,0,'b'},
               {"skip",no_argument,0,'s'},
               {"count",no_argument,0,'c'},
+							{"num_threads",required_argument,0,'@'},
               { NULL, 0, NULL, 0}
 
    }; //End of declaring opts
@@ -81,7 +83,7 @@ void options(int argc, char *argv[]){
    int iarg = 0;
 
      //Iterate through options
-   while((iarg = getopt_long(argc, argv, "a:b:r:scvh", long_opts, &index)) != -1){
+   while((iarg = getopt_long(argc, argv, "a:b:r:@:scvh", long_opts, &index)) != -1){
     switch(iarg){
       case 's':
         skip_z = 1;
@@ -110,6 +112,12 @@ void options(int argc, char *argv[]){
       case 'v':
         print_version(0);
         break;
+
+			case '@':
+				if(sscanf(optarg, "%i", &nthreads) != 1){
+      		sentinel("Error parsing -@ argument '%s'. Should be an integer > 0",optarg,1);
+      	}
+				break;
 
       case '?':
         print_usage (1);
@@ -161,6 +169,7 @@ int main(int argc, char *argv[]){
   khash_t(chrom) *chr_hash = NULL;
   bam1_t *reada = NULL;
   bam1_t *readb = NULL;
+	htsThreadPool p = {NULL, 0};
   options(argc, argv);
   //Open bam file a
   htsa = hts_open(bam_a_loc,"r");
@@ -191,6 +200,19 @@ int main(int argc, char *argv[]){
     }
   }
   fprintf(stdout,"Reference sequence order passed\n");
+
+
+	// Create and share the thread pool
+  if (nthreads > 0) {
+      p.pool = hts_tpool_init(nthreads);
+      if (!p.pool) {
+          fprintf(stderr, "Error creating thread pool\n");
+          exit_code = 1;
+      } else {
+          hts_set_opt(htsa,  HTS_OPT_THREAD_POOL, &p);
+          hts_set_opt(htsb, HTS_OPT_THREAD_POOL, &p);
+      }
+  }
 
   uint64_t count = 0;
   uint64_t flag_diffs = 0;
@@ -298,6 +320,7 @@ int main(int argc, char *argv[]){
   bam_hdr_destroy(headb);
   hts_close(htsa);
   hts_close(htsb);
+	if (p.pool) hts_tpool_destroy(p.pool);
   return 0;
 error:
   if(count_flag_diff && chr_hash != NULL){
@@ -317,5 +340,6 @@ error:
   if(headb) bam_hdr_destroy(headb);
   if(htsa) hts_close(htsa);
   if(htsb) hts_close(htsb);
+	if (p.pool) hts_tpool_destroy(p.pool);
   return 1;
 }

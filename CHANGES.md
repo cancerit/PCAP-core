@@ -1,5 +1,9 @@
 # CHANGES
 
+## NEXT
+
+* Add threadpool to bam_stats and diff_bams. Fixes #18, Fixes #19
+
 ## 4.1.4
 
 * Ensure `sentinel` calls exit with non-zero exit code. Fixes #16
