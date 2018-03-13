@@ -326,7 +326,6 @@ error:
     khiter_t k;
     for (k = kh_begin(chr_hash); k != kh_end(chr_hash); ++k) {
       if (kh_exist(chr_hash, k)) {
-        const int32_t keyp = kh_key(chr_hash,k);
         khash_t(posn) pos_hash = kh_value(chr_hash, k);
         kh_destroy(posn,&pos_hash);
       }
