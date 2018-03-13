@@ -93,7 +93,7 @@ void print_usage (int exit_code){
   exit(exit_code);
 }
 
-void options(int argc, char *argv[]){
+int options(int argc, char *argv[]){
   strcat(prog_cl,argv[0]);
   const struct option long_opts[] =
   {
@@ -305,7 +305,8 @@ int main(int argc, char *argv[]){
   bam1_t *b = NULL;
   prog_cl = malloc(sizeof(char)*2000);
   check_mem(prog_cl);
-  options(argc,argv);
+  int problem = options(argc,argv);
+  check(problem==0,"Error parsing options.");
 
   time_t time_start = time(NULL);
 
