@@ -42,7 +42,7 @@ const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 m
 const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
-const my $BAM_STATS => q{ -i %s -o %s};
+const my $BAM_STATS => q{ -i %s -o %s -@ %d};
 
 sub new {
   my ($class, $bam) = @_;
@@ -247,7 +247,7 @@ sub bam_stats {
   if($options->{'cram'}) {
     # Only needed for cram output
     my $command = _which('bam_stats') || die "Unable to find 'bam_stats' in path";
-    $command .= sprintf $BAM_STATS, $xam, $bas;
+    $command .= sprintf $BAM_STATS, $xam, $bas, $options->{'threads'};
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, 0);
   }
   PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), 0);
