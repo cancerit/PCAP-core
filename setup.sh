@@ -217,22 +217,18 @@ else
   echo "BWA - No change between PCAP versions"
 fi
 
-if [[ ",$COMPILE," == *,biobambam,* ]] ; then
-  echo -n "Building biobambam2 ..."
-  if [ -e $SETUP_DIR/biobambam2.success ]; then
-    echo " previously installed2 ..."
-  else
-  echo
-    cd $SETUP_DIR
-    get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
-    mkdir -p $INST_PATH/biobambam2
-    tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
-    rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
-    rm -f biobambam2.tar.gz
-    touch $SETUP_DIR/biobambam2.success
-  fi
+echo -n "Building biobambam2 ..."
+if [ -e $SETUP_DIR/biobambam2.success ]; then
+  echo " previously installed biobambam2 ..."
 else
-  echo "biobambam - No change between PCAP versions"
+echo
+  cd $SETUP_DIR
+  get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
+  mkdir -p $INST_PATH/biobambam2
+  tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
+  rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
+  rm -f biobambam2.tar.gz
+  touch $SETUP_DIR/biobambam2.success
 fi
 
 cd $INIT_DIR
