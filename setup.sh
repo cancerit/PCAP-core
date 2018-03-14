@@ -260,7 +260,7 @@ rm -rf $SETUP_DIR
 echo
 echo
 echo "Please add the following to beginning of path:"
-echo "  $INST_PATH/bin:$INST_PATH/biobambam2/bin:"
+echo "  $INST_PATH/biobambam2/bin:$INST_PATH/bin"
 echo "Please add the following to beginning of PERL5LIB:"
 echo "  $PERLROOT"
 echo
