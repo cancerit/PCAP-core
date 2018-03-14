@@ -77,7 +77,7 @@ unset PERL5LIB
 ARCHNAME=`perl -e 'use Config; print $Config{archname};'`
 PERLROOT=$INST_PATH/lib/perl5
 export PERL5LIB="$PERLROOT"
-export PATH="$INST_PATH/bin:$INST_PATH/biobambam2/bin:$PATH"
+export PATH="$INST_PATH/biobambam2/bin:$INST_PATH/bin:$PATH"
 
 #create a location to build dependencies
 SETUP_DIR=$INIT_DIR/install_tmp
