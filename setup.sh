@@ -113,13 +113,6 @@ else
 fi
 
 
-# figure out the upgrade path
-COMPILE=`echo 'nothing' | perl -I lib -MPCAP -ne 'print PCAP::upgrade_path($_);'`
-if [ -e "$INST_PATH/lib/perl5/PCAP.pm" ]; then
-  COMPILE=`perl -I $INST_PATH/lib/perl5 -MPCAP -e 'print PCAP->VERSION,"\n";' | perl -I lib -MPCAP -ne 'print PCAP::upgrade_path($_);'`
-fi
-COMPILE=",$COMPILE,"
-
 echo -n "Get htslib ..."
 if [ -e $SETUP_DIR/htslibGet.success ]; then
   echo " already staged ...";
@@ -174,52 +167,44 @@ fi
 
 cd $INIT_DIR
 
-if [[ ",$COMPILE," == *,samtools,* ]] ; then
-  echo -n "Building samtools ..."
-  if [ -e $SETUP_DIR/samtools.success ]; then
-    echo " previously installed ...";
-  else
-  echo
-    cd $SETUP_DIR
-    rm -rf samtools
-    get_distro "samtools" $SOURCE_SAMTOOLS
-    mkdir -p samtools
-    tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
-    cd samtools
-    ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
-    make -j$CPU all all-htslib
-    make install all all-htslib
-    cd $SETUP_DIR
-    rm -f samtools.tar.bz2
-    touch $SETUP_DIR/samtools.success
-  fi
+echo -n "Building samtools ..."
+if [ -e $SETUP_DIR/samtools.success ]; then
+  echo " previously installed ...";
 else
-  echo "samtools - No change between PCAP versions"
+echo
+  cd $SETUP_DIR
+  rm -rf samtools
+  get_distro "samtools" $SOURCE_SAMTOOLS
+  mkdir -p samtools
+  tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
+  cd samtools
+  ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
+  make -j$CPU all all-htslib
+  make install all all-htslib
+  cd $SETUP_DIR
+  rm -f samtools.tar.bz2
+  touch $SETUP_DIR/samtools.success
 fi
 
 
 cd $SETUP_DIR
-if [[ ",$COMPILE," == *,bwa,* ]] ; then
-  echo -n "Building BWA ..."
-  if [ -e $SETUP_DIR/bwa.success ]; then
-    echo " previously installed ..."
-  else
-    echo
-    get_distro "bwa" $SOURCE_BWA
-    mkdir -p bwa
-    tar --strip-components 1 -C bwa -zxf bwa.tar.gz
-    make -C bwa -j$CPU
-    cp bwa/bwa $INST_PATH/bin/.
-    rm -f bwa.tar.gz
-    touch $SETUP_DIR/bwa.success
-  fi
+echo -n "Building BWA ..."
+if [ -e $SETUP_DIR/bwa.success ]; then
+  echo " previously installed ..."
 else
-  echo "BWA - No change between PCAP versions"
+  echo
+  get_distro "bwa" $SOURCE_BWA
+  mkdir -p bwa
+  tar --strip-components 1 -C bwa -zxf bwa.tar.gz
+  make -C bwa -j$CPU
+  cp bwa/bwa $INST_PATH/bin/.
+  rm -f bwa.tar.gz
+  touch $SETUP_DIR/bwa.success
 fi
 
 echo -n "Building biobambam2 ..."
 if [ -e $SETUP_DIR/biobambam2.success ]; then
-  echo " previously installed biobambam2 ..."
+  echo " previously installed ..."
 else
 echo
   cd $SETUP_DIR
