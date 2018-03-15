@@ -206,7 +206,7 @@ sub split_in {
       my $cmd;
       if($input->bam_or_cram eq 'cram') {
         $cmd = sprintf $CRAMFASTQ, $bam2fq,
-                                  $options->{'reference'},,
+                                  $options->{'reference'},
                                   File::Spec->catfile($tmp, "bamtofastq.$index"),
                                   $split_folder,
                                   $fragment_size * $MILLION * $BAM_MULT,
