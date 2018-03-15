@@ -1,6 +1,6 @@
 # CHANGES
 
-## NEXT
+## 4.2.0
 
 * Add threadpool to `bam_stats` and `diff_bams`. Fixes #18, Fixes #19
 * bwa_mem.pl can use threads for `bam_stats`
