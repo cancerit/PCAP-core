@@ -77,7 +77,7 @@ unset PERL5LIB
 ARCHNAME=`perl -e 'use Config; print $Config{archname};'`
 PERLROOT=$INST_PATH/lib/perl5
 export PERL5LIB="$PERLROOT"
-export PATH="$INST_PATH/bin:$INST_PATH/biobambam2/bin:$PATH"
+export PATH="$INST_PATH/biobambam2/bin:$INST_PATH/bin:$PATH"
 
 #create a location to build dependencies
 SETUP_DIR=$INIT_DIR/install_tmp
@@ -112,13 +112,6 @@ else
   touch $SETUP_DIR/basePerlDeps.success
 fi
 
-
-# figure out the upgrade path
-COMPILE=`echo 'nothing' | perl -I lib -MPCAP -ne 'print PCAP::upgrade_path($_);'`
-if [ -e "$INST_PATH/lib/perl5/PCAP.pm" ]; then
-  COMPILE=`perl -I $INST_PATH/lib/perl5 -MPCAP -e 'print PCAP->VERSION,"\n";' | perl -I lib -MPCAP -ne 'print PCAP::upgrade_path($_);'`
-fi
-COMPILE=",$COMPILE,"
 
 echo -n "Get htslib ..."
 if [ -e $SETUP_DIR/htslibGet.success ]; then
@@ -174,65 +167,53 @@ fi
 
 cd $INIT_DIR
 
-if [[ ",$COMPILE," == *,samtools,* ]] ; then
-  echo -n "Building samtools ..."
-  if [ -e $SETUP_DIR/samtools.success ]; then
-    echo " previously installed ...";
-  else
-  echo
-    cd $SETUP_DIR
-    rm -rf samtools
-    get_distro "samtools" $SOURCE_SAMTOOLS
-    mkdir -p samtools
-    tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
-    cd samtools
-    ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
-    make -j$CPU all all-htslib
-    make install all all-htslib
-    cd $SETUP_DIR
-    rm -f samtools.tar.bz2
-    touch $SETUP_DIR/samtools.success
-  fi
+echo -n "Building samtools ..."
+if [ -e $SETUP_DIR/samtools.success ]; then
+  echo " previously installed ...";
 else
-  echo "samtools - No change between PCAP versions"
+echo
+  cd $SETUP_DIR
+  rm -rf samtools
+  get_distro "samtools" $SOURCE_SAMTOOLS
+  mkdir -p samtools
+  tar --strip-components 1 -C samtools -xjf samtools.tar.bz2
+  cd samtools
+  ./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
+  make -j$CPU all all-htslib
+  make install all all-htslib
+  cd $SETUP_DIR
+  rm -f samtools.tar.bz2
+  touch $SETUP_DIR/samtools.success
 fi
 
 
 cd $SETUP_DIR
-if [[ ",$COMPILE," == *,bwa,* ]] ; then
-  echo -n "Building BWA ..."
-  if [ -e $SETUP_DIR/bwa.success ]; then
-    echo " previously installed ..."
-  else
-    echo
-    get_distro "bwa" $SOURCE_BWA
-    mkdir -p bwa
-    tar --strip-components 1 -C bwa -zxf bwa.tar.gz
-    make -C bwa -j$CPU
-    cp bwa/bwa $INST_PATH/bin/.
-    rm -f bwa.tar.gz
-    touch $SETUP_DIR/bwa.success
-  fi
+echo -n "Building BWA ..."
+if [ -e $SETUP_DIR/bwa.success ]; then
+  echo " previously installed ..."
 else
-  echo "BWA - No change between PCAP versions"
+  echo
+  get_distro "bwa" $SOURCE_BWA
+  mkdir -p bwa
+  tar --strip-components 1 -C bwa -zxf bwa.tar.gz
+  make -C bwa -j$CPU
+  cp bwa/bwa $INST_PATH/bin/.
+  rm -f bwa.tar.gz
+  touch $SETUP_DIR/bwa.success
 fi
 
-if [[ ",$COMPILE," == *,biobambam,* ]] ; then
-  echo -n "Building biobambam2 ..."
-  if [ -e $SETUP_DIR/biobambam2.success ]; then
-    echo " previously installed2 ..."
-  else
-  echo
-    cd $SETUP_DIR
-    get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
-    mkdir -p $INST_PATH/biobambam2
-    tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
-    rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
-    rm -f biobambam2.tar.gz
-    touch $SETUP_DIR/biobambam2.success
-  fi
+echo -n "Building biobambam2 ..."
+if [ -e $SETUP_DIR/biobambam2.success ]; then
+  echo " previously installed ..."
 else
-  echo "biobambam - No change between PCAP versions"
+echo
+  cd $SETUP_DIR
+  get_distro "biobambam2" $SOURCE_BBB_BIN_DIST
+  mkdir -p $INST_PATH/biobambam2
+  tar -m --strip-components 3 -C $INST_PATH/biobambam2 -zxf biobambam2.tar.gz
+  rm -f $INST_PATH/biobambam2/bin/curl # don't let this file in SSL doesn't work
+  rm -f biobambam2.tar.gz
+  touch $SETUP_DIR/biobambam2.success
 fi
 
 cd $INIT_DIR
@@ -279,7 +260,7 @@ rm -rf $SETUP_DIR
 echo
 echo
 echo "Please add the following to beginning of path:"
-echo "  $INST_PATH/bin:$INST_PATH/biobambam2/bin:"
+echo "  $INST_PATH/biobambam2/bin:$INST_PATH/bin"
 echo "Please add the following to beginning of PERL5LIB:"
 echo "  $PERLROOT"
 echo
