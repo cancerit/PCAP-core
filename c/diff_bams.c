@@ -20,6 +20,7 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include "htslib/sam.h"
+#include "htslib/thread_pool.h"
 #include "khash.h"
 #include "dbg.h"
 
@@ -31,7 +32,7 @@ char *bam_b_loc = NULL;
 char *ref_file = NULL;
 int skip_z = 0;
 int count_flag_diff = 0;
-
+int nthreads = 0; // shared pool
 
 int check_exist(char *fname){
 	FILE *fp;
@@ -56,13 +57,14 @@ void print_usage (int exit_code){
 	printf ("Other:\n");
   printf ("-r --ref            Required for CRAM, genome.fa with co-located fai.\n");
   printf ("-c --count          Count flag differences.\n");
+	printf ("-@ --num_threads    Use thread pool with specified number of threads.\n");
   printf ("-s --skip           Don't include reads with MAPQ=0 in comparison.\n\n");
   printf ("-h --help           Display this usage information.\n");
 	printf ("-v --version        Prints the version number.\n\n");
   exit(exit_code);
 }
 
-void options(int argc, char *argv[]){
+int options(int argc, char *argv[]){
 
   const struct option long_opts[] =
     {
@@ -73,6 +75,7 @@ void options(int argc, char *argv[]){
               {"bam_b",required_argument,0,'b'},
               {"skip",no_argument,0,'s'},
               {"count",no_argument,0,'c'},
+							{"num_threads",required_argument,0,'@'},
               { NULL, 0, NULL, 0}
 
    }; //End of declaring opts
@@ -81,7 +84,7 @@ void options(int argc, char *argv[]){
    int iarg = 0;
 
      //Iterate through options
-   while((iarg = getopt_long(argc, argv, "a:b:r:scvh", long_opts, &index)) != -1){
+   while((iarg = getopt_long(argc, argv, "a:b:r:@:scvh", long_opts, &index)) != -1){
     switch(iarg){
       case 's':
         skip_z = 1;
@@ -110,6 +113,10 @@ void options(int argc, char *argv[]){
       case 'v':
         print_version(0);
         break;
+
+			case '@':
+				check(sscanf(optarg, "%i", &nthreads)==1, "Error parsing -@ argument '%s'. Should be an integer > 0", optarg);
+				break;
 
       case '?':
         print_usage (1);
@@ -150,7 +157,10 @@ void options(int argc, char *argv[]){
     print_usage(1);
   }
 
-   return;
+	return 0;
+
+error:
+	return 1;
 }
 
 int main(int argc, char *argv[]){
@@ -161,8 +171,10 @@ int main(int argc, char *argv[]){
   khash_t(chrom) *chr_hash = NULL;
   bam1_t *reada = NULL;
   bam1_t *readb = NULL;
-  options(argc, argv);
-  //Open bam file a
+	htsThreadPool p = {NULL, 0};
+  int err = options(argc, argv);
+	check(err==0,"Error parsing options.");
+	//Open bam file a
   htsa = hts_open(bam_a_loc,"r");
   check(htsa != NULL, "Error opening hts file 'a' for reading '%s'.",bam_a_loc);
   //Open bam file b
@@ -180,17 +192,26 @@ int main(int argc, char *argv[]){
   check(headb != NULL, "Error reading header from opened hts file 'b' '%s'.",bam_b_loc);
 
   if(heada->n_targets != headb->n_targets ){
-    sentinel("Reference sequence count is different\n",1);
+    sentinel("Reference sequence count is different\n");
   }
   fprintf(stdout,"Reference sequence count passed\n");
 
   int i=0;
   for(i=0;i<heada->n_targets;i++){
     if(strcmp(heada->target_name[i],headb->target_name[i])!=0){
-      sentinel("Reference sequences in different order\n",1);
+      sentinel("Reference sequences in different order\n");
     }
   }
   fprintf(stdout,"Reference sequence order passed\n");
+
+
+	// Create and share the thread pool
+  if (nthreads > 0) {
+      p.pool = hts_tpool_init(nthreads);
+			check(p.pool != NULL, "Error creating thread pool");
+      hts_set_opt(htsa,  HTS_OPT_THREAD_POOL, &p);
+			hts_set_opt(htsb, HTS_OPT_THREAD_POOL, &p);
+  }
 
   uint64_t count = 0;
   uint64_t flag_diffs = 0;
@@ -219,11 +240,11 @@ int main(int argc, char *argv[]){
       break;
     }
     if((chka>=0 && chkb <0) || (chkb>=0 && chka<0)){
-      sentinel("Files have different number of records\n",1);
+      sentinel("Files have different number of records\n");
     }
 
     if(reada->core.tid != readb->core.tid || reada->core.pos != readb->core.pos || strcmp(bam_get_qname(reada),bam_get_qname(readb))!=0){
-      sentinel("Files differ at record %"PRIu64" (qname) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb),1);
+      sentinel("Files differ at record %"PRIu64" (qname) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb));
     }
 
     if(reada->core.flag != readb->core.flag){
@@ -255,7 +276,7 @@ int main(int argc, char *argv[]){
         }
         last_coord = pos;
       }else{
-        sentinel("Files differ at record %"PRIu64" (flags) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb),1);
+        sentinel("Files differ at record %"PRIu64" (flags) a=%s b=%s\n",count,bam_get_qname(reada),bam_get_qname(readb));
       }
     }//End of if flags don't match
     if(count % 5000000 == 0) {
@@ -298,13 +319,13 @@ int main(int argc, char *argv[]){
   bam_hdr_destroy(headb);
   hts_close(htsa);
   hts_close(htsb);
+	if (p.pool) hts_tpool_destroy(p.pool);
   return 0;
 error:
   if(count_flag_diff && chr_hash != NULL){
     khiter_t k;
     for (k = kh_begin(chr_hash); k != kh_end(chr_hash); ++k) {
       if (kh_exist(chr_hash, k)) {
-        const int32_t keyp = kh_key(chr_hash,k);
         khash_t(posn) pos_hash = kh_value(chr_hash, k);
         kh_destroy(posn,&pos_hash);
       }
@@ -317,5 +338,6 @@ error:
   if(headb) bam_hdr_destroy(headb);
   if(htsa) hts_close(htsa);
   if(htsb) hts_close(htsb);
+	if (p.pool) hts_tpool_destroy(p.pool);
   return 1;
 }

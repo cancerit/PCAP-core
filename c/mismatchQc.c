@@ -93,7 +93,7 @@ void print_usage (int exit_code){
   exit(exit_code);
 }
 
-void options(int argc, char *argv[]){
+int options(int argc, char *argv[]){
   strcat(prog_cl,argv[0]);
   const struct option long_opts[] =
   {
@@ -140,7 +140,7 @@ void options(int argc, char *argv[]){
 
      case '@':
        if(sscanf(optarg, "%i", &nthreads) != 1){
-          sentinel("Error parsing -@ nThreads) argument '%s'. Should be an integer",optarg,1);
+          sentinel("Error parsing -@ nThreads) argument '%s'. Should be an integer",optarg);
        }
        strcat(prog_cl," -@ ");
        strcat(prog_cl,optarg);
@@ -158,7 +158,7 @@ void options(int argc, char *argv[]){
 
      case 'l':
       if(sscanf(optarg, "%i", &clevel) != 1){
-         sentinel("Error parsing -l (compression level) argument '%s'. Should be an integer",optarg,1);
+         sentinel("Error parsing -l (compression level) argument '%s'. Should be an integer",optarg);
       }
       strcat(prog_cl," -l ");
       strcat(prog_cl,optarg);
@@ -172,7 +172,7 @@ void options(int argc, char *argv[]){
 
      case 't':
       if(sscanf(optarg, "%f", &mismatch_frac) != 1){
-         sentinel("Error parsing -t argument '%s'. Should be a 1.0 >= float >= 0.0.",optarg,1);
+         sentinel("Error parsing -t argument '%s'. Should be a 1.0 >= float >= 0.0.",optarg);
       }
       strcat(prog_cl," -t ");
       strcat(prog_cl,optarg);
@@ -208,9 +208,9 @@ void options(int argc, char *argv[]){
    strcat(prog_cl," -o ");
    strcat(prog_cl,output_file);
 
-   return;
+   return 0;
   error:
-    return;
+    return 1;
 }
 
 float infer_mis_match_rate(bam1_t *b){
@@ -286,7 +286,7 @@ int checkMismatchStatus(bam1_t **b){
     check(chk==0,"Error adding mismatch tag to read %s.",bam_get_qname(*b));
     uint8_t *p;
     if((p = bam_aux_get(*b, mm_tag)) && bam_aux2A(p)!=YES){
-     sentinel("Error adding new tag to read %s.",bam_get_qname(*b),1);
+     sentinel("Error adding new tag to read %s.",bam_get_qname(*b));
     }
     marked_count = marked_count+1;
   }
@@ -305,7 +305,8 @@ int main(int argc, char *argv[]){
   bam1_t *b = NULL;
   prog_cl = malloc(sizeof(char)*2000);
   check_mem(prog_cl);
-  options(argc,argv);
+  int problem = options(argc,argv);
+  check(problem==0,"Error parsing options.");
 
   time_t time_start = time(NULL);
 

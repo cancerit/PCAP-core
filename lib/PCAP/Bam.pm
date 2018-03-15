@@ -37,12 +37,12 @@ use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
 const my $MISMATCHQC => q{| %s -l 0 -t %.2f };
-const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas};
-const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas};
+const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
+const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
 const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
-const my $BAM_STATS => q{ -i %s -o %s};
+const my $BAM_STATS => q{ -i %s -o %s -@ %d};
 
 sub new {
   my ($class, $bam) = @_;
@@ -182,7 +182,8 @@ sub merge_and_mark_dup {
                               $marked, $idx_type,
                               $marked,
                               $tools{'bam_stats'},
-                              $marked;
+                              $marked,
+                              $helper_threads;
     }
   }
   else {
@@ -220,7 +221,8 @@ sub merge_and_mark_dup {
                               $marked, $idx_type,
                               $marked,
                               $tools{'bam_stats'},
-                              $marked;
+                              $marked,
+                              $helper_threads;
     }
   }
 
@@ -247,7 +249,7 @@ sub bam_stats {
   if($options->{'cram'}) {
     # Only needed for cram output
     my $command = _which('bam_stats') || die "Unable to find 'bam_stats' in path";
-    $command .= sprintf $BAM_STATS, $xam, $bas;
+    $command .= sprintf $BAM_STATS, $xam, $bas, $options->{'threads'};
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, 0);
   }
   PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), 0);
