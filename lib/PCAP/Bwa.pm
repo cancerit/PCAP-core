@@ -37,7 +37,7 @@ use PCAP::Bam;
 
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
-const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%};
+const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%s};
 const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
 const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
 const my $BAMSORT => q{ fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam outputthreads=%s calmdnm=1 calmdnmrecompindetonly=1 calmdnmreference=%s};
@@ -206,7 +206,7 @@ sub split_in {
       my $cmd;
       if($input->bam_or_cram eq 'cram') {
         $cmd = sprintf $CRAMFASTQ, $bam2fq,
-                                  $options->{'reference'},,
+                                  $options->{'reference'},
                                   File::Spec->catfile($tmp, "bamtofastq.$index"),
                                   $split_folder,
                                   $fragment_size * $MILLION * $BAM_MULT,

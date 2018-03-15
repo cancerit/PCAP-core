@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.2.1
+
+Fix for input type of CRAM.
+
 ## 4.2.0
 
 * Add threadpool to `bam_stats` and `diff_bams`. Fixes #18, Fixes #19
