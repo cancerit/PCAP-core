@@ -1,8 +1,12 @@
 # CHANGES
 
+## 4.2.2
+
+* Update `Bio::DB::HTS` to v2.10
+
 ## 4.2.1
 
-Fix for input type of CRAM.
+* Fix for input type of CRAM.
 
 ## 4.2.0
 
