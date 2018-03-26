@@ -7,7 +7,7 @@ SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.7/htslib-1
 SOURCE_SAMTOOLS="https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2"
 
 # Bio::DB::HTS
-SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.9.tar.gz"
+SOURCE_BIOBDHTS="https://github.com/Ensembl/Bio-HTS/archive/2.10.tar.gz"
 
 # for biobambam
 SOURCE_BBB_BIN_DIST="https://github.com/gt1/biobambam2/releases/download/2.0.86-release-20180228171821/biobambam2-2.0.86-release-20180228171821-x86_64-etch-linux-gnu.tar.gz"
