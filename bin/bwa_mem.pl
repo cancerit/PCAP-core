@@ -90,6 +90,7 @@ sub setup {
   my %opts = ('map_threads' => &PCAP::Bwa::bwa_mem_max_cores,
               'mmqcfrac' => 0.05,
               'threads' => 1,
+              'fragment' => 10,
               'csi' => undef,
              );
 
@@ -103,7 +104,7 @@ sub setup {
               'o|outdir=s' => \$opts{'outdir'},
               's|sample=s' => \$opts{'sample'},
               'n|nomarkdup' => \$opts{'nomarkdup'},
-              'f|fragment=s' => \$opts{'fragment'},
+              'f|fragment:i' => \$opts{'fragment'},
               'p|process=s' => \$opts{'process'},
               'i|index=i' => \$opts{'index'},
               'b|bwa=s' => \$opts{'bwa'},
@@ -213,7 +214,7 @@ bwa_mem.pl [options] [file(s)...]
     -threads     -t   Number of threads to use. [1]
 
   Optional parameters:
-    -fragment    -f   Split input into fragements of X million repairs [10]
+    -fragment    -f   Split input into fragments of X million repairs [10]
     -nomarkdup   -n   Don't mark duplicates [flag]
     -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
