@@ -1,5 +1,18 @@
 # CHANGES
 
+## 4.2.4
+
+Fixed bam_stats outputs to be more consistent with pre 4.1.0.
+
+The addition of the ability to count QC-Failed reads (previously completely excluded)
+had resulted in mapping stats being augmented by this class of reads instead of just total reads
+and the `#qcfail_reads[12]` fields.
+
+## 4.2.3
+
+* Missing default value for `bwa_mem.pl` option `-f|fragment` fixed.
+* Documentation corrections.
+
 ## 4.2.2
 
 * Update `Bio::DB::HTS` to v2.10
