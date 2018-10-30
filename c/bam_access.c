@@ -196,7 +196,8 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
     }
 
     //Count unmapped and go to next read as anything after this is for mapped only.
-    if(b->core.flag & BAM_FUNMAP){
+    //QCFail is considered unmapped
+    if(b->core.flag & BAM_FUNMAP || b->core.flag & BAM_FQCFAIL){
       (*grp_stats)[rg_index][read]->umap++;
       continue;
     }
@@ -221,6 +222,7 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
       // Count all the pairs where both ends are not unmapped
       // already tested if this read is mapped above
       if(!(b->core.flag & BAM_FMUNMAP)) {
+        // there will be slight skew due to QCFail handling
         (*grp_stats)[rg_index][read]->mapped_pairs++;
 
         // Insert size can only be calculated based on reads that are on same chr
@@ -240,6 +242,7 @@ int bam_access_process_reads(htsFile *input, bam_hdr_t *head, rg_info_t **grps, 
         }
         else if(b->core.tid != b->core.mtid) {
           // here count the reads where the chr are different
+          // there will be slight skew due to QCFail handling
           (*grp_stats)[rg_index][read]->inter_chr_pairs++;
         }
       }
