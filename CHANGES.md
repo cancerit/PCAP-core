@@ -1,5 +1,11 @@
 # CHANGES
 
+## 4.2.5
+
+* mismatchQC has added commandline parameter - used by default
+* checks that reads marked as properly paired are in the correct orientations for paired-end (F/R)
+* if not then the properly paired flag is removed.
+
 ## 4.2.4
 
 Fixed bam_stats outputs to be more consistent with pre 4.1.0.
