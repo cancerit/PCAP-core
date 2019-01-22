@@ -43,6 +43,7 @@ const char mm_tag[2] = "mm";
 const char tag_type = 'A';
 const char *MD_TAG = "MD";
 const char YES = 'Y';
+int is_correct_pp = 0;
 long long int marked_count = 0;
 #define _cop(c) ((c)&BAM_CIGAR_MASK)
 /*
@@ -75,22 +76,23 @@ int check_exist(char *fname){
 
 void print_usage (int exit_code){
 
-	printf ("Usage: mismatchQc -i file -o file [-h] [-v]\n\n");
-  printf ("Marks reads \n");
-  printf ("-i --input                  [bc]ram File path to read input [stdin].\n");
-  printf ("-o --output                 Path to output [stdout].\n\n");
-  printf ("Optional:\n");
-  printf ("-@ --threads                number of BAM/CRAM compression threads.\n");
-  printf ("-C --cram                   Use CRAM compression for output [default: bam].\n");
-  printf ("-x --index                  Generate an index alongside output file (invalid when output is to stdout).\n");
-  printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
-  printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
-  printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
+    printf ("Usage: mismatchQc -i file -o file [-h] [-v]\n\n");
+    printf ("Marks reads \n");
+    printf ("-i --input                  [bc]ram File path to read input [stdin].\n");
+    printf ("-o --output                 Path to output [stdout].\n\n");
+    printf ("Optional:\n");
+    printf ("-@ --threads                number of BAM/CRAM compression threads.\n");
+    printf ("-C --cram                   Use CRAM compression for output [default: bam].\n");
+    printf ("-x --index                  Generate an index alongside output file (invalid when output is to stdout).\n");
+    printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
+    printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
+    printf ("-p --proper-pair-correct    Correct bwa-mem proper pairs (assumes a proper pair must have F/R orientation)\n");
+    printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
 	printf ("Other:\n");
 	printf ("-h --help      Display this usage information.\n");
-  printf ("-d --debug     Turn on debug mode.\n");
-	printf ("-v --version   Prints the version number.\n\n");
-  exit(exit_code);
+    printf ("-d --debug     Turn on debug mode.\n");
+    printf ("-v --version   Prints the version number.\n\n");
+    exit(exit_code);
 }
 
 int options(int argc, char *argv[]){
@@ -108,6 +110,7 @@ int options(int argc, char *argv[]){
             {"compression-level",required_argument,0,'l'},
             {"reference",required_argument,0,'r'},
             {"mismatch-threshold",required_argument,0,'t'},
+            {"proper-pair-correct",no_argument,0,'p'},
             { NULL, 0, NULL, 0}
 
  }; //End of declaring opts
@@ -116,7 +119,7 @@ int options(int argc, char *argv[]){
  int iarg = 0;
 
  //Iterate through options
-  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:@:Cvxdh", long_opts, &index)) != -1){
+  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:@:pCvxdh", long_opts, &index)) != -1){
    switch(iarg){
      case 'i':
        input_file = optarg;
@@ -176,6 +179,10 @@ int options(int argc, char *argv[]){
       }
       strcat(prog_cl," -t ");
       strcat(prog_cl,optarg);
+      break;
+
+     case 'p':
+      is_correct_pp = 1;
       break;
 
      case '?':
@@ -295,11 +302,21 @@ error:
   return 1;
 }
 
+int checkProperPairedStatus(bam1_t **b){
+    if (!((*b)->core.flag & BAM_FPROPER_PAIR)) return 0; //Ignore non properly paired reads
+    if (((*b)->core.flag & BAM_FREVERSE && !((*b)->core.flag & BAM_FMREVERSE) )) return 0; //Ignore correct orientations
+    if (!((*b)->core.flag & BAM_FREVERSE) && (*b)->core.flag & BAM_FMREVERSE) return 0; //Ignore correct orientations
+    //We have a properly mapped marked read but the orientations of reads aren't correct for paired end reads
+    //Remove the properly paired flag from this read
+    (*b)->core.flag = (*b)->core.flag - BAM_FPROPER_PAIR;
+    return 0;
+}
+
 int main(int argc, char *argv[]){
   htsFile *input = NULL;
   htsFile *output = NULL;
   hts_idx_t *index = NULL;
-	bam_hdr_t *head = NULL;
+  bam_hdr_t *head = NULL;
   bam_hdr_t *new_head = NULL;
   char modew[800];
   bam1_t *b = NULL;
@@ -384,6 +401,10 @@ int main(int argc, char *argv[]){
     int rd_check = 0;
     rd_check = checkMismatchStatus(&b);
     check(rd_check==0,"Error checking mismatch status of reads.");
+    if(is_correct_pp == 1){
+        int pp_check = checkProperPairedStatus(&b);
+        check(pp_check==0, "Error checking proper paired status of read.");
+    }
     int res = sam_write1(output,new_head,b);
     check(res>=0,"Error writing read to output file.");
   }

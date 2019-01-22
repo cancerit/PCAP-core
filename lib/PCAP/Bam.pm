@@ -36,7 +36,7 @@ use Data::UUID;
 use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
-const my $MISMATCHQC => q{| %s -l 0 -t %.2f };
+const my $MISMATCHQC => q{| %s -l 0 -t %.2f -p };
 const my $BAMBAM_DUP => q{%s level=0 %s | %s tmpfile=%s level=0 markthreads=%d M=%s.met %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
 const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
 const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
