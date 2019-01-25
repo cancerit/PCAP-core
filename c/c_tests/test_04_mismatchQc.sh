@@ -46,6 +46,7 @@ compare_sam () {
 }
 
 #Ensure valid format produced
+echo "1"
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam | bamvalidate
 if [ "$?" != "0" ];
 then
@@ -53,6 +54,7 @@ then
   exit 1;
 fi
 
+echo "2"
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam -l 2| bamvalidate
 if [ "$?" != "0" ];
 then
@@ -60,6 +62,7 @@ then
   exit 1;
 fi
 
+echo "3"
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam -C | bamvalidate inputformat=cram
 if [ "$?" != "0" ];
 then
@@ -67,6 +70,7 @@ then
   exit 1;
 fi
 
+echo "4"
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam | bamcollate2 inputformat=bam outputformat=sam collate=0 resetaux=0 > ../t/data/mismatch_test_out.sam;
 if [ "$?" != "0" ];
 then
@@ -74,6 +78,7 @@ then
   exit 1;
 fi
 
+echo "5"
 if [ compare_sam '../t/data/mismatch_test_out.sam' '../t/data/mismatch_expected_out.sam' != "0" ];
 then
   echo "ERROR in "$0": Comparing mismatchQc to expected result failed."
@@ -82,6 +87,7 @@ then
   exit 1
 fi
 
+echo "6"
 ../bin/mismatchQc -i ../t/data/mismatch_test.bam -t 0.01 | bamcollate2 inputformat=bam outputformat=sam collate=0 resetaux=0 > ../t/data/mismatch_test_out.sam;
 if [ "$?" != "0" ];
 then
@@ -89,6 +95,7 @@ then
   exit 1;
 fi
 
+echo "7"
 if [ compare_sam '../t/data/mismatch_test_out.sam' '../t/data/mismatch_expected_out_low_frac.sam' != "0" ];
 then
   echo "ERROR in "$0": Comparing mismatchQc low fraction to expected result failed."
