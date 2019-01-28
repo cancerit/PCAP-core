@@ -60,7 +60,7 @@ then
   exit 1;
 fi
 
-../bin/mismatchQc -i ../t/data/mismatch_test.bam -C | bamvalidate inputformat=cram
+../bin/mismatchQc -i ../t/data/mismatch_test.cram -C | bamvalidate inputformat=cram
 if [ "$?" != "0" ];
 then
   echo "ERROR running ../bin/mismatchQc -i ../t/data/mismatch_test.bam -C. Invalid output cram compression"
