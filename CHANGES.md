@@ -1,5 +1,10 @@
 # CHANGES
 
+## 4.2.6
+
+* New bam file added with mini reference for cram formatting test.
+* This prevents travis timeout issues where the reference area is being searched for by bamvalidate
+
 ## 4.2.5
 
 * mismatchQC has added commandline parameter - used by default
