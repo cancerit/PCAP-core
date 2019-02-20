@@ -3,6 +3,7 @@ package PCAP::Threaded;
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
 # Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2018-2019 Cancer, Ageing and Somatic Mutation, Genome Research Limited
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -265,9 +266,13 @@ sub external_process_handler {
     my $err = File::Spec->catfile($tmp, "$caller.$suffix.err");
 
     try {
-      system("/usr/bin/time $script 1> $out 2> $err");
+      system("/usr/bin/time bash $script 1> $out 2> $err");
     }
-    catch { die $_; };
+    catch {
+      warn "\nGeneral output can be found in this file: $out\n";
+      warn "Errors can be found in this file: $err\n\n";
+      die "Wrapper script message:\n".$_;
+    };
 
     unlink $script; # only leave scripts if we fail
     if($ENV{PCAP_THREADED_REM_LOGS}) {
@@ -293,9 +298,7 @@ sub _create_script {
   print $SH join qq{\n}, @{$commands}, q{} or die "Write to $script failed";
   undef $SH;
   autoflush STDOUT 1;
-  system('sync') if($ENV{PCAP_THREADED_FORCE_SYNC});
-
-  chmod $SCRIPT_OCT_MODE, $script or die "Failed to set executable flag on: $script";
+  system('sync');
 
   # sleep for random microsec max 1 sec.
   my $microsec = int rand 1_000_000;
