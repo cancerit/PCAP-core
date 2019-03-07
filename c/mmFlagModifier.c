@@ -316,12 +316,15 @@ int main(int argc, char *argv[]){
           b->core.flag += BAM_FQCFAIL;
         }
       }
-    }
+    }//End of check for presence of mm:A:Y tag
     int res = sam_write1(output,new_head,b);
     check(res>=0,"Error writing read to output file.");
   }//End of iteration through each read in the xam file
   
-  
+  bam_destroy1(b);
+  sam_hdr_free(cram_head);
+  bam_hdr_destroy(head);
+  bam_hdr_destroy(new_head);
   int out = hts_close(output);
   check(out>=0,"Error closing output file.");
   if(debug==1) fprintf(stderr,"Processed %lld reads in total, modified %lld flags.\n",count,marked_count);
@@ -333,11 +336,6 @@ int main(int argc, char *argv[]){
   }
 
   if(debug==1) fprintf(stderr,"Done.\n");
-
-  bam_destroy1(b);
-  bam_hdr_destroy(head);
-  bam_hdr_destroy(new_head);
-  sam_hdr_free(cram_head);
   free(prog_cl);
   int in = hts_close(input);
   check(in>=0,"Error closing input file.");
