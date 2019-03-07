@@ -372,7 +372,7 @@ flag 512 where the read also has the tag mm:A:Y .
 
 e.g.
 
-bammaskflags maskneg=512 auxexists=mm < mmqc.bam > cleaned.bam
+mmFlagModifier -m -i mmqc.bam > cleaned.bam
 
 =item B<-mmqcfrac>
 
