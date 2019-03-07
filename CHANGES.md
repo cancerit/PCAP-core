@@ -3,7 +3,7 @@
 ## feature/mmFlagModifier
 
 * Removed duplicate flag from `BAD_FLAGS` variable in mismatchQC script
-* Added mmFlagModifier script to remove/reinstate QC_fail flag where `mm:A:Y` tag is found.
+* Added `mmFlagModifier` script to remove/reinstate QC_fail flag where `mm:A:Y` tag is found.
 
 ## 4.2.7
 
