@@ -1,5 +1,10 @@
 # CHANGES
 
+## feature/mmFlagModifier
+
+* Removed duplicate flag from `BAD_FLAGS` variable in mismatchQC script
+* Added mmFlagModifier script to remove/reinstate QC_fail flag where `mm:A:Y` tag is found.
+
 ## 4.2.6
 
 * New bam file added with mini reference for cram formatting test.
