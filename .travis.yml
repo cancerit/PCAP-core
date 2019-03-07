@@ -25,6 +25,8 @@ addons:
    - lsof
    - libbz2-dev
    - liblzma-dev
+   - libgd-dev
+   - libdb-dev
 
 install: true
 
