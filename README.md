@@ -16,16 +16,12 @@ and subsequent calling algorithms.
 The intention is to provide reference implementations and simple to execute wrappers
 that are useful for the scientific community who may have little IT/bioinformatic support.
 
-<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
-
-- [General usage](#general-usage)
-- [Docker, Singularity and Dockstore](#docker-singularity-and-dockstore)
-- [Dependencies/Install](#dependenciesinstall)
-- [Creating a release](#creating-a-release)
-	- [Preparation](#preparation)
-	- [Cutting the release](#cutting-the-release)
-
-<!-- /TOC -->
+* [General usage](#general-usage)
+* [Docker, Singularity and Dockstore](#docker-singularity-and-dockstore)
+* [Dependencies/Install](#dependenciesinstall)
+* [Creating a release](#creating-a-release)
+	* [Preparation](#preparation)
+	* [Cutting the release](#cutting-the-release)
 
 ## General usage
 
@@ -73,13 +69,13 @@ Please see the respective licence for each before use.
 ### Cutting the release
 
 1. Update `lib/PCAP.pm` to the correct version.
-1. Ensure upgrade path for new version number is added to `lib/PCAP.pm`.
-1. Update `CHANGES.md` to show major items.
-1. Run `./prerelease.sh`
-1. Check all tests and coverage reports are acceptable.
-1. Commit the updated docs tree and updated module/version.
-1. Push commits.
-1. Use the GitHub tools to draft a release.
+2. Ensure upgrade path for new version number is added to `lib/PCAP.pm`.
+3. Update `CHANGES.md` to show major items.
+4. Run `./prerelease.sh`
+5. Check all tests and coverage reports are acceptable.
+6. Commit the updated docs tree and updated module/version.
+7. Push commits.
+8. Use the GitHub tools to draft a release.
 
 <!-- References -->
 
