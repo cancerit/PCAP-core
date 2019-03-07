@@ -235,6 +235,7 @@ else
   cp bin/reheadSQ $INST_PATH/bin/.
   cp bin/diff_bams $INST_PATH/bin/.
   cp bin/mismatchQc $INST_PATH/bin/.
+  cp bin/mmFlagModifier $INST_PATH/bin/.
   touch $SETUP_DIR/bam_stats.success
   make -C c clean
 fi
