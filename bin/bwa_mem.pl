@@ -365,11 +365,14 @@ Mark reads as QCFAIL (0x200, 512) using the mismatchQc program, also adds aux ta
 WARNING:
 bwa_mem.pl will exclude all QCFAIL reads from mapping. If a BAM/CRAM file has been created using
 this option please ensure that you pre-process the file to remove the flag 512 if you intend to
-reprocess based on that output.
+reprocess based on that output. 
+
+The script mmFlagModifier -m (--remove) can process a bam file to remove any occurences of 
+flag 512 where the read also has the tag mm:A:Y . 
 
 e.g.
 
-bammaskflags maskneg=512 auxexists=mm < mmqc.bam > cleaned.bam
+mmFlagModifier -m -i mmqc.bam > cleaned.bam
 
 =item B<-mmqcfrac>
 
