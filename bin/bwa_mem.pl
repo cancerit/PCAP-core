@@ -367,10 +367,8 @@ bwa_mem.pl will exclude all QCFAIL reads from mapping. If a BAM/CRAM file has be
 this option please ensure that you pre-process the file to remove the flag 512 if you intend to
 reprocess based on that output. 
 
-The script mmFlagModifier -r (--remove) can process a bam file to remove any occurences of 
+The script mmFlagModifier -m (--remove) can process a bam file to remove any occurences of 
 flag 512 where the read also has the tag mm:A:Y . 
-
-In -p (--replace) mode the mmFlagModifier script can reinstate the flag on reads with the mm:A:Y tag.
 
 e.g.
 
