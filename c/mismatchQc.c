@@ -54,7 +54,7 @@ long long int marked_count = 0;
   read fails platform/vendor quality checks,
   read is PCR or optical duplicate
 */
-const int BAD_FLAGS = BAM_FUNMAP | BAM_FMUNMAP | BAM_FQCFAIL | BAM_FDUP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY;
+const int BAD_FLAGS = BAM_FUNMAP | BAM_FMUNMAP | BAM_FQCFAIL | BAM_FSECONDARY | BAM_FSUPPLEMENTARY;
 
 enum rw_opts {
   W_CRAM        = 1,
