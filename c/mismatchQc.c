@@ -183,6 +183,7 @@ int options(int argc, char *argv[]){
 
      case 'p':
       is_correct_pp = 1;
+      strcat(prog_cl," -p");
       break;
 
      case '?':
