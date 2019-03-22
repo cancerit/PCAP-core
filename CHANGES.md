@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.3.1
+
+* Added -p flag to program commandline output in BAM header @PG line
+
 ## 4.3.0
 
 * Removed duplicate flag from `BAD_FLAGS` variable in mismatchQC script
