@@ -313,7 +313,7 @@ This also impacts the number of threads used by BWA mapping steps.
 =item B<-fragment>
 
 Split input into fragements of X million repairs.  To prevent variability in data processing either
-set this to a very large number or ensure that it is not changed.  Values >= 5000 indicate that data
+set this to a very large number or ensure that it is not changed.  Values > 5000 indicate that data
 should not be split.
 
 =item B<-nomarkdup>
