@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.3.2
+
+* Resolved #40 - faster recovery times
+
 ## 4.3.1
 
 * Added -p flag to program commandline output in BAM header @PG line
