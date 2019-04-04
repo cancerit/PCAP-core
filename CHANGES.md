@@ -3,6 +3,7 @@
 ## 4.3.2
 
 * Resolved #40 - faster recovery times
+* Resolved #39 - handle splitting correctly
 
 ## 4.3.1
 
