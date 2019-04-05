@@ -322,7 +322,6 @@ int main(int argc, char *argv[]){
   }//End of iteration through each read in the xam file
   
   bam_destroy1(b);
-  sam_hdr_free(cram_head);
   bam_hdr_destroy(head);
   bam_hdr_destroy(new_head);
   int out = hts_close(output);
