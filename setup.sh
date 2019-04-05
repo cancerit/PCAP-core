@@ -226,9 +226,8 @@ else
   cd $INIT_DIR
   make -C c clean
   if [ -z ${REF_PATH+x} ]; then
-    mkdir -p /tmp/$USER
-    export REF_PATH=/tmp/$USER/cache/%2s/%2s/%s:http://www.ebi.ac.uk/ena/cram/md5/%s
-    export REF_CACHE=/tmp/$USER/cache/%2s/%2s/%s
+    export REF_CACHE=$INIT_DIR/t/data/ref_cache/%2s/%2s/%s
+    export REF_PATH=$REF_CACHE
   fi
   env HTSLIB=$SETUP_DIR/htslib make -C c -j$CPU prefix=$INST_PATH
   cp bin/bam_stats $INST_PATH/bin/.
