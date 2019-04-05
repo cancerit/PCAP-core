@@ -415,6 +415,7 @@ sub mismatchQc_checks {
         $bammaskflag = 0; # reset each time we see mismatchQc
       }
       $bammaskflag = 1 if($mismatchQc == 1 && $line =~ m/\tPN:bammaskflags/ && $line =~ m/maskflags=512/);
+      $bammaskflag = 1 if($mismatchQc == 1 && $line =~ m/\tPN:PCAP-core-mmFlagModifier/ && ($line =~ m/CL:[^\t]+ -m/ || $line =~ m/CL:[^\t]+ --remove/));
     }
     if($mismatchQc == 1 && $bammaskflag == 0) {
       die <<ERRORDOC;
