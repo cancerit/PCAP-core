@@ -34,6 +34,8 @@ char* prog_id="PCAP-core-mmFlagModifier";
 char* prog_name="mmFlagModifier";
 char* prog_desc="Removes or reinstates the QC vendor fail flag in the presence of the mismatch QC fail tag";
 char* prog_cl = NULL;
+hts_opt *in_opts = NULL;
+hts_opt *out_opts = NULL;
 int debug=0;
 const char mm_tag[2] = "mm";
 const char tag_type = 'A';
@@ -72,6 +74,8 @@ void print_usage (int exit_code){
   printf ("-C --cram                   Use CRAM compression for output [default: bam].\n");
   printf ("-x --index                  Generate an index alongside output file (invalid when output is to stdout).\n");
   printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
+  printf ("-n --input-fmt-option       option=value: set an option for CRAM input. As per --input-fmt-option in the samtools documentation http://www.htslib.org/doc/samtools.html#GLOBAL_OPTIONS\n");
+  printf ("-u --output-fmt-option      option=value: set an option for CRAM output. As per --output-fmt-option in the samtools documentation http://www.htslib.org/doc/samtools.html#GLOBAL_OPTIONS\n");
   printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
   printf ("Other:\n");
   printf ("-h --help      Display this usage information.\n");
@@ -91,6 +95,8 @@ int options(int argc, char *argv[]){
             {"output",required_argument,0,'o'},
             {"cram",no_argument,0,'C'},
             {"index",no_argument,0,'x'},
+            {"input-fmt-option",required_argument,0,'n'},
+            {"output-fmt-option",required_argument,0,'u'},
             {"threads",required_argument,0,'@'},
             {"compression-level",required_argument,0,'l'},
             {"reference",required_argument,0,'r'},
@@ -104,7 +110,7 @@ int options(int argc, char *argv[]){
  int iarg = 0;
 
  //Iterate through options
-  while((iarg = getopt_long(argc, argv, "l:i:o:r:@:Cvxdhmp", long_opts, &index)) != -1){
+  while((iarg = getopt_long(argc, argv, "l:i:o:r:@:n:u:Cvxdhmp", long_opts, &index)) != -1){
     switch(iarg){
       case 'i':
         input_file = optarg;
@@ -167,6 +173,14 @@ int options(int argc, char *argv[]){
         wflags |= RW_REPLACE;
         strcat(prog_cl," -p");
         break;
+
+      case 'n':
+       hts_opt_add(&in_opts, optarg);
+       break;
+
+      case 'u':
+       hts_opt_add(&out_opts, optarg);
+       break;
 
       case '?':
         print_usage (1);
@@ -235,6 +249,9 @@ int main(int argc, char *argv[]){
   input = hts_open(input_file,"r");
   check(input != NULL, "Error opening hts file for reading '%s'.",input_file);
 
+  check(hts_opt_apply(input, in_opts)==0,"Error applying CRAM input options.");
+  hts_opt_free(in_opts);
+
   //Read header from bam file
   head = sam_hdr_read(input);
   check(head != NULL, "Error reading header from opened hts file '%s'.",input_file);
@@ -250,6 +267,9 @@ int main(int argc, char *argv[]){
   if(debug==1) fprintf(stderr,"Outputting data to %s using mode %s.\n",output_file,modew);
   output = hts_open(output_file,modew);
   check(output != NULL, "Error opening hts file for writing '%s' in mode %s.",output_file,modew);
+
+  check(hts_opt_apply(output, out_opts)==0,"Error applying CRAM output options.");
+  hts_opt_free(out_opts);
 
   //Add program line to header
   SAM_hdr *cram_head = bam_header_to_cram(head);
