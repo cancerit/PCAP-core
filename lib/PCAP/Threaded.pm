@@ -300,7 +300,7 @@ sub _create_script {
   autoflush STDOUT 1;
   system('sync');
 
-  my $microsec = 100_000
+  my $microsec = 100_000;
   _file_complete($script, $microsec);
   usleep($microsec);
   return $script;
