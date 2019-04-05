@@ -89,8 +89,8 @@ void print_usage (int exit_code){
     printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
     printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
     printf ("-p --proper-pair-correct    Correct bwa-mem proper pairs (assumes a proper pair must have F/R orientation)\n");
-    printf ("-n --input_args             option=value: set an option for CRAM input. As per samtools documentation http://www.htslib.org/doc/samtools-1.8.html#GLOBAL_OPTIONS\n");
-    printf ("-u --output_args            option=value: set an option for CRAM output. As per samtools documentation http://www.htslib.org/doc/samtools-1.8.html#GLOBAL_OPTIONS\n");
+    printf ("-n --input_args             option=value: set an option for CRAM input. As per samtools documentation http://www.htslib.org/doc/samtools.html#GLOBAL_OPTIONS\n");
+    printf ("-u --output_args            option=value: set an option for CRAM output. As per samtools documentation http://www.htslib.org/doc/samtools.html#GLOBAL_OPTIONS\n");
     printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
 	  printf ("Other:\n");
 	  printf ("-h --help      Display this usage information.\n");
