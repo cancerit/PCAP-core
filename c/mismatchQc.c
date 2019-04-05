@@ -45,6 +45,8 @@ const char *MD_TAG = "MD";
 const char YES = 'Y';
 int is_correct_pp = 0;
 long long int marked_count = 0;
+hts_opt *in_opts = NULL;
+hts_opt *out_opts = NULL;
 #define _cop(c) ((c)&BAM_CIGAR_MASK)
 /*
   Ignore mate unmapped,
@@ -87,9 +89,11 @@ void print_usage (int exit_code){
     printf ("-t --mismatch-threshold     Mismatch threshold for marking read as QC fail [float](default: %f).\n",mismatch_frac);
     printf ("-r --reference              load CRAM references from the specificed fasta file instead of @SQ headers when writing a CRAM file\n");
     printf ("-p --proper-pair-correct    Correct bwa-mem proper pairs (assumes a proper pair must have F/R orientation)\n");
+    printf ("-n --input_args             option=value: set an option for CRAM input. As per samtools documentation http://www.htslib.org/doc/samtools-1.8.html#GLOBAL_OPTIONS\n");
+    printf ("-u --output_args            option=value: set an option for CRAM output. As per samtools documentation http://www.htslib.org/doc/samtools-1.8.html#GLOBAL_OPTIONS\n");
     printf ("-l --compression-level      0-9: set zlib compression level.\n\n");
-	printf ("Other:\n");
-	printf ("-h --help      Display this usage information.\n");
+	  printf ("Other:\n");
+	  printf ("-h --help      Display this usage information.\n");
     printf ("-d --debug     Turn on debug mode.\n");
     printf ("-v --version   Prints the version number.\n\n");
     exit(exit_code);
@@ -104,6 +108,8 @@ int options(int argc, char *argv[]){
             {"debug",no_argument,0,'d'},
             {"input",required_argument,0,'i'},
             {"output",required_argument,0,'o'},
+            {"input_args",required_argument,0,'n'},
+            {"output_args",required_argument,0,'u'},
             {"cram",no_argument,0,'C'},
             {"index",no_argument,0,'x'},
             {"threads",required_argument,0,'@'},
@@ -119,7 +125,7 @@ int options(int argc, char *argv[]){
  int iarg = 0;
 
  //Iterate through options
-  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:@:pCvxdh", long_opts, &index)) != -1){
+  while((iarg = getopt_long(argc, argv, "t:l:i:o:r:n:u:@:pCvxdh", long_opts, &index)) != -1){
    switch(iarg){
      case 'i':
        input_file = optarg;
@@ -184,6 +190,14 @@ int options(int argc, char *argv[]){
      case 'p':
       is_correct_pp = 1;
       strcat(prog_cl," -p");
+      break;
+
+     case 'n':
+      hts_opt_add(&in_opts, optarg);
+      break;
+
+     case 'u':
+      hts_opt_add(&out_opts, optarg);
       break;
 
      case '?':
@@ -332,6 +346,9 @@ int main(int argc, char *argv[]){
   input = hts_open(input_file,"r");
   check(input != NULL, "Error opening hts file for reading '%s'.",input_file);
 
+  check(hts_opt_apply(input, in_opts)==0,"Error applying CRAM input options.");
+  hts_opt_free(in_opts);
+
   //Read header from bam file
   head = sam_hdr_read(input);
   check(head != NULL, "Error reading header from opened hts file '%s'.",input_file);
@@ -347,6 +364,9 @@ int main(int argc, char *argv[]){
   if(debug==1) fprintf(stderr,"Outputting data to %s using mode %s.\n",output_file,modew);
   output = hts_open(output_file,modew);
   check(output != NULL, "Error opening hts file for writing '%s' in mode %s.",output_file,modew);
+
+  check(hts_opt_apply(output, out_opts)==0,"Error applying CRAM output options.");
+  hts_opt_free(out_opts);
 
   //Add program line to header
   SAM_hdr *cram_head = bam_header_to_cram(head);
@@ -368,7 +388,6 @@ int main(int argc, char *argv[]){
 
     check(ret == 0, "Error setting CRAM reference file for writing");
   }
-
   //Set threads if required for input and output
   // Create and share the thread pool
   htsThreadPool p = {NULL, 0};
@@ -425,7 +444,6 @@ int main(int argc, char *argv[]){
   bam_destroy1(b);
   bam_hdr_destroy(head);
   bam_hdr_destroy(new_head);
-  sam_hdr_free(cram_head);
   free(prog_cl);
   int in = hts_close(input);
   check(in>=0,"Error closing input file.");
