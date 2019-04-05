@@ -157,9 +157,9 @@ sub run {
         }
         threads->create($function_ref, $index++, @params);
         last if($index > $iterations);
-        sleep $start_interval;
+        usleep($start_interval * 1_000_000);
       }
-      $start_interval = 2; # once the initial scale up is complete start interval can be shorter.
+      $start_interval = 0.1; # once the initial scale up is complete start interval can be tiny.
       sleep $self->thread_join_interval while(threads->list(threads::joinable()) == 0);
       for my $thr(threads->list(threads::joinable())) {
         $thr->join;
@@ -300,9 +300,7 @@ sub _create_script {
   autoflush STDOUT 1;
   system('sync');
 
-  # sleep for random microsec max 1 sec.
-  my $microsec = int rand 1_000_000;
-  $microsec = 100_000 if($microsec < 200_000); # min 0.2 sec
+  my $microsec = 100_000;
   _file_complete($script, $microsec);
   usleep($microsec);
   return $script;
