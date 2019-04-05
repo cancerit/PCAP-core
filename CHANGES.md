@@ -1,5 +1,12 @@
 # CHANGES
 
+## 4.3.2
+
+* Add options for input/output of CRAM in mismatchQc and mmFlagModifier
+* Correct mem free issue when writing CRAM in mismatchQc and mmFlagModifier
+* Resolved #40 - faster recovery times
+* Resolved #39 - handle splitting correctly
+
 ## 4.3.1
 
 * Added -p flag to program commandline output in BAM header @PG line

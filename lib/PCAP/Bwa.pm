@@ -171,7 +171,7 @@ sub split_in {
       if($input->paired_fq) {
         my $fq1 = $input->in.'_1.'.$input->fastq;
         my $fq2 = $input->in.'_2.'.$input->fastq;
-        if($input->fastq =~ m/[.]gz$/ || $options->{'fragment'} > 5000) {
+        if($input->fastq =~ m/[.]gz$/ || $fragment_size > 5000) {
           symlink $fq1, File::Spec->catfile($split_folder, 'pairedfq1.0.'.$input->fastq);
           symlink $fq2, File::Spec->catfile($split_folder, 'pairedfq2.0.'.$input->fastq);
         }
@@ -189,7 +189,7 @@ sub split_in {
       # interleaved FQ
       else {
         my $fq_i = $input->in.'.'.$input->fastq;
-        if($input->fastq =~ m/[.]gz$/ || $options->{'fragment'} > 5000) {
+        if($input->fastq =~ m/[.]gz$/ || $fragment_size > 5000) {
           symlink $fq_i, File::Spec->catfile($split_folder, 'i.'.$input->fastq);
         }
         else {
