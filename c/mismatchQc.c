@@ -169,7 +169,7 @@ int options(int argc, char *argv[]){
 
      case 'r':
       fn_ref = optarg;
-      strcat(prog_cl," -f ");
+      strcat(prog_cl," -r ");
       strcat(prog_cl,fn_ref);
       break;
 
