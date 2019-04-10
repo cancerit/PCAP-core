@@ -1,5 +1,11 @@
 # CHANGES
 
+## 4.3.3
+
+* Remove explicit `sync` for several reasons
+  * No longer `chmod` scripts
+  * Causes problems with heavily loaded shared file systems (sync hangs)
+
 ## 4.3.2
 
 * Add options for input/output of CRAM in mismatchQc and mmFlagModifier
