@@ -32,7 +32,6 @@ use File::Spec;
 use File::Path qw(make_path);
 use Try::Tiny qw(try catch finally);
 use Capture::Tiny qw(capture);
-use IO::File;
 use Const::Fast qw(const);
 use Scalar::Util qw(looks_like_number);
 use Time::HiRes qw(usleep);
@@ -292,22 +291,20 @@ sub _create_script {
   if($ENV{PCAP_THREADED_NO_SCRIPT} && -e $script) {
     die "ERROR: Script already present, delete to proceed: $script";
   }
-  my $SH = IO::File->new($script, 'w');
-  die "Cannot create $script: $!\n" unless(defined $SH);
+
+  open my $SH, '>', $script or die "Failed to create $script";
   print $SH qq{#!/bin/bash\nset -eux\n} or die "Write to $script failed";
   print $SH join qq{\n}, @{$commands}, q{} or die "Write to $script failed";
-  undef $SH;
-  autoflush STDOUT 1;
-  system('sync');
+  close $SH;
 
   my $microsec = 100_000;
   _file_complete($script, $microsec);
-  usleep($microsec);
   return $script;
 }
 
 sub _file_complete {
   my ($script, $microsec) = @_;
+  usleep($microsec);
   my $tries = 0;
   while(! -e $script) {
     $tries++;
