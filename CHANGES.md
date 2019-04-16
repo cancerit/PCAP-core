@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.3.4
+
+* Further changes to threaded module to improve reliability under singularity
+
 ## 4.3.3
 
 * Remove explicit `sync` for several reasons
