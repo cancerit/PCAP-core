@@ -62,6 +62,7 @@ apt-get -yqq install \
     libgoogle-perftools-dev \
     lsof \
     time \
+    libgd-perl \
     psmisc
 ```
 
