@@ -60,7 +60,9 @@ LABEL maintainer="cgphelp@sanger.ac.uk"\
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
+ENV PATH $OPT/bin:$OPT/biobambam2/bin:$PATH
 ENV PATH $OPT/bin:$PATH
+ENV PERL5LIB $OPT/lib/perl5
 ENV LD_LIBRARY_PATH $OPT/lib
 ENV LC_ALL C
 
