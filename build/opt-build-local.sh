@@ -72,6 +72,7 @@ cp bin/bam_stats $INST_PATH/bin/.
 cp bin/reheadSQ $INST_PATH/bin/.
 cp bin/diff_bams $INST_PATH/bin/.
 cp bin/mismatchQc $INST_PATH/bin/.
+cp bin/mmFlagModifier $INST_PATH/bin/.
 
 rm -rf $REF_CACHE
 rm -rf tmp_htslib
