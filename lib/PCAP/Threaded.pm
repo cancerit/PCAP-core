@@ -216,7 +216,7 @@ sub external_process_handler {
       for my $c(@commands) {
         warn "\nErrors from command: $c\n\n";
         print "\nOutput from command: $c\n\n";
-        system($c);
+        system("/usr/bin/time bash $c");
       }
     }
     catch { die $_; };
