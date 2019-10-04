@@ -2,50 +2,27 @@ notifications:
   slack: wtsi-cgpit:ptUMR1tkNyZJYd9TpGoss8WR
   email: false
 
-env:
- - CC=gcc
+sudo: false
 
-addons:
- apt:
-  packages:
-   - build-essential
-   - autoconf
-   - bsdtar
-   - time
-   - curl
-   - libcurl4-openssl-dev
-   - nettle-dev
-   - zlib1g-dev
-   - libncurses5-dev
-   - libpstreams-dev
-   - unzip
-   - libpng12-dev
-   - libexpat1-dev
-   - libgoogle-perftools-dev
-   - lsof
-   - libbz2-dev
-   - liblzma-dev
-   - libgd-dev
-   - libdb-dev
-
-install: true
-
-language: perl
-
-perl:
- - "5.22"
-
-before_script:
- - git clone --depth 1 --single-branch --branch develop https://github.com/cancerit/cgpBigWig.git
- - cd cgpBigWig
- - ./setup.sh $HOME/wtsi-opt
- - cd ../
+services:
+  - docker
 
 script:
  - set -e
- - ./setup.sh ~/wtsi-opt
- - $HOME/wtsi-opt/bin/diff_bams --version
- - $HOME/wtsi-opt/bin/reheadSQ --version
- - $HOME/wtsi-opt/bin/bam_stats --version
- - $HOME/wtsi-opt/bin/mismatchQc --version
- - perl -I $HOME/wtsi-opt/lib/perl5 ~/wtsi-opt/bin/bwa_mem.pl --version
+ - echo 'Build and check docker image'
+ - docker build -t pcap-core .
+ - docker images | grep -c pcap-core
+ - echo 'Verify program(s) from base image'
+ - docker run -t --rm pcap-core bam2bedgraph --version
+ - docker run -t --rm pcap-core bwjoin --version
+ - docker run -t --rm pcap-core bam2bw --version
+ - docker run -t --rm pcap-core bwcat --version
+ - docker run -t --rm pcap-core bam2bwbases --version
+ - docker run -t --rm pcap-core bg2bw --version
+ - docker run -t --rm pcap-core detectExtremeDepth --version
+ - echo 'Verify program(s) from this repo'
+ - docker run -t --rm pcap-core diff_bams --version
+ - docker run -t --rm pcap-core reheadSQ --version
+ - docker run -t --rm pcap-core bam_stats --version
+ - docker run -t --rm pcap-core mismatchQc --version
+ - docker run -t --rm pcap-core bwa_mem.pl --version

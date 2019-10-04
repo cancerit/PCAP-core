@@ -1,5 +1,10 @@
 # CHANGES
 
+## 4.4.0
+
+* Adds local docker file to support large scale data tests on internal CI platform
+* CWL and additional helper scripts etc will continue to be supported through the dockstore-cgpmap project.
+
 ## 4.3.4
 
 * Further changes to threaded module to improve reliability under singularity
