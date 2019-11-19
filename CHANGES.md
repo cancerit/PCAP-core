@@ -1,5 +1,9 @@
 # CHANGES
 
+## 4.4.1
+
+* `bamToBw.pl` correct to send stdout/err to file when threads are active.
+
 ## 4.4.0
 
 * Adds local docker file to support large scale data tests on internal CI platform
