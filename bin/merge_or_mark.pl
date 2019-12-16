@@ -172,6 +172,7 @@ merge_or_mark.pl [options] [file(s)...]
   Other:
     -help        -h   Brief help message.
     -man         -m   Full documentation.
+    -version     -v   Print version and exit
 
 File list can be full file names or wildcard, e.g.
 
