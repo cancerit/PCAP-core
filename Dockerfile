@@ -2,8 +2,9 @@ FROM quay.io/wtsicgp/cgpbigwig:1.1.0 as builder
 
 USER  root
 
-ARG VER_BBB2="2.0.87-release-20180301132713"
-ARG VER_BIODBHTS="2.10"
+ARG BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece96d2201fcd0b5249884c7/biobambam2-2.0.146-release-20191030105216-x86_64-linux-gnu.tar.xz"
+ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
+ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
 ARG VER_HTSLIB="1.9"
 ARG VER_SAMTOOLS="1.9"
@@ -60,10 +61,10 @@ LABEL maintainer="cgphelp@sanger.ac.uk"\
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
-ENV PATH $OPT/bin:$OPT/biobambam2/bin:$PATH
+ENV PATH $OPT/bin:$OPT/biobambam2/bin:$OPT/scramble/bin:$PATH
 ENV PATH $OPT/bin:$PATH
 ENV PERL5LIB $OPT/lib/perl5
-ENV LD_LIBRARY_PATH $OPT/lib
+ENV LD_LIBRARY_PATH $OPT/lib:$OPT/scramble/lib
 ENV LC_ALL C
 
 RUN apt-get -yq update
@@ -80,6 +81,7 @@ zlib1g \
 liblzma5 \
 libncurses5 \
 p11-kit \
+libcurl3 \
 unattended-upgrades && \
 unattended-upgrade -d -v && \
 apt-get remove -yq unattended-upgrades && \

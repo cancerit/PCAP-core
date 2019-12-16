@@ -29,6 +29,7 @@ WriteMakefile(
   EXE_FILES     => [qw( bin/bwa_aln.pl
                         bin/bwa_mem.pl
                         bin/bamToBw.pl
+                        bin/merge_or_mark.pl
                         bin/xam_coverage_bins.pl )],
   PREREQ_PM     => {
                      'Module::Build' => 0.42,

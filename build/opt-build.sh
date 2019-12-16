@@ -45,9 +45,9 @@ cd $SETUP_DIR
 ## biobambam2 first
 BB_INST=$INST_PATH/biobambam2
 if [ ! -e $SETUP_DIR/bbb2.sucess ]; then
-  curl -sSL --retry 10 https://github.com/gt1/biobambam2/releases/download/${VER_BBB2}/biobambam2-${VER_BBB2}-x86_64-etch-linux-gnu.tar.gz > distro.tar.gz
+  curl -sSL --retry 10 $BBB2_URL > distro.tar.gz
   mkdir -p $BB_INST
-  tar --strip-components 3 -C $BB_INST -zxf distro.tar.gz
+  tar --strip-components 3 -C $BB_INST -Jxf distro.tar.gz
   rm -f $BB_INST/bin/curl # don't let this file in SSL doesn't work
   rm -rf distro.* distro/*
   touch $SETUP_DIR/bbb2.success
@@ -66,6 +66,18 @@ set -eux
 curl -sSL https://cpanmin.us/ > $SETUP_DIR/cpanm
 perl $SETUP_DIR/cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH App::cpanminus
 rm -f $SETUP_DIR/cpanm
+
+## scramble (from staden)
+if [ ! -e $SETUP_DIR/staden.success ]; then
+  curl -sSL --retry 10 $STADEN > distro.tar.gz
+  rm -rf distro/*
+  mkdir -p $OPT/scramble
+  tar --strip-components 1 -C distro -xzf distro.tar.gz
+  cp -r distro/* $OPT/scramble
+  cd $SETUP_DIR
+  rm -rf distro.* distro/*
+  touch $SETUP_DIR/staden.success
+fi
 
 ## SAMTOOLS (tar.bz2)
 if [ ! -e $SETUP_DIR/samtools.success ]; then
