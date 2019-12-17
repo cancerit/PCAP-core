@@ -44,8 +44,8 @@ const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I 
 
 const my $LANE_BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 | %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
 const my $LANE_BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
-const my $LANE_BAMBAM_DUP => q{%s level=0 %s | mmFlagModifier -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | mmFlagModifier -l 0 -p | %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
-const my $LANE_BAMBAM_DUP_CRAM => q{%s level=0 %s | mmFlagModifier -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | mmFlagModifier -l 0 -p | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
+const my $LANE_BAMBAM_DUP => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | %s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s | tee %s | %s -o %s.bas -@ %d};
+const my $LANE_BAMBAM_DUP_CRAM => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s -@ %d};
@@ -166,10 +166,12 @@ sub merge_or_mark_lanes {
       $commands[0] = sprintf $LANE_BAMBAM_DUP_CRAM,
                               $tools{'bammerge'},
                               $input_str,
+                              $tools{'mmFlagModifier'},
                               $tools{'bammarkduplicates2'},
                               $bbb_tmp,
                               $helper_threads,
                               $marked,
+                              $tools{'mmFlagModifier'},
                               $tools{'scramble'},
                               $options->{'reference'},
                               $helper_threads,
@@ -182,10 +184,12 @@ sub merge_or_mark_lanes {
       $commands[0] = sprintf $LANE_BAMBAM_DUP,
                               $tools{'bammerge'},
                               $input_str,
+                              $tools{'mmFlagModifier'},
                               $tools{'bammarkduplicates2'},
                               $bbb_tmp,
                               $helper_threads,
                               $marked,
+                              $tools{'mmFlagModifier'},
                               $tools{'bamrecompress'},
                               $brc_tmp,
                               $helper_threads,
