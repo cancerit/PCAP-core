@@ -125,7 +125,7 @@ sub setup {
     exit 0;
   }
 
-  my $version = PCAP::Bwa::bwa_version();
+  my $version = PCAP::Bwa::bwamem2_version();
   die "bwa mem can only be used with bwa version 0.7+, the version found in path is: $version\n" unless(version->parse($version) >= version->parse('0.7.0'));
 
   # then check for no args:

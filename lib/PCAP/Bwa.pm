@@ -56,6 +56,17 @@ sub bwa_mem_max_cores {
   return $BWA_MEM_MAX_CORES;
 }
 
+sub bwamem2_version {
+  my $bwa = _which('bwa-mem2');
+  my $version;
+  {
+    my ($stdout, $stderr, $exit) = capture{ system("$bwa version"); };
+    chomp $stdout;
+    ($version) = $stdout =~ /([[:digit:]\.]+)/m;
+  }
+  return $version;
+}
+
 sub bwa_version {
   my $bwa = _which('bwa');
   my $version;
@@ -279,7 +290,8 @@ sub bwa_mem {
     if(exists $options->{'bwa_pl'}) {
       $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
     }
-    $bwa .= _which('bwa') || die "Unable to find 'bwa' in path";
+    # may want to test for chipset abilities
+    $bwa .= _which('bwa-mem2') || die "Unable to find 'bwa-mem2' in path";
 
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
     my $command = 'set -o pipefail; ';

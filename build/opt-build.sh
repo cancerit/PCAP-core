@@ -107,6 +107,16 @@ if [ ! -e $SETUP_DIR/bwa.success ]; then
   touch $SETUP_DIR/bwa.success
 fi
 
+## build BWA-mem2 (tar.gz)
+if [ ! -e $SETUP_DIR/bwa2.success ]; then
+  curl -sSL https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2/bwa-mem2-2.0pre2_x64-linux.tar.bz2 > distro.tar.bz2
+  rm -rf distro/*
+  tar --strip-components 1 -C distro -jxf distro.tar.bz2
+  cp distro/bwa-mem2* $INST_PATH/bin/.
+  rm -rf distro.* distro/*
+  touch $SETUP_DIR/bwa2.success
+fi
+
 ## Bio::DB::HTS (tar.gz)
 if [ ! -e $SETUP_DIR/Bio-DB-HTS.success ]; then
   ## add perl deps
