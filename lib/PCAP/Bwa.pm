@@ -2,7 +2,7 @@ package PCAP::Bwa;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2014-2020 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -62,7 +62,7 @@ sub bwamem2_version {
   {
     my ($stdout, $stderr, $exit) = capture{ system("$bwa version"); };
     chomp $stdout;
-    ($version) = $stdout =~ /([[:digit:]\.]+)/m;
+    $version = $stdout;
   }
   return $version;
 }
@@ -79,7 +79,7 @@ sub bwa_version {
 }
 
 sub mem_setup {
-  my $options = shift;
+  my ($options, $skip_mmqc_check) = @_;
   if($options->{'reference'} =~ m/\.gz$/) {
     my $tmp_ref = $options->{'reference'};
     $tmp_ref =~ s/\.gz$//;
@@ -94,7 +94,7 @@ sub mem_setup {
   }
   # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
   # if it has check for use of at least bammaskflags
-  PCAP::Bam::mismatchQc_checks($options->{'raw_files'});
+  PCAP::Bam::mismatchQc_checks($options->{'raw_files'}) unless($skip_mmqc_check);
   return 1;
 }
 

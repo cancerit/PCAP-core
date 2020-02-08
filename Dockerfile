@@ -82,6 +82,7 @@ liblzma5 \
 libncurses5 \
 p11-kit \
 libcurl3 \
+moreutils \
 unattended-upgrades && \
 unattended-upgrade -d -v && \
 apt-get remove -yq unattended-upgrades && \
