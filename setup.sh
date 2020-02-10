@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SOURCE_BWA="https://github.com/lh3/bwa/archive/v0.7.17.tar.gz"
+SOURCE_BWAMEM2="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2/bwa-mem2-2.0pre2_x64-linux.tar.bz2"
 
 # for bamstats and Bio::DB::HTS
 SOURCE_HTSLIB="https://github.com/samtools/htslib/releases/download/1.7/htslib-1.7.tar.bz2"
@@ -200,6 +201,18 @@ else
   cp bwa/bwa $INST_PATH/bin/.
   rm -f bwa.tar.gz
   touch $SETUP_DIR/bwa.success
+fi
+
+## build BWA-mem2 (tar.gz)
+cd $SETUP_DIR
+echo -n "Building bwa-mem2 ..."
+if [ ! -e $SETUP_DIR/bwa2.success ]; then
+  curl -sSL $SOURCE_BWAMEM2 > distro.tar.bz2
+  rm -rf distro/*
+  tar --strip-components 1 -C distro -jxf distro.tar.bz2
+  cp distro/bwa-mem2* $INST_PATH/bin/.
+  rm -rf distro.* distro/*
+  touch $SETUP_DIR/bwa2.success
 fi
 
 echo -n "Building biobambam2 ..."
