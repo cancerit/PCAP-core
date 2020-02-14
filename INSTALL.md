@@ -63,7 +63,8 @@ apt-get -yqq install \
     lsof \
     time \
     libgd-perl \
-    psmisc
+    psmisc \
+    moreutils
 ```
 
 ### Amazon Linux AMI

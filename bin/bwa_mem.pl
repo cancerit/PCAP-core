@@ -2,7 +2,7 @@
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2014-2020 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
   my $options = setup();
 
  	my $threads = PCAP::Threaded->new($options->{'threads'});
-	&PCAP::Threaded::disable_out_err if(!exists $options->{'index'} && $options->{'threads'} == 1);
+  &PCAP::Threaded::disable_out_err if(exists $options->{'index'});
 
   # register processes
 	$threads->add_function('split', \&PCAP::Bwa::split_in);
@@ -98,8 +98,8 @@ sub setup {
               'm|man' => \$opts{'m'},
               'v|version' => \$opts{'v'},
               'j|jobs' => \$opts{'jobs'},
-              't|threads=i' => \$opts{'threads'},
-              'mt|map_threads=i' => \$opts{'map_threads'},
+              't|threads:i' => \$opts{'threads'},
+              'mt|map_threads:i' => \$opts{'map_threads'},
               'r|reference=s' => \$opts{'reference'},
               'o|outdir=s' => \$opts{'outdir'},
               's|sample=s' => \$opts{'sample'},
@@ -124,9 +124,6 @@ sub setup {
     print PCAP->VERSION,"\n";
     exit 0;
   }
-
-  my $version = PCAP::Bwa::bwa_version();
-  die "bwa mem can only be used with bwa version 0.7+, the version found in path is: $version\n" unless(version->parse($version) >= version->parse('0.7.0'));
 
   # then check for no args:
   my $defined;

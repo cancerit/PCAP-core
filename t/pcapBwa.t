@@ -32,6 +32,7 @@ subtest 'Initialisation checks' => sub {
 
 subtest 'Non object checks' => sub {
   ok(PCAP::Bwa::bwa_version(), 'Version returned for BWA');
+  ok(PCAP::Bwa::bwamem2_version(), 'Version returned for bwa-mem2');
 };
 
 done_testing();

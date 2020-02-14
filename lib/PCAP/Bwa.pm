@@ -2,7 +2,7 @@ package PCAP::Bwa;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2014-2020 ICGC PanCancer Project
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -56,6 +56,17 @@ sub bwa_mem_max_cores {
   return $BWA_MEM_MAX_CORES;
 }
 
+sub bwamem2_version {
+  my $bwa = _which('bwa-mem2');
+  my $version;
+  {
+    my ($stdout, $stderr, $exit) = capture{ system("$bwa version"); };
+    chomp $stdout;
+    $version = $stdout;
+  }
+  return $version;
+}
+
 sub bwa_version {
   my $bwa = _which('bwa');
   my $version;
@@ -68,7 +79,7 @@ sub bwa_version {
 }
 
 sub mem_setup {
-  my $options = shift;
+  my ($options, $skip_mmqc_check) = @_;
   if($options->{'reference'} =~ m/\.gz$/) {
     my $tmp_ref = $options->{'reference'};
     $tmp_ref =~ s/\.gz$//;
@@ -83,7 +94,7 @@ sub mem_setup {
   }
   # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
   # if it has check for use of at least bammaskflags
-  PCAP::Bam::mismatchQc_checks($options->{'raw_files'});
+  PCAP::Bam::mismatchQc_checks($options->{'raw_files'}) unless($skip_mmqc_check);
   return 1;
 }
 
@@ -279,7 +290,8 @@ sub bwa_mem {
     if(exists $options->{'bwa_pl'}) {
       $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
     }
-    $bwa .= _which('bwa') || die "Unable to find 'bwa' in path";
+    # may want to test for chipset abilities
+    $bwa .= _which('bwa-mem2') || die "Unable to find 'bwa-mem2' in path";
 
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
     my $command = 'set -o pipefail; ';
