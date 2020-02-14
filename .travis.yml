@@ -26,3 +26,4 @@ script:
  - docker run -t --rm pcap-core bam_stats --version
  - docker run -t --rm pcap-core mismatchQc --version
  - docker run -t --rm pcap-core bwa_mem.pl --version
+ - docker run -t --rm pcap-core merge_or_mark.pl --version

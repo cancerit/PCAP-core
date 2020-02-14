@@ -235,9 +235,11 @@ sub external_process_handler {
       system("/usr/bin/time bash $script 1> $out 2> $err");
     }
     catch {
-      warn "\nGeneral output can be found in this file: $out\n";
-      warn "Errors can be found in this file: $err\n\n";
-      die "Wrapper script message:\n".$_;
+      warn "\nTHREAD_EXITED: General output can be found in this file, last 10 lines below: $out\n";
+      system(sprintf 'tail -n 10 %s | xargs -I {} echo STDOUT: {}', $out);
+      warn "\nTHREAD_EXITED: Errors can be found in this file, output below: $err\n\n";
+      system(sprintf 'cat %s | xargs -I {} echo STDERR: {}', $err);
+      die "\nTHREAD_EXITED: Wrapper script message:\n".$_;
     };
 
     unlink $script; # only leave scripts if we fail
