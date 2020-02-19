@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.0.1
+
+* Fix for pushing data for threaded item to stdout/err on failure
+
 ## 5.0.0
 
 * Adds basic `merge_or_mark.pl` script
