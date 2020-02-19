@@ -287,11 +287,15 @@ sub bwa_mem {
     $threads = $options->{'threads'} if($options->{'threads'} < $options->{'map_threads'});
 
     my $bwa = q{};
-    if(exists $options->{'bwa_pl'}) {
-      $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
+    if(exists $options->{'bwamem2'}) {
+      $bwa .= _which('bwa-mem2') || die "Unable to find 'bwa-mem2' in path";
     }
-    # may want to test for chipset abilities
-    $bwa .= _which('bwa-mem2') || die "Unable to find 'bwa-mem2' in path";
+    else {
+      if(exists $options->{'bwa_pl'}) {
+        $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
+      }
+      $bwa .= _which('bwa') || die "Unable to find 'bwa' in path";
+    }
 
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
     my $command = 'set -o pipefail; ';

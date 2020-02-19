@@ -115,6 +115,7 @@ sub setup {
               'g|groupinfo=s' => \$opts{'groupinfo'},
               'q|mmqc' => \$opts{'mmqc'},
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
+              'bm2|bwamem2' => \$opts{'bwamem2'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -129,6 +130,11 @@ sub setup {
   my $defined;
   for(keys %opts) { $defined++ if(defined $opts{$_}); }
   pod2usage(-msg  => "\nERROR: Options must be defined.\n", -verbose => 1,  -output => \*STDERR) unless($defined);
+
+  if($opts{'bwa_pl'} && $opts{'bwamem2'}) {
+    warn "INFO: -bwa_pl cannot be used with -bwamem2, ignoring\n";
+    delete $opts{'bwa_pl'};
+  }
 
   PCAP::Cli::file_for_reading('reference', $opts{'reference'});
   $opts{'outdir'} = abs_path($opts{'outdir'});
@@ -146,6 +152,7 @@ sub setup {
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
+  delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
 
@@ -205,41 +212,43 @@ bwa_mem.pl - Align a set of lanes to specified reference with single command.
 bwa_mem.pl [options] [file(s)...]
 
   Required parameters:
-    -outdir      -o   Folder to output result to.
-    -reference   -r   Path to reference genome file *.fa[.gz]
-    -sample      -s   Sample name to be applied to output file.
-    -threads     -t   Number of threads to use. [1]
+    -outdir      -o    Folder to output result to.
+    -reference   -r    Path to reference genome file *.fa[.gz]
+    -sample      -s    Sample name to be applied to output file.
+    -threads     -t    Number of threads to use. [1]
 
   Optional parameters:
-    -fragment    -f   Split input into fragments of X million repairs [10]
-    -nomarkdup   -n   Don't mark duplicates [flag]
-    -csi              Use CSI index instead of BAI for BAM files [flag].
-    -cram        -c   Output cram, see '-sc' [flag]
-    -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
-                      - '-I,-O' are used internally and should not be provided
-    -bwa         -b     Single quoted string of additional parameters to pass to BWA
-                         - '-t,-p,-R' are used internally and should not be provided.
-                         - '-v' is set to 1 unless '-bwa' is set.
-    -map_threads -mt  Number of cores applied to each parallel BWA job when '-t' exceeds this value
-                      and '-i' is not in use [6]
-    -groupinfo   -g   Readgroup information metadata file, values are not validated (yaml) [file]
-    -mmqc        -q   Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
-                       - Please see 'bwa_mem.pl -m'
-    -mmqcfrac    -qf  Mismatch fraction for -mmqc [0.05]
+    -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
+    -fragment    -f    Split input into fragments of X million repairs [10]
+    -nomarkdup   -n    Don't mark duplicates [flag]
+    -csi               Use CSI index instead of BAI for BAM files [flag].
+    -cram        -c    Output cram, see '-sc' [flag]
+    -scramble    -sc   Single quoted string of parameters to pass to Scramble when '-c' used
+                       - '-I,-O' are used internally and should not be provided
+    -bwa         -b    Single quoted string of additional parameters to pass to BWA
+                        - '-t,-p,-R' are used internally and should not be provided.
+                        - '-v' is set to 1 unless '-bwa' is set.
+    -map_threads -mt   Number of cores applied to each parallel BWA job when '-t' exceeds this value
+                       and '-i' is not in use [6]
+    -groupinfo   -g    Readgroup information metadata file, values are not validated (yaml) [file]
+    -mmqc        -q    Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
+                        - Please see 'bwa_mem.pl -m'
+    -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
 
   Targeted processing:
-    -process     -p   Only process this step then exit, optionally set -index
+    -process     -p    Only process this step then exit, optionally set -index
                         bwamem - only applicable if input is bam
                           mark - Run duplicate marking (-index N/A)
                          stats - Generates the *.bas file for the final BAM.
 
-    -index       -i   Optionally restrict '-p' to single job
+    -index       -i    Optionally restrict '-p' to single job
                         bwamem - 1..<lane_count>
 
   Performance variables
-    -bwa_pl      -l   BWA runs ~8% quicker when using the tcmalloc library from
-                      https://github.com/gperftools/ (assuming number of cores not exceeded)
-                      If available specify the path to 'gperftools/lib/libtcmalloc_minimal.so'.
+    -bwa_pl      -l    BWA runs ~8% quicker when using the tcmalloc library from
+                       https://github.com/gperftools/ (assuming number of cores not exceeded)
+                       If available specify the path to 'gperftools/lib/libtcmalloc_minimal.so'.
+                       - NOT APPLIED TO bwa-mem2
 
   Other:
     -jobs        -j   For a parallel step report the number of jobs required
@@ -306,6 +315,10 @@ This also impacts the number of threads used by BWA mapping steps.
 =head2 OPTIONAL parameters
 
 =over 4
+
+=item B<-bwamem2>
+
+Use binary `bwa-mem2` instead of original implementation of `bwa`.  Significant speed improvement.
 
 =item B<-fragment>
 
