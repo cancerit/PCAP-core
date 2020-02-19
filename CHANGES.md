@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.0.2
+
+* bwa-mem2 only applied if you request it
+
 ## 5.0.1
 
 * Fix for pushing data for threaded item to stdout/err on failure
