@@ -235,10 +235,11 @@ sub external_process_handler {
       system("/usr/bin/time bash $script 1> $out 2> $err");
     }
     catch {
+      sleep 5; # give files time to close
       warn "\nTHREAD_EXITED: General output can be found in this file, last 10 lines below: $out\n";
-      system(sprintf 'tail -n 10 %s | xargs -I {} echo STDOUT: {}', $out);
+      system(sprintf q(tail -n 10 %s | perl -ne 'print qq{STDOUT: $_};'), $out);
       warn "\nTHREAD_EXITED: Errors can be found in this file, output below: $err\n\n";
-      system(sprintf 'cat %s | xargs -I {} echo STDERR: {}', $err);
+      system(sprintf q(perl -ne 'print qq{STDERR: $_};' %s), $err);
       die "\nTHREAD_EXITED: Wrapper script message:\n".$_;
     };
 
