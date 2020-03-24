@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.0.3
+
+* Fix the `setup.sh` script.
+
 ## 5.0.2
 
 * bwa-mem2 only applied if you request it
