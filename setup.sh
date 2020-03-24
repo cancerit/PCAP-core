@@ -207,11 +207,11 @@ fi
 cd $SETUP_DIR
 echo -n "Building bwa-mem2 ..."
 if [ ! -e $SETUP_DIR/bwa2.success ]; then
-  curl -sSL $SOURCE_BWAMEM2 > distro.tar.bz2
-  rm -rf distro/*
-  tar --strip-components 1 -C distro -jxf distro.tar.bz2
-  cp distro/bwa-mem2* $INST_PATH/bin/.
-  rm -rf distro.* distro/*
+  get_distro "bwa2" $SOURCE_BWAMEM2
+  mkdir -p bwa2
+  tar --strip-components 1 -C bwa2 -jxf bwa2.tar.bz2
+  cp bwa2/bwa-mem2* $INST_PATH/bin/.
+  rm -rf bwa2.* bwa2/*
   touch $SETUP_DIR/bwa2.success
 fi
 
