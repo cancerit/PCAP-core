@@ -42,10 +42,10 @@ const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| pee '%s tmpfile=%s inde
 const my $BAMBAM_DUP_CRAM => q{%s level=0 %s | %s tmpfile=%s M=%s.met markthreads=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 
-const my $LANE_BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
-const my $LANE_BAMBAM_DUP => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_BAMBAM_DUP_CRAM => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
+const my $LANE_BAMBAM_MERGE => q{%s SO=%s %s tmpfile=%s level=0 | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
+const my $LANE_BAMBAM_MERGE_CRAM => q{%s SO=%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
+const my $LANE_BAMBAM_DUP => q{%s SO=%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
+const my $LANE_BAMBAM_DUP_CRAM => q{%s SO=%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s -@ %d};
@@ -135,6 +135,7 @@ sub merge_or_mark_lanes {
       my $add_sc = $options->{'scramble'} || q{};
       $commands[0] = sprintf $LANE_BAMBAM_MERGE_CRAM,
                               $tools{'bammerge'},
+                              $options->{'sortorder'},
                               $input_str,
                               $bbb_tmp,
                               $tools{'scramble'},
@@ -148,6 +149,7 @@ sub merge_or_mark_lanes {
     else {
       $commands[0] = sprintf $LANE_BAMBAM_MERGE,
                               $tools{'bammerge'},
+                              $options->{'sortorder'},
                               $input_str,
                               $bbb_tmp,
                               $tools{'bamrecompress'},
@@ -166,6 +168,7 @@ sub merge_or_mark_lanes {
       my $add_sc = $options->{'scramble'} || q{};
       $commands[0] = sprintf $LANE_BAMBAM_DUP_CRAM,
                               $tools{'bammerge'},
+                              $options->{'sortorder'},
                               $input_str,
                               $tools{'mmFlagModifier'},
                               $tools{'bammarkduplicates2'},
@@ -184,6 +187,7 @@ sub merge_or_mark_lanes {
     else {
       $commands[0] = sprintf $LANE_BAMBAM_DUP,
                               $tools{'bammerge'},
+                              $options->{'sortorder'},
                               $input_str,
                               $tools{'mmFlagModifier'},
                               $tools{'bammarkduplicates2'},

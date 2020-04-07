@@ -39,6 +39,8 @@ use PCAP::Bam;
 use PCAP::Bwa;
 use version;
 
+const my $COORD_SORT_ORDER => 'coordinate';
+const my $QUERYNAME_SORT_ORDER => 'queryname';
 const my @VALID_PROCESS => qw(setup mark stats);
 const my %INDEX_FACTOR => ( 'setup' => 1,
                             'mark'   => 1,
@@ -81,6 +83,7 @@ sub setup {
               's|sample=s' => \$opts{'sample'},
               'n|nomarkdup' => \$opts{'nomarkdup'},
               'p|process=s' => \$opts{'process'},
+              'q|querynamesort' => \$opts{'qnamesort'},
               'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
@@ -112,6 +115,8 @@ sub setup {
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
+  $opts{'sortorder'} = $COORD_SORT_ORDER;
+  $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 
   if($opts{'threads'} > 4) {
     warn "Setting 'threads' to 4 as higher values are of limited value\n";
@@ -158,6 +163,7 @@ merge_or_mark.pl [options] [file(s)...]
   Optional parameters:
     -threads     -t   Number of threads to use (max=4). [1]
     -nomarkdup   -n   Don't mark duplicates [flag]
+    -qnamesort   -q   Use queryname sorting flag in bammerge rather than coordinate. [flag].
     -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
@@ -227,6 +233,10 @@ Disables duplicate marking, switching bammarkduplicates2 for bammerge.
 =item B<-csi>
 
 User CSI style index for final BAM file instead of default BAI.
+
+=item B<-qnamesort>
+
+Use queryname sorting in bammerge calls rather than the default coordinate.
 
 =item B<-cram>
 
