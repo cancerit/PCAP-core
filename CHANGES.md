@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.0.4
+
+* Add `qnamesort` connamdline flag to `merge_or_mark.pl` for bammerge calls (Defaults to `SO=coordinate` without)
+
 ## 5.0.3
 
 * Fix the `setup.sh` script.
