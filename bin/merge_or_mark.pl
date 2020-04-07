@@ -164,6 +164,7 @@ merge_or_mark.pl [options] [file(s)...]
     -threads     -t   Number of threads to use (max=4). [1]
     -nomarkdup   -n   Don't mark duplicates [flag]
     -qnamesort   -q   Use queryname sorting flag in bammerge rather than coordinate. [flag].
+                      To be used in conjunction with -nomarkdup only
     -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
@@ -237,6 +238,7 @@ User CSI style index for final BAM file instead of default BAI.
 =item B<-qnamesort>
 
 Use queryname sorting in bammerge calls rather than the default coordinate.
+Can only be used in combination with B<-nomarkdup>
 
 =item B<-cram>
 
