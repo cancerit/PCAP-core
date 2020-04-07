@@ -72,6 +72,7 @@ sub setup {
   my %opts = (
               'threads' => 1,
               'csi' => undef,
+              'sortorder' => $COORD_SORT_ORDER,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -115,7 +116,6 @@ sub setup {
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
-  $opts{'sortorder'} = $COORD_SORT_ORDER;
   $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 
   if($opts{'threads'} > 4) {
