@@ -116,6 +116,9 @@ sub setup {
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'scramble'} unless(defined $opts{'scramble'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
+  if($opts{'qnamesort'} && !$opts{'nomarkdup'}){
+      die "ERROR: -qnamesort can only be used in conjunction with -nomarkdups\n";
+  }
   $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 
   if($opts{'threads'} > 4) {
