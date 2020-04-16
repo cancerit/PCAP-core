@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.0.5
+
+* Support for paired FASTQ names ending with _R1_001 and _R2_001 in addition to _1 and _2 as before
+
 ## 5.0.4
 
 * Add `qnamesort` connamdline flag to `merge_or_mark.pl` for bammerge calls (Defaults to `SO=coordinate` without)

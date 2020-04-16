@@ -39,7 +39,7 @@ const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
 const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%s};
 const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
-const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
+const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s.sai %s.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
 const my $BAMSORT => q{ fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam outputthreads=%s calmdnm=1 calmdnmrecompindetonly=1 calmdnmreference=%s sortthreads=%s};
 
 const my $FALSE_RG => q{@RG\tID:%s\tSM:%s\tLB:default\tPL:ILLUMINA};
@@ -180,8 +180,8 @@ sub split_in {
     if($input->fastq) {
       # paired fq input
       if($input->paired_fq) {
-        my $fq1 = $input->in.'_1.'.$input->fastq;
-        my $fq2 = $input->in.'_2.'.$input->fastq;
+        my $fq1 = $input->in.($input->illumina_fq ? '_R1_001.' : '_1.').$input->fastq;
+        my $fq2 = $input->in.($input->illumina_fq ? '_R2_001.' : '_2.').$input->fastq;
         if($input->fastq =~ m/[.]gz$/ || $fragment_size > 5000) {
           symlink $fq1, File::Spec->catfile($split_folder, 'pairedfq1.0.'.$input->fastq);
           symlink $fq2, File::Spec->catfile($split_folder, 'pairedfq2.0.'.$input->fastq);
@@ -402,6 +402,7 @@ sub sampe {
 
   my $pathstub = $input_meta->[$index-1]->tstub;
   my $fastq = $input_meta->[$index-1]->fastq;
+  my $illumina_fq = $input_meta->[$index-1]->illumina_fq;
 
 
   my $command = _which('bwa') || die "Unable to find 'bwa' in path";;
@@ -412,10 +413,10 @@ sub sampe {
   if(defined $fastq) {
     $command .= sprintf $ALN_TO_SORTED, $input_meta->[$index-1]->rg_header(q{\t}),
                                       $ref,
-                                      $pathstub,
-                                      $pathstub,
-                                      $input_meta->[$index-1]->in.'_1', $fastq,
-                                      $input_meta->[$index-1]->in.'_2', $fastq,
+                                      $pathstub.($illumina_fq ? '_R1_001' : '_1'),
+                                      $pathstub.($illumina_fq ? '_R2_001' : '_2'),
+                                      $input_meta->[$index-1]->in.($illumina_fq ? '_R1_001' : '_1'), $fastq,
+                                      $input_meta->[$index-1]->in.($illumina_fq ? '_R2_001' : '_2'), $fastq,
                                       $bamsort,
                                       $pathstub,
                                       $pathstub;
@@ -423,8 +424,8 @@ sub sampe {
   else {
     $command .= sprintf $ALN_TO_SORTED, $input_meta->[$index-1]->rg_header(q{\t}),
                                       $ref,
-                                      $pathstub,
-                                      $pathstub,
+                                      $pathstub.'_1',
+                                      $pathstub.'_2',
                                       $pathstub, 'bam',
                                       $pathstub, 'bam',
                                       $bamsort,

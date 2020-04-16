@@ -73,6 +73,12 @@ subtest 'Non-object funcions' => sub {
     ($base, $end) = PCAP::Bwa::Meta::parse_fastq_filename('fastq_2');
     is($base, 'fastq', "fastq_2 file should have '_2' removed");
     is($end, '2', "Read end should be 2");
+    ($base, $end) = PCAP::Bwa::Meta::parse_fastq_filename('fastq_R1_001');
+    is($base, 'fastq', "fastq_R1_001 has a basename of 'fastq'");
+    is($end, 'R1_001', "file ending with R1_001 indicates read 1 of pair");
+    ($base, $end) = PCAP::Bwa::Meta::parse_fastq_filename('fastq_R2_001');
+    is($base, 'fastq', "fastq_R2_001 has a basename of 'fastq'");
+    is($end, 'R2_001', "file ending with R2_001 indicates read 2 of a pair");
     ($base, $end) = PCAP::Bwa::Meta::parse_fastq_filename('fastq_3');
     isnt($base, 'fastq', "fastq_3 file should be unchanged, assume interleaved");
     ok(!defined $end, "_3, so not defined");
@@ -134,6 +140,9 @@ subtest 'Objects from file list' => sub {
   is(PCAP::Bwa::Meta::files_to_meta($tmp, [ File::Spec->catfile($test_data, '1_1.fq')
                                           , File::Spec->catfile($test_data, '1_2.fq')], 'sample')->[0]->{'paired_fq'}
     , 1, 'Paired fq identified as paired');
+  is(PCAP::Bwa::Meta::files_to_meta($tmp, [ File::Spec->catfile($test_data, '4_R1_001.fq')
+                                          , File::Spec->catfile($test_data, '4_R2_001.fq')], 'sample')->[0]->{'paired_fq'}
+    , 1, 'Paired fastqs with Illumina names identified as paired');
   like( exception{ PCAP::Bwa::Meta::files_to_meta($tmp
                                                   , [ File::Spec->catfile($test_data, '2_1.fq')
                                                     , File::Spec->catfile($test_data, '2_2.fq')]
@@ -173,6 +182,13 @@ subtest 'Objects from file list' => sub {
                                                       , 'sample') }
       , qq{ERROR: BAM|CRAM, paired FASTQ and interleaved FASTQ file types cannot be mixed, please choose one type\n}
       , 'Fail when inputs are mixed file types');
+  is( exception{ PCAP::Bwa::Meta::files_to_meta($tmp
+                                                    , [ File::Spec->catfile($test_data, '4_R1_001.fq')
+                                                      , File::Spec->catfile($test_data, '4_R2_001.fq')
+                                                      , File::Spec->catfile($test_data, '1.fq')]
+                                                      , 'sample') }
+      , qq{ERROR: BAM|CRAM, paired FASTQ and interleaved FASTQ file types cannot be mixed, please choose one type\n}
+      , 'Fail when inputs mix interleaves with paired per illumina');
   like( exception{ PCAP::Bwa::Meta::files_to_meta($tmp, [ File::Spec->catfile($test_data, 'wibble.wobble')]
                                                       , 'sample') }
       , qr/.+ is not an expected input file type.\n/m
@@ -247,6 +263,11 @@ subtest 'Accessors' => sub {
   like( exception { $meta->paired_fq(1) }
       , qr/'paired_fq' can only be set via new\(\)/
       , 'Fail to directly set paired_fq');
+
+  is($meta->illumina_fq, 0, 'Expected non illumina fastq names');
+  like( exception { $meta->illumina_fq(1) }
+      , qr/'illumina_fq' can only be set via new\(\)/
+      , 'Fail to directly set illumina_fq');
 
   my $tstub = File::Spec->catfile($tmp, '2'); # 2 as files_to_meta called twice
 
