@@ -85,7 +85,6 @@ sub setup {
               'n|nomarkdup' => \$opts{'nomarkdup'},
               'p|process=s' => \$opts{'process'},
               'q|querynamesort' => \$opts{'qnamesort'},
-              'i|noindex' => \$opts{'noindex'},
               'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
@@ -119,9 +118,6 @@ sub setup {
   delete $opts{'csi'} unless(defined $opts{'csi'});
   if($opts{'qnamesort'} && !$opts{'nomarkdup'}){
       die "ERROR: -qnamesort can only be used in conjunction with -nomarkdups\n";
-  }
-  if($opts{'noindex'} && !$opts{'qnamesort'}){
-      die "ERROR: -noindex can only be used in conjunction with -qnamesort\n";
   }
   $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 

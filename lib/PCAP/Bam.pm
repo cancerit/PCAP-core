@@ -44,9 +44,6 @@ const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| %s -r %s -t %d -I 
 
 const my $LANE_BAMBAM_MERGE => q{%s SO=%s %s tmpfile=%s level=0 | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
 const my $LANE_BAMBAM_MERGE_CRAM => q{%s SO=%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
-const my $LANE_BAMBAM_MERGE_NOIDX => q{%s SO=%s %s tmpfile=%s level=0 | pee '%s tmpfile=%s md5=1 numthreads=%d md5filename=%s.md5 > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_BAMBAM_MERGE_CRAM_NOIDX => q{%s SO=%s %s tmpfile=%s level=0 | %s -r %s -t %d -I bam -O cram %s %s};
-
 const my $LANE_BAMBAM_DUP => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
 const my $LANE_BAMBAM_DUP_CRAM => q{%s level=0 %s | %s -l 0 -m | %s tmpfile=%s level=0 markthreads=%d M=%s.met | %s -l 0 -p | %s -r %s -t %d -I bam -O cram %s | tee %s | %s index - %s.crai};
 
@@ -134,40 +131,9 @@ sub merge_or_mark_lanes {
 
   # subtly different, as need to strip mmQc before dup-rem, and then reapply
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
-    if(defined $options->{'noindex'} && $options->{'noindex'} == 1) {
-        if($options->{'cram'}) {
-            my $add_sc = $options->{'scramble'} || q{};
-            $commands[0] = sprintf $LANE_BAMBAM_MERGE_CRAM_NOIDX,
-                              $tools{'bammerge'},
-                              $options->{'sortorder'},
-                              $input_str,
-                              $bbb_tmp,
-                              $tools{'scramble'},
-                              $options->{'reference'},
-                              $helper_threads,
-                              $add_sc,
-                              $marked;
-        }
-        else {
-            $commands[0] = sprintf $LANE_BAMBAM_MERGE_NOIDX,
-                              $tools{'bammerge'},
-                              $options->{'sortorder'},
-                              $input_str,
-                              $bbb_tmp,
-                              $tools{'bamrecompress'},
-                              $brc_tmp,
-                              $helper_threads,
-                              $marked,
-                              $marked,
-                              $tools{'bam_stats'},
-                              $marked,
-                              $helper_threads;
-        }
-    }
-    else{
-        if($options->{'cram'}) {
-            my $add_sc = $options->{'scramble'} || q{};
-            $commands[0] = sprintf $LANE_BAMBAM_MERGE_CRAM,
+    if($options->{'cram'}) {
+      my $add_sc = $options->{'scramble'} || q{};
+      $commands[0] = sprintf $LANE_BAMBAM_MERGE_CRAM,
                               $tools{'bammerge'},
                               $options->{'sortorder'},
                               $input_str,
@@ -179,9 +145,9 @@ sub merge_or_mark_lanes {
                               $marked,
                               $tools{'samtools'},
                               $marked;
-        }
-        else {
-            $commands[0] = sprintf $LANE_BAMBAM_MERGE,
+    }
+    else {
+      $commands[0] = sprintf $LANE_BAMBAM_MERGE,
                               $tools{'bammerge'},
                               $options->{'sortorder'},
                               $input_str,
@@ -195,8 +161,7 @@ sub merge_or_mark_lanes {
                               $tools{'bam_stats'},
                               $marked,
                               $helper_threads;
-        }
-    }    
+    }
   }
   else {
     if($options->{'cram'}) {
