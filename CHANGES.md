@@ -1,8 +1,12 @@
 # CHANGES
 
+## 5.0.5
+
+* Add `noindex` commandline flag to `merge_or_mark.pl` for bammerge calls. Only permitted alongisde `qnamesort`
+
 ## 5.0.4
 
-* Add `qnamesort` connamdline flag to `merge_or_mark.pl` for bammerge calls (Defaults to `SO=coordinate` without)
+* Add `qnamesort` commandline flag to `merge_or_mark.pl` for bammerge calls (Defaults to `SO=coordinate` without)
 
 ## 5.0.3
 
