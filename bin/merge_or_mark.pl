@@ -85,6 +85,7 @@ sub setup {
               'n|nomarkdup' => \$opts{'nomarkdup'},
               'p|process=s' => \$opts{'process'},
               'q|querynamesort' => \$opts{'qnamesort'},
+              'i|noindex' => \$opts{'noindex'},
               'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
@@ -118,6 +119,9 @@ sub setup {
   delete $opts{'csi'} unless(defined $opts{'csi'});
   if($opts{'qnamesort'} && !$opts{'nomarkdup'}){
       die "ERROR: -qnamesort can only be used in conjunction with -nomarkdups\n";
+  }
+  if($opts{'noindex'} && !$opts{'qnamesort'}){
+      die "ERROR: -noindex can only be used in conjunction with -qnamesort\n";
   }
   $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 
@@ -168,6 +172,8 @@ merge_or_mark.pl [options] [file(s)...]
     -nomarkdup   -n   Don't mark duplicates [flag]
     -qnamesort   -q   Use queryname sorting flag in bammerge rather than coordinate. [flag].
                       To be used in conjunction with -nomarkdup only
+    -noindex     -i   Don't attempt to index the merged file. Only available in conjunction with 
+                      -qnamesort.
     -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
     -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
@@ -242,6 +248,11 @@ User CSI style index for final BAM file instead of default BAI.
 
 Use queryname sorting in bammerge calls rather than the default coordinate.
 Can only be used in combination with B<-nomarkdup>
+
+=item B<-noindex>
+
+Don't attempt to generate an index for the merged file.
+Can only be used in combination with B<-qnamesort>
 
 =item B<-cram>
 
