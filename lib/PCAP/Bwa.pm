@@ -29,6 +29,7 @@ use warnings FATAL => 'all';
 use Const::Fast qw(const);
 use File::Path qw(make_path);
 use File::Spec;
+use File::Temp qw(tempdir);
 use Capture::Tiny qw(capture);
 use File::Copy qw(copy);
 
@@ -136,6 +137,7 @@ sub mem_mapmax {
       next if($file =~ m/^\./);
       next if($file =~ m/^pairedfq2\.[[:digit:]]+/); # captured by 1.*
       next if($file =~ m/s[.]fq[.]gz_[[:digit:]]+[.]gz$/);
+      next if($file eq 'unknown');
       if($file =~ m/o[12][.]fq[.]gz_[[:digit:]]+[.]gz$/) {
         warn "Orphan reads found, your input BAM appears to have had duplicates 'removed' rather than 'marked': $folder/$file\n\tWARNING: This will give a sub-optimal result\n";
         next;
@@ -213,27 +215,16 @@ sub split_in {
     }
     # if bam|cram input
     else {
-      my $bam2fq = _which('bamtofastq') || die "Unable to find 'bamtofastq' in path";
-      my $cmd;
-      if($input->bam_or_cram eq 'cram') {
-        $cmd = sprintf $CRAMFASTQ, $bam2fq,
-                                  $options->{'reference'},
-                                  File::Spec->catfile($tmp, "bamtofastq.$index"),
-                                  $split_folder,
-                                  $fragment_size * $MILLION * $BAM_MULT,
-                                  $input->in;
-      }
-      else {
-        my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
-        $cmd = sprintf $BAMFASTQ, $samtools,
-                                  $options->{'reference'},
-                                  $input->in,
-                                  $bam2fq,
-                                  File::Spec->catfile($tmp, "bamtofastq.$index"),
-                                  $split_folder,
-                                  $fragment_size * $MILLION * $BAM_MULT;
-      }
+      my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
+      make_path($collate_folder) unless(-d $collate_folder);
+      my $collate_tmp =  tempdir( DIR => $collate_folder, CLEANUP => 1 );
+      my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
+      my $view = sprintf '%s view -bu -T %s -F 2304 %s', $samtools, $options->{'reference'}, $input->in; # exclude non-primary
+      my $collate = sprintf '%s collate -Ou --output-fmt BAM - %s/collate', $samtools, $collate_tmp;
+      my $split = sprintf '%s split --output-fmt BAM,level=1 -u %s/unknown -f %s/%%!_i.bam -', $samtools, $split_folder, $split_folder;
+      my $cmd = sprintf '%s | %s | %s', $view, $collate, $split;
       # treat as interleaved fastq
+      push @commands, 'set -o pipefail';
       push @commands, $cmd;
     }
 
@@ -311,16 +302,24 @@ sub bwa_mem {
 
     # uncoverable branch true
     # uncoverable branch false
-    if($input->paired_fq) {
-      $split =~ s/'/\\'/g;
-      my $split2 = $split;
-      $split2 =~ s/pairedfq1(\.[[:digit:]]+)/pairedfq2$1/;
-      $bwa .= ' '.$split;
-      $bwa .= ' '.$split2;
+    if($input->fastq) {
+      if($input->paired_fq) {
+        $split =~ s/'/\\'/g;
+        my $split2 = $split;
+        $split2 =~ s/pairedfq1(\.[[:digit:]]+)/pairedfq2$1/;
+        $bwa .= ' '.$split;
+        $bwa .= ' '.$split2;
+      }
+      else {
+        $split =~ s/'/\\'/g;
+        $bwa .= ' '.$split;
+      }
     }
     else {
+      # bam/cram
       $split =~ s/'/\\'/g;
-      $bwa .= ' '.$split;
+      my $tofastq = sprintf '%s fastq -N %s', _which('samtools'), $split;
+      $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
     }
     $command .= $bwa;
 
