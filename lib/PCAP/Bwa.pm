@@ -219,7 +219,7 @@ sub split_in {
       make_path($collate_folder) unless(-d $collate_folder);
       my $collate_tmp =  tempdir( DIR => $collate_folder, CLEANUP => 1 );
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
-      my $view = sprintf '%s view -bu -T %s -F 2304 %s', $samtools, $options->{'reference'}, $input->in; # exclude non-primary
+      my $view = sprintf '%s view -bu -T %s -F 2816 %s', $samtools, $options->{'reference'}, $input->in; # exclude non-primary
       my $collate = sprintf '%s collate -Ou --output-fmt BAM - %s/collate', $samtools, $collate_tmp;
       my $split = sprintf '%s split --output-fmt BAM,level=1 -u %s/unknown -f %s/%%!_i.bam -', $samtools, $split_folder, $split_folder;
       my $cmd = sprintf '%s | %s | %s', $view, $collate, $split;
