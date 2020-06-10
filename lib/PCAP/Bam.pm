@@ -147,7 +147,7 @@ sub merge_or_mark_lanes {
       else {
           $commands[0] = sprintf $LANE_BAMBAM_MERGE,
                               $tools{'bammerge'}, $options->{'sortorder'}, $input_str, $bbb_tmp,
-                              $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $marked, $bbb_idx_opt,
+                              $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $bbb_idx_opt, $marked,
                               $tools{'bam_stats'}, $marked, $helper_threads;
       }
   }
