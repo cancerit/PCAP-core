@@ -145,4 +145,3 @@ if [ ! -e $SETUP_DIR/Bio-DB-HTS.success ]; then
 fi
 
 cd $HOME
-rm -rf $SETUP_DIR

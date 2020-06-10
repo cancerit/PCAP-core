@@ -91,6 +91,8 @@ sub setup {
               'mmqcfrac' => 0.05,
               'threads' => 1,
               'fragment' => 10,
+              'dupmode' => 't',
+              'seqslice' => 10000,
               'csi' => undef,
              );
 
@@ -116,6 +118,8 @@ sub setup {
               'q|mmqc' => \$opts{'mmqc'},
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
               'bm2|bwamem2' => \$opts{'bwamem2'},
+              'd|dupmode:s' => \$opts{'dupmode'},
+              'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -145,10 +149,14 @@ sub setup {
     die "ERROR: Please generate $opts{dict}, e.g.\n\t\$ samtools dict -a \$ASSEMBLY -s \$SPECIES $opts{reference} > $opts{dict}\n";
   }
 
+  if(defined $opts{'scramble'}) {
+    die "ERROR: -scramble option is deprecated, please see -seqslice\n";
+  }
+
   delete $opts{'process'} unless(defined $opts{'process'});
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'bwa'} unless(defined $opts{'bwa'});
-  delete $opts{'scramble'} unless(defined $opts{'scramble'});
+  delete $opts{'scramble'};
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
@@ -223,8 +231,8 @@ bwa_mem.pl [options] [file(s)...]
     -nomarkdup   -n    Don't mark duplicates [flag]
     -csi               Use CSI index instead of BAI for BAM files [flag].
     -cram        -c    Output cram, see '-sc' [flag]
-    -scramble    -sc   Single quoted string of parameters to pass to Scramble when '-c' used
-                       - '-I,-O' are used internally and should not be provided
+    -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
+    -scramble    -sc   DEPRECATED
     -bwa         -b    Single quoted string of additional parameters to pass to BWA
                         - '-t,-p,-R' are used internally and should not be provided.
                         - '-v' is set to 1 unless '-bwa' is set.
@@ -234,6 +242,7 @@ bwa_mem.pl [options] [file(s)...]
     -mmqc        -q    Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
                         - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
+    -dupmode     -d    see "samtools markdup -m" [t]
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index

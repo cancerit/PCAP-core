@@ -72,6 +72,8 @@ sub setup {
   my %opts = (
               'threads' => 1,
               'csi' => undef,
+              'dupmode' => 't',
+              'seqslice' => 10000,
               'sortorder' => $COORD_SORT_ORDER,
              );
 
@@ -89,6 +91,8 @@ sub setup {
               'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
+              'd|dupmode:s' => \$opts{'dupmode'},
+              'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -113,9 +117,13 @@ sub setup {
     die "ERROR: Please generate $opts{dict}, e.g.\n\t\$ samtools dict -a \$ASSEMBLY -s \$SPECIES $opts{reference} > $opts{dict}\n";
   }
 
+  if(defined $opts{'scramble'}) {
+    die "ERROR: -scramble option is deprecated, please see -seqslice\n";
+  }
+
   delete $opts{'process'} unless(defined $opts{'process'});
   delete $opts{'index'} unless(defined $opts{'index'});
-  delete $opts{'scramble'} unless(defined $opts{'scramble'});
+  delete $opts{'scramble'};
   delete $opts{'csi'} unless(defined $opts{'csi'});
   if($opts{'qnamesort'} && !$opts{'nomarkdup'}){
       die "ERROR: -qnamesort can only be used in conjunction with -nomarkdups\n";
@@ -172,12 +180,13 @@ merge_or_mark.pl [options] [file(s)...]
     -nomarkdup   -n   Don't mark duplicates [flag]
     -qnamesort   -q   Use queryname sorting flag in bammerge rather than coordinate. [flag].
                       To be used in conjunction with -nomarkdup only
-    -noindex     -i   Don't attempt to index the merged file. Only available in conjunction with 
+    -noindex     -i   Don't attempt to index the merged file. Only available in conjunction with
                       -qnamesort.
     -csi              Use CSI index instead of BAI for BAM files [flag].
     -cram        -c   Output cram, see '-sc' [flag]
-    -scramble    -sc  Single quoted string of parameters to pass to Scramble when '-c' used
-                      - '-I,-O' are used internally and should not be provided
+    -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
+    -scramble    -sc   DEPRECATED
+    -dupmode     -d    see "samtools markdup -m" [t]
 
   Targeted processing:
     -process     -p   Only process this step then exit, optionally set -index
@@ -260,6 +269,8 @@ Final output file will be a CRAM file instead of BAM.  To tune the the compressi
 B<-scramble> option.
 
 =item B<-scramble>
+
+DEPRECATED - see -seqslice
 
 Single quoted string of parameters to pass to Scramble when '-c' used.  Please see the Scramble
 documentation for details.

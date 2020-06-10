@@ -39,9 +39,12 @@ use PCAP::Bam;
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
 const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%s};
-const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
 const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
-const my $BAMSORT => q{ fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam outputthreads=%s calmdnm=1 calmdnmrecompindetonly=1 calmdnmreference=%s sortthreads=%s};
+# order linked
+const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
+const my $FIXMATE => q {%s fixmate -m -O BAM --output-fmt-option level=0 - -};
+const my $BAMSORT => q{ inputformat=bam level=1 tmpfile=%s_tmp O=%s_sorted.bam outputthreads=%s calmdnm=1 calmdnmrecompindetonly=1 calmdnmreference=%s sortthreads=%s};
+
 
 const my $FALSE_RG => q{@RG\tID:%s\tSM:%s\tLB:default\tPL:ILLUMINA};
 
@@ -292,7 +295,6 @@ sub bwa_mem {
     }
 
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
-    my $command = 'set -o pipefail; ';
 
     my $interleaved_fq = q{};
     # uncoverable branch true
@@ -324,11 +326,9 @@ sub bwa_mem {
       my $tofastq = sprintf '%s fastq -N %s', _which('samtools'), $split;
       $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
     }
-    $command .= $bwa;
 
     # now add the code for reheadSQ
     my $rehead_sq = sprintf '%s -d %s', _which('reheadSQ'), $options->{'dict'};
-    $command .= ' | '.$rehead_sq;
 
     my $helpers = 1;
     # uncoverable branch true
@@ -339,11 +339,14 @@ sub bwa_mem {
     $sorted_bam_stub =~ s|/split/([[:digit:]]+)/(.+)$|/sorted/$1_$2|;
     $sorted_bam_stub =~ s/\\'/-/g;
 
+    my $fixmate = sprintf $FIXMATE, _which('samtools');
+
     my $ref = exists $options->{'decomp_ref'} ? $options->{'decomp_ref'} : $options->{'reference'};
     my $sort = _which('bamsort') || die "Unable to find 'bamsort' in path\n";
     $sort .= sprintf $BAMSORT, File::Spec->catfile($tmp, "bamsort.$index"), $sorted_bam_stub, $helpers, $ref, $helpers;
 
-    $command .= " | $sort";
+    my $command = 'set -o pipefail; ';
+    $command .= "$bwa | $rehead_sq | $fixmate | $sort";
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
     PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), $index);
