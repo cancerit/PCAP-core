@@ -32,9 +32,10 @@ use Data::Dumper;
 use version 0.77;
 
 const my @REQUIRED_PROGRAMS => qw(bamcollate2 bammarkduplicates2 bamsort bwa samtools);
-const my $BIOBAMBAM2_VERSION => '2.0.86';
-const my $BWA_VERSION => '0.7.12';
-const my $SAMTOOLS_VERSION => '1.7';
+# left-pad all subelements to 3 digits
+const my $BIOBAMBAM2_VERSION => '2.000.086'; # 2.0.86
+const my $BWA_VERSION => '0.007.012'; # 0.7.12
+const my $SAMTOOLS_VERSION => '1.010'; # 1.10
 
 # can't put regex in const
 my %EXPECTED_VERSION = (
@@ -89,7 +90,14 @@ subtest 'External programs have expected version' => sub {
     }
 
     my $reg = $details->{'match'};
-    my ($version) = $stream =~ /$reg/m;
+    my $version;
+    # have to fix problem numbering
+    ($version) = $stream =~ /$reg/m;
+    my ($maj, $min, $hot) = split /\./, $version;
+    $version = sprintf '%d.%03d', $maj, $min;
+    if(defined $hot) {
+      $version .= sprintf '.%03d', $hot;
+    }
     version->parse($version);
 
     ok(version->parse($version) >= $details->{'version'}, sprintf 'Expect minimum version of %s for %s, got %s', $details->{'version'}, $prog, $version);

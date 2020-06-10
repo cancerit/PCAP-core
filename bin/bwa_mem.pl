@@ -249,6 +249,7 @@ bwa_mem.pl [options] [file(s)...]
                        https://github.com/gperftools/ (assuming number of cores not exceeded)
                        If available specify the path to 'gperftools/lib/libtcmalloc_minimal.so'.
                        - NOT APPLIED TO bwa-mem2
+                      Falls back to environment variable GPERF_FOR_BWA when not set, or nothing.
 
   Other:
     -jobs        -j   For a parallel step report the number of jobs required

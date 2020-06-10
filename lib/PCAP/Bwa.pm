@@ -285,6 +285,9 @@ sub bwa_mem {
       if(exists $options->{'bwa_pl'}) {
         $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
       }
+      elsif(exists $ENV{GPERF_FOR_BWA}) {
+        $bwa .= 'LD_PRELOAD='.$ENV{GPERF_FOR_BWA}.' ';
+      }
       $bwa .= _which('bwa') || die "Unable to find 'bwa' in path";
     }
 
