@@ -44,8 +44,8 @@ const my $BAMBAM_MERGE_CRAM => q{%s %s tmpfile=%s level=0 %s| pee '%s view -O CR
 const my $LANE_BAMBAM_MERGE => q{%s SO=%s %s tmpfile=%s level=0 | pee '%s tmpfile=%s md5=1 numthreads=%d md5filename=%s.md5 %s > %s' '%s -o %s.bas -@ %d'};
 const my $LANE_BAMBAM_MERGE_CRAM => q{%s SO=%s %s tmpfile=%s level=0 | %s view -O CRAM --output-fmt-option seqs_per_slice=%d %s -T %s -@ %d - %s};
 
-const my $LANE_SAMT_DUP => q{%s level=0 %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -m %s -f %s.met - - %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_SAMT_DUP_CRAM => q{%s level=0 %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -m %s.met -f %s - - %s| pee '%s view -O CRAM --output-fmt-option seqs_per_slice=%d --write-index -T %s -@ %d - %s' '%s -o %s.bas -@ %d'};
+const my $LANE_SAMT_DUP =>      q{%s level=0 %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -f %s.met - - %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
+const my $LANE_SAMT_DUP_CRAM => q{%s level=0 %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -f %s.met - - %s| pee '%s view -O CRAM --output-fmt-option seqs_per_slice=%d --write-index -T %s -@ %d - %s' '%s -o %s.bas -@ %d'};
 
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s -@ %d};
@@ -163,7 +163,7 @@ sub merge_or_mark_lanes {
     else {
       $commands[0] = sprintf $LANE_SAMT_DUP,
                       $tools{bammerge}, $input_str,
-                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $options->{dupmode}, $marked,
+                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       q{}, # placeholder for mmQc used in other function
                       $tools{bamrecompress}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
                       $tools{bam_stats}, $marked, $helper_threads;
@@ -259,7 +259,7 @@ sub merge_and_mark_dup {
     if($options->{'cram'}) {
       $commands[0] = sprintf $LANE_SAMT_DUP_CRAM,
                       $tools{bammerge}, $input_str,
-                      $tools{samtools}, $strmd_tmp, $helper_threads, $marked,
+                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
                       $tools{samtools}, $options->{seqslice}, $options->{reference}, $helper_threads, $marked,
                       $tools{bam_stats}, $marked, $helper_threads;
@@ -267,7 +267,7 @@ sub merge_and_mark_dup {
     else {
       $commands[0] = sprintf $LANE_SAMT_DUP,
                       $tools{bammerge}, $input_str,
-                      $tools{samtools}, $strmd_tmp, $helper_threads, $options->{dupmode}, $marked,
+                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
                       $tools{bamrecompress}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
                       $tools{bam_stats}, $marked, $helper_threads;
