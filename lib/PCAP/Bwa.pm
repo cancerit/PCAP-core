@@ -29,7 +29,6 @@ use warnings FATAL => 'all';
 use Const::Fast qw(const);
 use File::Path qw(make_path remove_tree);
 use File::Spec;
-use File::Temp qw(tempdir);
 use Capture::Tiny qw(capture);
 use File::Copy qw(copy);
 
@@ -37,8 +36,6 @@ use PCAP::Bwa::Meta;
 use PCAP::Bam;
 
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
-const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
-const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%s};
 const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
 # order linked
 const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
@@ -140,7 +137,7 @@ sub mem_mapmax {
       next if($file =~ m/^\./);
       next if($file =~ m/^pairedfq2\.[[:digit:]]+/); # captured by 1.*
       next if($file =~ m/s[.]fq[.]gz_[[:digit:]]+[.]gz$/);
-      next if($file eq 'unknown');
+      next if($file eq 'unknown.bam');
       if($file =~ m/o[12][.]fq[.]gz_[[:digit:]]+[.]gz$/) {
         warn "Orphan reads found, your input BAM appears to have had duplicates 'removed' rather than 'marked': $folder/$file\n\tWARNING: This will give a sub-optimal result\n";
         next;
@@ -175,7 +172,6 @@ sub split_in {
 
     make_path($split_folder) unless(-d $split_folder);
     make_path($sort_folder) unless(-d $sort_folder);
-
 
     my $fragment_size = $options->{'fragment'};
     $fragment_size ||= $READPAIR_SPLITSIZE;
@@ -220,11 +216,10 @@ sub split_in {
     else {
       my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
       make_path($collate_folder) unless(-d $collate_folder);
-      my $collate_tmp =  tempdir( DIR => $collate_folder, CLEANUP => 1 );
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
       my $view = sprintf '%s view -bu -T %s -F 2816 %s', $samtools, $options->{'reference'}, $input->in; # exclude non-primary
-      my $collate = sprintf '%s collate -Ou --output-fmt BAM - %s/collate', $samtools, $collate_tmp;
-      my $split = sprintf '%s split --output-fmt BAM,level=1 -u %s/unknown -f %s/%%!_i.bam -', $samtools, $split_folder, $split_folder;
+      my $collate = sprintf '%s collate -Ou - %s/collate', $samtools, $collate_folder;
+      my $split = sprintf '%s split --output-fmt BAM,level=1 -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $split_folder, $split_folder;
       my $cmd = sprintf '%s | %s | %s', $view, $collate, $split;
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';

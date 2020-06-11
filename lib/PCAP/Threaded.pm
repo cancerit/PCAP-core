@@ -243,7 +243,7 @@ sub external_process_handler {
       die "\nTHREAD_EXITED: Wrapper script message:\n".$_;
     };
 
-    #unlink $script; # only leave scripts if we fail
+    unlink $script; # only leave scripts if we fail
     if($ENV{PCAP_THREADED_REM_LOGS}) {
       unlink $err;
       unlink $out;

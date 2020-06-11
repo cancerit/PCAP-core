@@ -38,8 +38,6 @@ use PCAP::Threaded;
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
 const my $MISMATCHQC => q{| %s -l 0 -t %.2f -p };
 
-#const my $BAMBAM_MERGE => q{%s %s tmpfile=%s level=0 %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-# %s merge -u -@ %d %s %s
 const my $BAMBAM_MERGE => q{%s merge -u -@ %d %s - %s %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
 const my $BAMBAM_MERGE_CRAM => q{%s merge -u -@ %d %s - %s %s| pee '%s view -O CRAM --output-fmt-option seqs_per_slice=%d %s -T %s -@ %d - %s' '%s -o %s.bas -@ %d'};
 
@@ -106,7 +104,7 @@ sub bam_to_grouped_bam {
 }
 
 sub merge_or_mark_lanes {
-  my ($options, @sorted_bams) = @_;
+  my ($options, @bams) = @_;
   my $tmp = $options->{'tmp'};
 
   my $marked = File::Spec->catdir($options->{'outdir'}, $options->{'sample'});
@@ -120,10 +118,8 @@ sub merge_or_mark_lanes {
   my $helper_threads = $options->{'threads'}-1;
   $helper_threads = 1 if($helper_threads < 1);
 
-  #my $input_str = ' I='.join(' I=', sort @sorted_bams);
-  my $input_str = join q{ }, sort @sorted_bams;
+  my $input_str = join q{ }, sort @bams;
 
-  my $bbb_tmp = File::Spec->catfile($tmp, 'biormdup');
   my $strmd_tmp = File::Spec->catfile($tmp, 'strmdup');
   my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
 
@@ -148,14 +144,11 @@ sub merge_or_mark_lanes {
       if($options->{'cram'}) {
           my $add_sc = $options->{'scramble'} || q{};
           push @commands, sprintf $LANE_BAMBAM_MERGE_CRAM,
-                          #$tools{'bammerge'}, $options->{'sortorder'}, $input_str, $bbb_tmp,
-                          #'%s merge -u -@ %d %s %s'
                           $tools{'samtools'}, $helper_threads, $namesrt, $input_str,
                           $tools{'samtools'}, $options->{seqslice}, $st_idx_opt, $options->{'reference'}, $helper_threads, $marked;
       }
       else {
           push @commands, sprintf $LANE_BAMBAM_MERGE,
-                          #$tools{'bammerge'}, $options->{'sortorder'}, $input_str, $bbb_tmp,
                           $tools{'samtools'}, $helper_threads, $namesrt, $input_str,
                           $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $bbb_idx_opt, $marked,
                           $tools{'bam_stats'}, $marked, $helper_threads;
@@ -164,7 +157,6 @@ sub merge_or_mark_lanes {
   else {
     if($options->{'cram'}) {
       push @commands, sprintf $LANE_SAMT_DUP_CRAM,
-                      #$tools{bammerge}, $input_str,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       q{}, # placeholder for mmQc used in other function
@@ -173,7 +165,6 @@ sub merge_or_mark_lanes {
     }
     else {
       push @commands, sprintf $LANE_SAMT_DUP,
-                      #$tools{bammerge}, $input_str,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       q{}, # placeholder for mmQc used in other function
@@ -207,25 +198,24 @@ sub merge_and_mark_dup {
   my $helper_threads = $options->{'threads'}-1;
   $helper_threads = 1 if($helper_threads < 1);
 
-  my @sorted_bams;
+  my @bams;
   if(defined $source) {
     opendir(my $dh, $source);
     while(my $file = readdir $dh) {
       next unless($file =~ m/_sorted\.bam$/);
-      push @sorted_bams, File::Spec->catfile($source, $file);
+      push @bams, File::Spec->catfile($source, $file);
     }
     closedir $dh;
 
   }
   else {
     for(@{$options->{'meta_set'}}) {
-      push @sorted_bams, $_->tstub.'_sorted.bam';
+      push @bams, $_->tstub.'_sorted.bam';
     }
   }
-  #my $input_str = ' I='.join(' I=', sort @sorted_bams);
-  my $input_str = join q{ }, sort @sorted_bams;
 
-  my $bbb_tmp = File::Spec->catfile($tmp, 'biormdup');
+  my $input_str = join q{ }, sort @bams;
+
   my $strmd_tmp = File::Spec->catfile($tmp, 'strmdup');
   my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
 
@@ -248,7 +238,6 @@ sub merge_and_mark_dup {
     if($options->{'cram'}) {
       my $add_sc = $options->{'scramble'} || q{};
       push @commands, sprintf $BAMBAM_MERGE_CRAM,
-                      #$tools{'bammerge'}, $input_str, $bbb_tmp,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $mismatchQc,
                       $tools{samtools}, $options->{seqslice}, q{--write-index}, $options->{reference}, $helper_threads, $marked,
@@ -256,7 +245,6 @@ sub merge_and_mark_dup {
     }
     else {
       push @commands, sprintf $BAMBAM_MERGE,
-                      #$tools{'bammerge'}, $input_str, $bbb_tmp,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $mismatchQc,
                       $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
@@ -266,7 +254,6 @@ sub merge_and_mark_dup {
   else {
     if($options->{'cram'}) {
       push @commands, sprintf $LANE_SAMT_DUP_CRAM,
-                      #$tools{bammerge}, $input_str,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
@@ -275,7 +262,6 @@ sub merge_and_mark_dup {
     }
     else {
       push @commands, sprintf $LANE_SAMT_DUP,
-                      #$tools{bammerge}, $input_str,
                       $tools{'samtools'}, $helper_threads, q{}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
