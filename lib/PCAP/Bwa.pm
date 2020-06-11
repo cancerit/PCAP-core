@@ -27,7 +27,7 @@ use autodie qw(:all);
 use English qw( -no_match_vars );
 use warnings FATAL => 'all';
 use Const::Fast qw(const);
-use File::Path qw(make_path);
+use File::Path qw(make_path remove_tree);
 use File::Spec;
 use File::Temp qw(tempdir);
 use Capture::Tiny qw(capture);
@@ -229,6 +229,7 @@ sub split_in {
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';
       push @commands, $cmd;
+      push @commands, "rm -rf $collate_folder"; # cleanup temp folder
     }
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), \@commands, $index);
@@ -243,6 +244,7 @@ sub bwa_mem {
 
   my $tmp = $options->{'tmp'};
   return 1 if PCAP::Threaded::success_exists(File::Spec->catdir($tmp, 'progress'), $index);
+
 
   my $input_meta = $options->{'meta_set'};
   my $to_map = $options->{'to_map'};

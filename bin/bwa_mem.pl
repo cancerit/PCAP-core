@@ -228,6 +228,7 @@ bwa_mem.pl [options] [file(s)...]
   Optional parameters:
     -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
     -fragment    -f    Split input into fragments of X million repairs [10]
+                        - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]
     -csi               Use CSI index instead of BAI for BAM files [flag].
     -cram        -c    Output cram, see '-sc' [flag]
@@ -246,9 +247,11 @@ bwa_mem.pl [options] [file(s)...]
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
+                         setup - checks and configure workspace (-index N/A)
+                         split - split data by readgroup and chunk size (if applicable)
                         bwamem - only applicable if input is bam
                           mark - Run duplicate marking (-index N/A)
-                         stats - Generates the *.bas file for the final BAM.
+                         stats - Generates the *.bas file for the final BAM  (-index N/A)
 
     -index       -i    Optionally restrict '-p' to single job
                         bwamem - 1..<lane_count>
@@ -258,7 +261,7 @@ bwa_mem.pl [options] [file(s)...]
                        https://github.com/gperftools/ (assuming number of cores not exceeded)
                        If available specify the path to 'gperftools/lib/libtcmalloc_minimal.so'.
                        - NOT APPLIED TO bwa-mem2
-                      Falls back to environment variable GPERF_FOR_BWA when not set, or nothing.
+                       Falls back to environment variable GPERF_FOR_BWA when not set, or nothing.
 
   Other:
     -jobs        -j   For a parallel step report the number of jobs required

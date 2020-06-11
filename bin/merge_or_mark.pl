@@ -86,7 +86,7 @@ sub setup {
               's|sample=s' => \$opts{'sample'},
               'n|nomarkdup' => \$opts{'nomarkdup'},
               'p|process=s' => \$opts{'process'},
-              'q|querynamesort' => \$opts{'qnamesort'},
+              'q|qnamesort' => \$opts{'qnamesort'},
               'i|noindex' => \$opts{'noindex'},
               'csi' => \$opts{'csi'},
               'c|cram' => \$opts{'cram'},
@@ -189,10 +189,10 @@ merge_or_mark.pl [options] [file(s)...]
     -dupmode     -d    see "samtools markdup -m" [t]
 
   Targeted processing:
-    -process     -p   Only process this step then exit, optionally set -index
-                        bwamem - only applicable if input is bam
-                          mark - Run duplicate marking (-index N/A)
-                         stats - Generates the *.bas file for the final BAM.
+    -process     -p   Only process this step then exit
+                         setup - only applicable if input is bam
+                          mark - Run duplicate marking
+                         stats - Generates the *.bas file for the final BAM
 
   Other:
     -help        -h   Brief help message.
