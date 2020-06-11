@@ -1,4 +1,4 @@
-FROM quay.io/wtsicgp/cgpbigwig:feature_htslib_1.10 as builder
+FROM quay.io/wtsicgp/cgpbigwig:1.3.0 as builder
 
 USER  root
 
