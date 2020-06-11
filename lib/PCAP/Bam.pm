@@ -187,7 +187,7 @@ sub merge_and_mark_dup {
   my $tmp = $options->{'tmp'};
   my $marked = File::Spec->catdir($options->{'outdir'}, $options->{'sample'});
 
-  my @commands;
+  my @commands = ('set -o pipefail');
 
   if($options->{'cram'}) {
     $marked .= '.cram';
@@ -241,23 +241,23 @@ sub merge_and_mark_dup {
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
     if($options->{'cram'}) {
       my $add_sc = $options->{'scramble'} || q{};
-      $commands[0] = sprintf $BAMBAM_MERGE_CRAM,
-                              $tools{'bammerge'}, $input_str, $bbb_tmp,
-                              $mismatchQc,
-                              $tools{samtools}, $options->{seqslice}, q{--write-index}, $options->{reference}, $helper_threads, $marked,
-                              $tools{bam_stats}, $marked, $helper_threads;
+      push @commands, sprintf $BAMBAM_MERGE_CRAM,
+                      $tools{'bammerge'}, $input_str, $bbb_tmp,
+                      $mismatchQc,
+                      $tools{samtools}, $options->{seqslice}, q{--write-index}, $options->{reference}, $helper_threads, $marked,
+                      $tools{bam_stats}, $marked, $helper_threads;
     }
     else {
-      $commands[0] = sprintf $BAMBAM_MERGE,
-                              $tools{'bammerge'}, $input_str, $bbb_tmp,
-                              $mismatchQc,
-                              $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
-                              $tools{'bam_stats'}, $marked, $helper_threads;
+      push @commands, sprintf $BAMBAM_MERGE,
+                      $tools{'bammerge'}, $input_str, $bbb_tmp,
+                      $mismatchQc,
+                      $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
+                      $tools{'bam_stats'}, $marked, $helper_threads;
     }
   }
   else {
     if($options->{'cram'}) {
-      $commands[0] = sprintf $LANE_SAMT_DUP_CRAM,
+      push @commands, sprintf $LANE_SAMT_DUP_CRAM,
                       $tools{bammerge}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
@@ -265,7 +265,7 @@ sub merge_and_mark_dup {
                       $tools{bam_stats}, $marked, $helper_threads;
     }
     else {
-      $commands[0] = sprintf $LANE_SAMT_DUP,
+      push @commands, sprintf $LANE_SAMT_DUP,
                       $tools{bammerge}, $input_str,
                       $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
                       $mismatchQc,
@@ -275,9 +275,7 @@ sub merge_and_mark_dup {
   }
 
   if($options->{'cram'}) {
-    unshift @commands, 'set -o pipefail';
     push @commands, sprintf $CRAM_CHKSUM, $marked, $marked;
-    push @commands, 'set +o pipefail';
   }
 
   PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), \@commands, 0);
