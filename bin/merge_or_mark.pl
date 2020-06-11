@@ -39,7 +39,6 @@ use PCAP::Bam;
 use PCAP::Bwa;
 use version;
 
-const my $COORD_SORT_ORDER => 'coordinate';
 const my $QUERYNAME_SORT_ORDER => 'queryname';
 const my @VALID_PROCESS => qw(setup mark stats);
 const my %INDEX_FACTOR => ( 'setup' => 1,
@@ -74,7 +73,6 @@ sub setup {
               'csi' => undef,
               'dupmode' => 't',
               'seqslice' => 10000,
-              'sortorder' => $COORD_SORT_ORDER,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -131,7 +129,6 @@ sub setup {
   if($opts{'noindex'} && !$opts{'qnamesort'}){
       die "ERROR: -noindex can only be used in conjunction with -qnamesort\n";
   }
-  $opts{'sortorder'} = $QUERYNAME_SORT_ORDER if($opts{'qnamesort'});
 
   if($opts{'threads'} > 4) {
     warn "Setting 'threads' to 4 as higher values are of limited value\n";
