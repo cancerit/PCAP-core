@@ -115,7 +115,7 @@ sub merge_or_mark_lanes {
   my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
 
   my %tools;
-  for my $tool(qw(bam_stats bammerge bamrecompress samtools)) {
+  for my $tool(qw(bam_stats samtools md5sum)) {
     $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
   }
 
@@ -144,26 +144,26 @@ sub merge_or_mark_lanes {
       $namesrt = q{-n} if($options->{'qnamesort'});
 
       my $merge    = sprintf q{%s merge %s -u -@ %d - %s},
-                              $tools{'samtools'}, $namesrt, $helper_threads, $input_str;
+                              $tools{samtools}, $namesrt, $helper_threads, $input_str;
       my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                               $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
-      my $md5      = sprintf q{md5sum -b > %s.md5},
-                              $marked;
+      my $md5      = sprintf q{%s -b > %s.md5},
+                            $tools{md5sum}, $marked;
       my $stats    = sprintf q{%s -o %s.bas -@ %d},
                               $tools{bam_stats}, $marked, $helper_threads;
       push @commands, qq{$merge | pee "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
-                           $tools{'samtools'}, $helper_threads, $input_str;
+                           $tools{samtools}, $helper_threads, $input_str;
     my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
     my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
                            $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
-    my $md5      = sprintf q{md5sum -b > %s.md5},
-                           $marked;
+    my $md5      = sprintf q{%s -b > %s.md5},
+                           $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
     push @commands, qq{$merge | $markdup | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
@@ -216,7 +216,7 @@ sub merge_and_mark_dup {
   my $brc_tmp = File::Spec->catfile($tmp, 'brcTmp');
 
   my %tools;
-  for my $tool(qw(bammerge bammarkduplicates2 bamrecompress scramble samtools bam_stats mismatchQc)) {
+  for my $tool(qw(samtools bam_stats mismatchQc md5sum)) {
     $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
   }
 
@@ -243,28 +243,28 @@ sub merge_and_mark_dup {
 
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
-                            $tools{'samtools'}, $helper_threads, $input_str;
+                            $tools{samtools}, $helper_threads, $input_str;
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                             $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
     my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
                           $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
-    my $md5      = sprintf q{md5sum -b > %s.md5},
-                            $marked;
+    my $md5      = sprintf q{%s -b > %s.md5},
+                           $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                             $tools{bam_stats}, $marked, $helper_threads;
     push @commands, qq{$merge | pee "$mismatchQc" "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
-                           $tools{'samtools'}, $helper_threads, $input_str;
+                           $tools{samtools}, $helper_threads, $input_str;
     my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
     my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
                            $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
-    my $md5      = sprintf q{md5sum -b > %s.md5},
-                           $marked;
+    my $md5      = sprintf q{%s -b > %s.md5},
+                           $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
     push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
