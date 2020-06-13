@@ -36,16 +36,7 @@ use Data::UUID;
 use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
-const my $MISMATCHQC => q{| %s -l 0 -t %.2f -p };
-
-const my $BAMBAM_MERGE => q{%s merge -u -@ %d %s - %s %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-const my $BAMBAM_MERGE_CRAM => q{%s merge -u -@ %d %s - %s %s| pee '%s view -O CRAM --output-fmt-option seqs_per_slice=%d %s -T %s -@ %d - %s' '%s -o %s.bas -@ %d'};
-
-const my $LANE_BAMBAM_MERGE => q{%s merge -u -@ %d %s - %s | pee '%s tmpfile=%s md5=1 numthreads=%d md5filename=%s.md5 %s > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_BAMBAM_MERGE_CRAM => q{%s merge -u -@ %d %s - %s | %s view -O CRAM --output-fmt-option seqs_per_slice=%d %s -T %s -@ %d - %s};
-
-const my $LANE_SAMT_DUP =>      q{%s merge -u -@ %d %s - %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -f %s.met - - %s| pee '%s tmpfile=%s index=1 md5=1 numthreads=%d md5filename=%s.md5 indexfilename=%s.%s > %s' '%s -o %s.bas -@ %d'};
-const my $LANE_SAMT_DUP_CRAM => q{%s merge -u -@ %d %s - %s | %s markdup --mode %s --output-fmt-option level=0 -S -c --include-fails -T %s -@ %d -f %s.met - - %s| pee '%s view -O CRAM --output-fmt-option seqs_per_slice=%d --write-index -T %s -@ %d - %s' '%s -o %s.bas -@ %d'};
+const my $MISMATCHQC => q{%s -l 0 -t %.2f -p};
 
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s -@ %d};
@@ -128,49 +119,54 @@ sub merge_or_mark_lanes {
     $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
   }
 
+  my $out_fmt = 'bam';
   my $idx_type = 'bai';
-  $idx_type = 'csi' if(exists $options->{'csi'});
+  my $idx_csi_flag = q{};
+  if($options->{'cram'}) {
+    $idx_type = 'crai';
+    $out_fmt = 'cram';
+    $out_fmt .= ',seqs_per_slice='.$options->{'seqslice'};
+  }
+  elsif(exists $options->{'csi'}) {
+    # only valid for bam
+    $idx_type = 'csi';
+    $idx_csi_flag = '-c';
+  }
 
-  # subtly different, as need to strip mmQc before dup-rem, and then reapply
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
-      my $bbb_idx_opt = sprintf('index=1 indexfilename=%s.%s', $marked, $idx_type);
-      my $st_idx_opt = '--write-index';
-      if(defined $options->{'noindex'} && $options->{'noindex'} == 1) {
-        $bbb_idx_opt = q{};
-        $st_idx_opt = q{};
+      my $idx = q{};
+      unless($options->{'noindex'}) {
+        $idx = sprintf q{%s index -@ %d %s - %s.%s},
+                        $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
       }
+
       my $namesrt = q{};
       $namesrt = q{-n} if($options->{'qnamesort'});
-      if($options->{'cram'}) {
-          my $add_sc = $options->{'scramble'} || q{};
-          push @commands, sprintf $LANE_BAMBAM_MERGE_CRAM,
-                          $tools{'samtools'}, $helper_threads, $namesrt, $input_str,
-                          $tools{'samtools'}, $options->{seqslice}, $st_idx_opt, $options->{'reference'}, $helper_threads, $marked;
-      }
-      else {
-          push @commands, sprintf $LANE_BAMBAM_MERGE,
-                          $tools{'samtools'}, $helper_threads, $namesrt, $input_str,
-                          $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $bbb_idx_opt, $marked,
-                          $tools{'bam_stats'}, $marked, $helper_threads;
-      }
+
+      my $merge    = sprintf q{%s merge %s -u -@ %d - %s},
+                              $tools{'samtools'}, $namesrt, $helper_threads, $input_str;
+      my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
+                              $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
+      my $md5      = sprintf q{md5sum -b > %s.md5},
+                              $marked;
+      my $stats    = sprintf q{%s -o %s.bas -@ %d},
+                              $tools{bam_stats}, $marked, $helper_threads;
+      push @commands, qq{$merge | pee "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
-    if($options->{'cram'}) {
-      push @commands, sprintf $LANE_SAMT_DUP_CRAM,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
-                      q{}, # placeholder for mmQc used in other function
-                      $tools{samtools}, $options->{seqslice}, $options->{reference}, $helper_threads, $marked,
-                      $tools{bam_stats}, $marked, $helper_threads;
-    }
-    else {
-      push @commands, sprintf $LANE_SAMT_DUP,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
-                      q{}, # placeholder for mmQc used in other function
-                      $tools{bamrecompress}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
-                      $tools{bam_stats}, $marked, $helper_threads;
-    }
+    my $merge    = sprintf q{%s merge -u -@ %d - %s},
+                           $tools{'samtools'}, $helper_threads, $input_str;
+    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+                           $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+    my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
+                           $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
+    my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
+                           $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
+    my $md5      = sprintf q{md5sum -b > %s.md5},
+                           $marked;
+    my $stats    = sprintf q{%s -o %s.bas -@ %d},
+                           $tools{bam_stats}, $marked, $helper_threads;
+    push @commands, qq{$merge | $markdup | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
   }
 
   if($options->{'cram'}) {
@@ -231,43 +227,47 @@ sub merge_and_mark_dup {
                       $options->{'mmqcfrac'};
   }
 
+  my $out_fmt = 'bam';
   my $idx_type = 'bai';
-  $idx_type = 'csi' if(exists $options->{'csi'});
+  my $idx_csi_flag = q{};
+  if($options->{'cram'}) {
+    $idx_type = 'crai';
+    $out_fmt = 'cram';
+    $out_fmt .= ',seqs_per_slice='.$options->{'seqslice'};
+  }
+  elsif(exists $options->{'csi'}) {
+    # only valid for bam
+    $idx_type = 'csi';
+    $idx_csi_flag = '-c';
+  }
 
   if(defined $options->{'nomarkdup'} && $options->{'nomarkdup'} == 1) {
-    if($options->{'cram'}) {
-      my $add_sc = $options->{'scramble'} || q{};
-      push @commands, sprintf $BAMBAM_MERGE_CRAM,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $mismatchQc,
-                      $tools{samtools}, $options->{seqslice}, q{--write-index}, $options->{reference}, $helper_threads, $marked,
-                      $tools{bam_stats}, $marked, $helper_threads;
-    }
-    else {
-      push @commands, sprintf $BAMBAM_MERGE,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $mismatchQc,
-                      $tools{'bamrecompress'}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
-                      $tools{'bam_stats'}, $marked, $helper_threads;
-    }
+    my $merge    = sprintf q{%s merge -u -@ %d - %s},
+                            $tools{'samtools'}, $helper_threads, $input_str;
+    my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
+                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
+    my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
+                          $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
+    my $md5      = sprintf q{md5sum -b > %s.md5},
+                            $marked;
+    my $stats    = sprintf q{%s -o %s.bas -@ %d},
+                            $tools{bam_stats}, $marked, $helper_threads;
+    push @commands, qq{$merge | pee "$mismatchQc" "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
-    if($options->{'cram'}) {
-      push @commands, sprintf $LANE_SAMT_DUP_CRAM,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
-                      $mismatchQc,
-                      $tools{samtools}, $options->{seqslice}, $options->{reference}, $helper_threads, $marked,
-                      $tools{bam_stats}, $marked, $helper_threads;
-    }
-    else {
-      push @commands, sprintf $LANE_SAMT_DUP,
-                      $tools{'samtools'}, $helper_threads, q{}, $input_str,
-                      $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked,
-                      $mismatchQc,
-                      $tools{bamrecompress}, $brc_tmp, $helper_threads, $marked, $marked, $idx_type, $marked,
-                      $tools{bam_stats}, $marked, $helper_threads;
-    }
+    my $merge    = sprintf q{%s merge -u -@ %d - %s},
+                           $tools{'samtools'}, $helper_threads, $input_str;
+    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+                           $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+    my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
+                           $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
+    my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
+                           $tools{samtools}, $helper_threads, $idx_csi_flag, $marked, $idx_type;
+    my $md5      = sprintf q{md5sum -b > %s.md5},
+                           $marked;
+    my $stats    = sprintf q{%s -o %s.bas -@ %d},
+                           $tools{bam_stats}, $marked, $helper_threads;
+    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
   }
 
   if($options->{'cram'}) {
