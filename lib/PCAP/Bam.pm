@@ -156,7 +156,7 @@ sub merge_or_mark_lanes {
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
                            $tools{samtools}, $helper_threads, $input_str;
-    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
@@ -257,7 +257,7 @@ sub merge_and_mark_dup {
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
                            $tools{samtools}, $helper_threads, $input_str;
-    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt-option BAM,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
