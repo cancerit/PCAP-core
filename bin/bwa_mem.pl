@@ -55,12 +55,12 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
   #&PCAP::Threaded::disable_out_err if(exists $options->{'index'});
 
   # register processes
-	$threads->add_function('split', \&PCAP::Bwa::split_in);
-	$threads->add_function('bwamem', \&PCAP::Bwa::bwa_mem, exists $options->{'index'} ? 1 : $options->{'map_threads'});
+  $threads->add_function('split', \&PCAP::Bwa::split_in, split_threads($options));
+  $threads->add_function('bwamem', \&PCAP::Bwa::bwa_mem, exists $options->{'index'} ? 1 : $options->{'map_threads'});
 
   PCAP::Bwa::mem_setup($options) if(!exists $options->{'process'} || $options->{'process'} eq 'setup');
 
-	$threads->run($options->{'max_split'}, 'split', $options) if(!exists $options->{'process'} || $options->{'process'} eq 'split');
+  $threads->run($options->{'max_split'}, 'split', $options) if(!exists $options->{'process'} || $options->{'process'} eq 'split');
 
   if(!exists $options->{'process'} || $options->{'process'} eq 'bwamem') {
     $options->{'max_index'} = PCAP::Bwa::mem_mapmax($options);
@@ -76,6 +76,24 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
     PCAP::Bam::bam_stats($options);
     &cleanup($options);
   }
+}
+
+sub split_threads {
+  my $options = shift;
+  my $div = 1;
+  my $threads_per_split = 1;
+  if(exists $options->{index}) {
+    $div = 1;
+    $threads_per_split = $options->{threads};
+  }
+  elsif($options->{raw_files}->[0] =~ m/(bam|cram)$/) {
+    my $inputs = scalar @{$options->{raw_files}};
+    $threads_per_split = int ($options->{threads} / $inputs);
+    $threads_per_split = 1 if($threads_per_split < 1);
+    $div = $threads_per_split;
+  }
+  $options->{threads_per_split} = $threads_per_split; # so can be used later
+  return $div; # so can be used as return
 }
 
 sub cleanup {

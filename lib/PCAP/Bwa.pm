@@ -211,12 +211,13 @@ sub split_in {
     }
     # if bam|cram input
     else {
+      my $helpers = $options->{threads_per_split};
       my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
       make_path($collate_folder) unless(-d $collate_folder);
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
-      my $view = sprintf '%s view %s -bu -T %s -F 2816 %s', $samtools, $TAG_STRIP, $options->{'reference'}, $input->in; # exclude non-primary
-      my $collate = sprintf '%s collate -Ou - %s/collate', $samtools, $collate_folder;
-      my $split = sprintf '%s split --output-fmt BAM,level=2 -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $split_folder, $split_folder;
+      my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d %s', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers, $input->in; # exclude non-primary
+      my $collate = sprintf '%s collate -Ou -@ %d - %s/collate', $samtools, $helpers, $collate_folder;
+      my $split = sprintf '%s split --output-fmt BAM,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
       my $cmd = sprintf '%s | %s | %s', $view, $collate, $split;
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';
