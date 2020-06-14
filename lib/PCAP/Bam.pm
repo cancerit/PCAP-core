@@ -166,7 +166,7 @@ sub merge_or_mark_lanes {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | $markdup | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
+    push @commands, qq{$merge | $markdup | pee "$compress | tee $marked | pee '$idx' '$md5'" "$stats" };
   }
 
   if($options->{'cram'}) {
@@ -267,7 +267,7 @@ sub merge_and_mark_dup {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | tee $marked | pee '$idx' $md5" "$stats" };
+    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | tee $marked | pee '$idx' '$md5'" "$stats" };
   }
 
   if($options->{'cram'}) {
