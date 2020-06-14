@@ -106,8 +106,7 @@ sub merge_or_mark_lanes {
 
   my @commands = ('set -o pipefail');
 
-  my $helper_threads = $options->{'threads'}-1;
-  $helper_threads = 1 if($helper_threads < 1);
+  my $helper_threads = $options->{'threads'};
 
   my $input_str = join q{ }, sort @bams;
 
@@ -166,7 +165,7 @@ sub merge_or_mark_lanes {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | $markdup | pee "$compress | tee $marked | pee '$idx' '$md5'" "$stats" };
+    push @commands, qq{$merge | $markdup | pee "$compress | pee 'cat > $marked' '$idx' '$md5'" "$stats" };
   }
 
   if($options->{'cram'}) {
@@ -191,8 +190,7 @@ sub merge_and_mark_dup {
 
   my @commands = ('set -o pipefail');
 
-  my $helper_threads = $options->{'threads'}-1;
-  $helper_threads = 1 if($helper_threads < 1);
+  my $helper_threads = $options->{'threads'};
 
   my @bams;
   if(defined $source) {
@@ -267,7 +265,7 @@ sub merge_and_mark_dup {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | tee $marked | pee '$idx' '$md5'" "$stats" };
+    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | pee 'cat > $marked' '$idx' '$md5'" "$stats" };
   }
 
   if($options->{'cram'}) {
