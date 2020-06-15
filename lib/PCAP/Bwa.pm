@@ -261,7 +261,7 @@ sub bwa_mem {
       $rg_line = q{'}.$input->rg_header(q{\t}).q{'};
     }
     else {
-      my ($rg) = $split =~ m|/split/[[:digit:]]+/(.+)_i.fq_[[:digit:]]+.gz$|;
+      my ($rg) = $split =~ m{/split/[[:digit:]]+/(.+)_i\.(?:fq_[[:digit:]]+\.)?(?:gz|bam)$};
       ($rg_line, undef) = PCAP::Bam::rg_line_for_output($input->in, $options->{'sample'}, undef, $rg);
       if($rg_line) {
         $rg_line =~ s/('+)/'"$1"'/g;
