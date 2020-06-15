@@ -36,7 +36,6 @@ use Data::UUID;
 use PCAP::Threaded;
 
 const my $BAMCOLLATE => q{(%s colsbs=268435456 collate=1 reset=1 exclude=SECONDARY,QCFAIL,SUPPLEMENTARY classes=F,F2 T=%s filename=%s level=1 > %s)};
-const my $MISMATCHQC => q{%s -l 0 -t %.2f -p};
 
 const my $CRAM_CHKSUM => q{md5sum %s | perl -ne '/^(\S+)/; print "$1";' > %s.md5};
 const my $BAM_STATS => q{ -i %s -o %s -@ %d};
@@ -220,7 +219,7 @@ sub merge_and_mark_dup {
 
   my $mismatchQc = q{};
   if(defined $options->{'mmqc'}) {
-    $mismatchQc = sprintf $MISMATCHQC,
+    $mismatchQc = sprintf q{ | %s -l 0 -t %.2f -p},
                       $tools{'mismatchQc'},
                       $options->{'mmqcfrac'};
   }
@@ -250,7 +249,7 @@ sub merge_and_mark_dup {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                             $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | pee "$mismatchQc" "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
+    push @commands, qq{$merge $mismatchQc | pee "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
@@ -265,7 +264,7 @@ sub merge_and_mark_dup {
                            $tools{md5sum}, $marked;
     my $stats    = sprintf q{%s -o %s.bas -@ %d},
                            $tools{bam_stats}, $marked, $helper_threads;
-    push @commands, qq{$merge | $markdup | $mismatchQc | pee "$compress | pee 'cat > $marked' '$idx' '$md5'" "$stats" };
+    push @commands, qq{$merge $mismatchQc | $markdup | pee "$compress | pee 'cat > $marked' '$idx' '$md5'" "$stats" };
   }
 
   if($options->{'cram'}) {
