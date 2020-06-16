@@ -38,7 +38,7 @@ use PCAP::Bam;
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
 const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
 
-const my $TAG_STRIP => q{-x AM -x MD -x NM -x RT -x SM -x X0 -x X1 -x XA -x XG -x XM -x XN -x XO -x XT};
+const my $TAG_STRIP => q{-x AM -x MD -x NM -x RT -x SM -x X0 -x X1 -x XA -x XG -x XM -x XN -x XO -x XT -x mm};
 
 const my $FALSE_RG => q{@RG\tID:%s\tSM:%s\tLB:default\tPL:ILLUMINA};
 
@@ -90,9 +90,6 @@ sub mem_setup {
       copy("$options->{reference}.fai", "$options->{tmp}/decomp.fa.fai") unless(-e "$options->{decomp_ref}.fai");
     }
   }
-  # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
-  # if it has check for use of at least bammaskflags
-  PCAP::Bam::mismatchQc_checks($options->{'raw_files'}) unless($skip_mmqc_check);
   return 1;
 }
 
@@ -215,10 +212,11 @@ sub split_in {
       my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
       make_path($collate_folder) unless(-d $collate_folder);
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
-      my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d %s', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers, $input->in; # exclude non-primary
+      my $mmQcStrip = sprintf '%s --remove -l 0 -@ %d -i %s', _which('mmFlagModifier'), $helpers, $input->in;
+      my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d -', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers; # leave
       my $collate = sprintf '%s collate -Ou -@ %d - %s/collate', $samtools, $helpers, $collate_folder;
       my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
-      my $cmd = sprintf '%s | %s | %s', $view, $collate, $split;
+      my $cmd = sprintf '%s | %s | %s | %s', $mmQcStrip, $view, $collate, $split;
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';
       push @commands, $cmd;
