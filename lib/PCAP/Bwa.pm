@@ -329,7 +329,7 @@ sub bwa_mem {
                             $tools{reheadSQ}, $options->{'dict'};
     my $fixmate   = sprintf q{%s fixmate -m --output-fmt bam,level=0 -@ %d - -},
                             $tools{samtools}, $threads;
-    my $sort      = sprintf q{%s sort --output-fmt bam,level=0 -T %s_tmp -@ %d -},
+    my $sort      = sprintf q{%s sort -m 2G --output-fmt bam,level=0 -T %s_tmp -@ %d -},
                             $tools{samtools}, File::Spec->catfile($tmp, "bamsort.$index"), $threads;
     my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
                             $tools{samtools}, $threads, $ref, $sorted_bam_stub;
