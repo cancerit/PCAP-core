@@ -1,6 +1,6 @@
 # CHANGES
 
-## NEXT
+## 5.1.0
 
 * Base image updated to Focal (Ubuntu 20.04).
 * Majority of biobambam2 replaced with samtools functions.
