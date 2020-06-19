@@ -52,7 +52,6 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
   my $options = setup();
 
  	my $threads = PCAP::Threaded->new($options->{'threads'});
-  #&PCAP::Threaded::disable_out_err if(exists $options->{'index'});
 
   # register processes
   $threads->add_function('split', \&PCAP::Bwa::split_in, split_threads($options));
