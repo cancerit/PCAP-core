@@ -13,7 +13,6 @@ if [ "$#" -lt "1" ] ; then
   exit 1
 fi
 
-
 # get path to this script
 SCRIPT_PATH=`dirname $0`;
 SCRIPT_PATH=`(cd $SCRIPT_PATH && pwd)`
@@ -42,12 +41,20 @@ mkdir -p $SETUP_DIR/distro # don't delete the actual distro directory until the 
 mkdir -p $INST_PATH/bin
 cd $SETUP_DIR
 
+# make sure tools installed can see the install loc of libraries
+set +u
+export LD_LIBRARY_PATH=`echo $INST_PATH/lib:$LD_LIBRARY_PATH | perl -pe 's/:\$//;'`
+export PATH=`echo $INST_PATH/bin:$BB_INST/bin:$PATH | perl -pe 's/:\$//;'`
+export MANPATH=`echo $INST_PATH/man:$BB_INST/man:$INST_PATH/share/man:$MANPATH | perl -pe 's/:\$//;'`
+export PERL5LIB=`echo $INST_PATH/lib/perl5:$PERL5LIB | perl -pe 's/:\$//;'`
+set -u
+
 ## biobambam2 first
 BB_INST=$INST_PATH/biobambam2
 if [ ! -e $SETUP_DIR/bbb2.sucess ]; then
   curl -sSL --retry 10 $BBB2_URL > distro.tar.gz
   mkdir -p $BB_INST
-  tar --strip-components 3 -C $BB_INST -Jxf distro.tar.gz
+  tar --strip-components 3 -C $BB_INST -zxf distro.tar.gz
   rm -f $BB_INST/bin/curl # don't let this file in SSL doesn't work
   rm -rf distro.* distro/*
   touch $SETUP_DIR/bbb2.success
@@ -70,7 +77,7 @@ rm -f $SETUP_DIR/cpanm
 ## scramble (from staden)
 if [ ! -e $SETUP_DIR/staden.success ]; then
   curl -sSL --retry 10 $STADEN > distro.tar.gz
-  rm -rf distro/*
+  rm -rf distro/* $OPT/scramble
   mkdir -p $OPT/scramble
   tar --strip-components 1 -C distro -xzf distro.tar.gz
   cp -r distro/* $OPT/scramble
@@ -121,6 +128,7 @@ fi
 if [ ! -e $SETUP_DIR/Bio-DB-HTS.success ]; then
   ## add perl deps
   cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH Module::Build
+  cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH XML::Parser
   cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH Bio::Root::Version
 
   curl -sSL --retry 10 https://github.com/Ensembl/Bio-DB-HTS/archive/${VER_BIODBHTS}.tar.gz > distro.tar.gz
@@ -137,4 +145,3 @@ if [ ! -e $SETUP_DIR/Bio-DB-HTS.success ]; then
 fi
 
 cd $HOME
-rm -rf $SETUP_DIR

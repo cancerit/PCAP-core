@@ -272,9 +272,9 @@ int main(int argc, char *argv[]){
   hts_opt_free(out_opts);
 
   //Add program line to header
-  SAM_hdr *cram_head = bam_header_to_cram(head);
+  SAM_hdr *cram_head = sam_hdr_dup(head);
   check(cram_head != NULL,"Error converting bam header to cram for PG add.");
-  int chk_h = sam_hdr_add_PG(cram_head,prog_id,"CL",prog_cl,"DS",prog_desc,"VN",VERSION,NULL);
+  int chk_h = sam_hdr_add_pg(cram_head,prog_id,"CL",prog_cl,"DS",prog_desc,"VN",VERSION,NULL);
   check(chk_h==0,"Error adding PG line to header.");
   //Reference setup if CRAM output
   if (wflags & W_CRAM) {
@@ -302,7 +302,7 @@ int main(int argc, char *argv[]){
     hts_set_opt(output, HTS_OPT_THREAD_POOL, &p);
   }
 
-  new_head = cram_header_to_bam(cram_head);
+  new_head = sam_hdr_dup(cram_head);
   int hd_chk = sam_hdr_write(output, new_head);
   check(hd_chk!=-1,"Error writing header to output file.");
 
@@ -325,7 +325,7 @@ int main(int argc, char *argv[]){
     }
     //Check to see if the read has the mm tag required.
     int has_tag = 0;
-    has_tag = check_mm_tag(b); 
+    has_tag = check_mm_tag(b);
     check(has_tag>=0,"Error checking for mm tag in read.");
     if(has_tag){
       marked_count++;
@@ -340,7 +340,7 @@ int main(int argc, char *argv[]){
     int res = sam_write1(output,new_head,b);
     check(res>=0,"Error writing read to output file.");
   }//End of iteration through each read in the xam file
-  
+
   bam_destroy1(b);
   bam_hdr_destroy(head);
   bam_hdr_destroy(new_head);
