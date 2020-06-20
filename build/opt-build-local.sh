@@ -40,9 +40,11 @@ mkdir -p $INST_PATH/bin
 
 # make sure tools installed can see the install loc of libraries
 set +u
+BB_INST=$INST_PATH/biobambam2
 export LD_LIBRARY_PATH=`echo $INST_PATH/lib:$LD_LIBRARY_PATH | perl -pe 's/:\$//;'`
-export PATH=`echo $INST_PATH/bin:$PATH | perl -pe 's/:\$//;'`
-export MANPATH=`echo $INST_PATH/man:$INST_PATH/share/man:$MANPATH | perl -pe 's/:\$//;'`
+export PATH=`echo $INST_PATH/bin:$BB_INST/bin:$PATH | perl -pe 's/:\$//;'`
+export MANPATH=`echo $INST_PATH/man:$BB_INST/man:$INST_PATH/share/man:$MANPATH | perl -pe 's/:\$//;'`
+export PERL5LIB=`echo $INST_PATH/lib/perl5:$PERL5LIB | perl -pe 's/:\$//;'`
 set -u
 
 ##### PCAP-core installation

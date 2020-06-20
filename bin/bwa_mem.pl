@@ -52,15 +52,14 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
   my $options = setup();
 
  	my $threads = PCAP::Threaded->new($options->{'threads'});
-  &PCAP::Threaded::disable_out_err if(exists $options->{'index'});
 
   # register processes
-	$threads->add_function('split', \&PCAP::Bwa::split_in);
-	$threads->add_function('bwamem', \&PCAP::Bwa::bwa_mem, exists $options->{'index'} ? 1 : $options->{'map_threads'});
+  $threads->add_function('split', \&PCAP::Bwa::split_in, split_threads($options));
+  $threads->add_function('bwamem', \&PCAP::Bwa::bwa_mem, exists $options->{'index'} ? 1 : $options->{'map_threads'});
 
   PCAP::Bwa::mem_setup($options) if(!exists $options->{'process'} || $options->{'process'} eq 'setup');
 
-	$threads->run($options->{'max_split'}, 'split', $options) if(!exists $options->{'process'} || $options->{'process'} eq 'split');
+  $threads->run($options->{'max_split'}, 'split', $options) if(!exists $options->{'process'} || $options->{'process'} eq 'split');
 
   if(!exists $options->{'process'} || $options->{'process'} eq 'bwamem') {
     $options->{'max_index'} = PCAP::Bwa::mem_mapmax($options);
@@ -78,6 +77,24 @@ const my %INDEX_FACTOR => ( 'setup' => 1,
   }
 }
 
+sub split_threads {
+  my $options = shift;
+  my $div = 1;
+  my $threads_per_split = 1;
+  if(exists $options->{index}) {
+    $div = 1;
+    $threads_per_split = $options->{threads};
+  }
+  elsif($options->{raw_files}->[0] =~ m/(bam|cram)$/) {
+    my $inputs = scalar @{$options->{raw_files}};
+    $threads_per_split = int ($options->{threads} / $inputs);
+    $threads_per_split = 1 if($threads_per_split < 1);
+    $div = $threads_per_split;
+  }
+  $options->{threads_per_split} = $threads_per_split; # so can be used later
+  return $div; # so can be used as return
+}
+
 sub cleanup {
   my $options = shift;
   my $tmpdir = $options->{'tmp'};
@@ -91,6 +108,8 @@ sub setup {
               'mmqcfrac' => 0.05,
               'threads' => 1,
               'fragment' => 10,
+              'dupmode' => 't',
+              'seqslice' => 10000,
               'csi' => undef,
              );
 
@@ -116,6 +135,8 @@ sub setup {
               'q|mmqc' => \$opts{'mmqc'},
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
               'bm2|bwamem2' => \$opts{'bwamem2'},
+              'd|dupmode:s' => \$opts{'dupmode'},
+              'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -145,10 +166,14 @@ sub setup {
     die "ERROR: Please generate $opts{dict}, e.g.\n\t\$ samtools dict -a \$ASSEMBLY -s \$SPECIES $opts{reference} > $opts{dict}\n";
   }
 
+  if(defined $opts{'scramble'}) {
+    die "ERROR: -scramble option is deprecated, please see -seqslice\n";
+  }
+
   delete $opts{'process'} unless(defined $opts{'process'});
   delete $opts{'index'} unless(defined $opts{'index'});
   delete $opts{'bwa'} unless(defined $opts{'bwa'});
-  delete $opts{'scramble'} unless(defined $opts{'scramble'});
+  delete $opts{'scramble'};
   delete $opts{'bwa_pl'} unless(defined $opts{'bwa_pl'});
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
@@ -220,11 +245,12 @@ bwa_mem.pl [options] [file(s)...]
   Optional parameters:
     -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
     -fragment    -f    Split input into fragments of X million repairs [10]
+                        - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]
     -csi               Use CSI index instead of BAI for BAM files [flag].
     -cram        -c    Output cram, see '-sc' [flag]
-    -scramble    -sc   Single quoted string of parameters to pass to Scramble when '-c' used
-                       - '-I,-O' are used internally and should not be provided
+    -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
+    -scramble    -sc   DEPRECATED
     -bwa         -b    Single quoted string of additional parameters to pass to BWA
                         - '-t,-p,-R' are used internally and should not be provided.
                         - '-v' is set to 1 unless '-bwa' is set.
@@ -234,12 +260,15 @@ bwa_mem.pl [options] [file(s)...]
     -mmqc        -q    Mark reads as QCFAIL (0x200, 512) if mismatch rate exceeded [flag]
                         - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
+    -dupmode     -d    see "samtools markdup -m" [t]
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
+                         setup - checks and configure workspace (-index N/A)
+                         split - split data by readgroup and chunk size (if applicable)
                         bwamem - only applicable if input is bam
                           mark - Run duplicate marking (-index N/A)
-                         stats - Generates the *.bas file for the final BAM.
+                         stats - Generates the *.bas file for the final BAM  (-index N/A)
 
     -index       -i    Optionally restrict '-p' to single job
                         bwamem - 1..<lane_count>
@@ -249,6 +278,7 @@ bwa_mem.pl [options] [file(s)...]
                        https://github.com/gperftools/ (assuming number of cores not exceeded)
                        If available specify the path to 'gperftools/lib/libtcmalloc_minimal.so'.
                        - NOT APPLIED TO bwa-mem2
+                       Falls back to environment variable GPERF_FOR_BWA when not set, or nothing.
 
   Other:
     -jobs        -j   For a parallel step report the number of jobs required

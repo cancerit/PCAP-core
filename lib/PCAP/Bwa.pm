@@ -27,7 +27,7 @@ use autodie qw(:all);
 use English qw( -no_match_vars );
 use warnings FATAL => 'all';
 use Const::Fast qw(const);
-use File::Path qw(make_path);
+use File::Path qw(make_path remove_tree);
 use File::Spec;
 use Capture::Tiny qw(capture);
 use File::Copy qw(copy);
@@ -36,11 +36,9 @@ use PCAP::Bwa::Meta;
 use PCAP::Bam;
 
 const my $BWA_ALN => q{ aln%s -t %s -f %s_%s.sai %s %s.%s};
-const my $BAMFASTQ => q{%s view -F 2816 -T %s -u %s| %s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s};
-const my $CRAMFASTQ => q{%s reference=%s inputformat=cram exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s filename=%s};
-const my $BWA_MEM => q{ mem %s %s -R %s -t %s %s};
 const my $ALN_TO_SORTED => q{ sampe -P -a 1000 -r '%s' %s %s_1.sai %s_2.sai %s.%s %s.%s | %s fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam};
-const my $BAMSORT => q{ fixmate=1 inputformat=sam level=1 tmpfile=%s_tmp O=%s_sorted.bam outputthreads=%s calmdnm=1 calmdnmrecompindetonly=1 calmdnmreference=%s sortthreads=%s};
+
+const my $TAG_STRIP => q{-x AM -x MD -x NM -x RT -x SM -x X0 -x X1 -x XA -x XG -x XM -x XN -x XO -x XT -x mm};
 
 const my $FALSE_RG => q{@RG\tID:%s\tSM:%s\tLB:default\tPL:ILLUMINA};
 
@@ -92,9 +90,6 @@ sub mem_setup {
       copy("$options->{reference}.fai", "$options->{tmp}/decomp.fa.fai") unless(-e "$options->{decomp_ref}.fai");
     }
   }
-  # do some checking to ensure input BAM/CRAM hasn't been through mismatchQc
-  # if it has check for use of at least bammaskflags
-  PCAP::Bam::mismatchQc_checks($options->{'raw_files'}) unless($skip_mmqc_check);
   return 1;
 }
 
@@ -136,6 +131,7 @@ sub mem_mapmax {
       next if($file =~ m/^\./);
       next if($file =~ m/^pairedfq2\.[[:digit:]]+/); # captured by 1.*
       next if($file =~ m/s[.]fq[.]gz_[[:digit:]]+[.]gz$/);
+      next if($file eq 'unknown.bam');
       if($file =~ m/o[12][.]fq[.]gz_[[:digit:]]+[.]gz$/) {
         warn "Orphan reads found, your input BAM appears to have had duplicates 'removed' rather than 'marked': $folder/$file\n\tWARNING: This will give a sub-optimal result\n";
         next;
@@ -170,7 +166,6 @@ sub split_in {
 
     make_path($split_folder) unless(-d $split_folder);
     make_path($sort_folder) unless(-d $sort_folder);
-
 
     my $fragment_size = $options->{'fragment'};
     $fragment_size ||= $READPAIR_SPLITSIZE;
@@ -213,28 +208,19 @@ sub split_in {
     }
     # if bam|cram input
     else {
-      my $bam2fq = _which('bamtofastq') || die "Unable to find 'bamtofastq' in path";
-      my $cmd;
-      if($input->bam_or_cram eq 'cram') {
-        $cmd = sprintf $CRAMFASTQ, $bam2fq,
-                                  $options->{'reference'},
-                                  File::Spec->catfile($tmp, "bamtofastq.$index"),
-                                  $split_folder,
-                                  $fragment_size * $MILLION * $BAM_MULT,
-                                  $input->in;
-      }
-      else {
-        my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
-        $cmd = sprintf $BAMFASTQ, $samtools,
-                                  $options->{'reference'},
-                                  $input->in,
-                                  $bam2fq,
-                                  File::Spec->catfile($tmp, "bamtofastq.$index"),
-                                  $split_folder,
-                                  $fragment_size * $MILLION * $BAM_MULT;
-      }
+      my $helpers = $options->{threads_per_split};
+      my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
+      make_path($collate_folder) unless(-d $collate_folder);
+      my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
+      my $mmQcStrip = sprintf '%s --remove -l 0 -@ %d -i %s', _which('mmFlagModifier'), $helpers, $input->in;
+      my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d -', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers; # leave
+      my $collate = sprintf '%s collate -Ou -@ %d - %s/collate', $samtools, $helpers, $collate_folder;
+      my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
+      my $cmd = sprintf '%s | %s | %s | %s', $mmQcStrip, $view, $collate, $split;
       # treat as interleaved fastq
+      push @commands, 'set -o pipefail';
       push @commands, $cmd;
+      push @commands, "rm -rf $collate_folder"; # cleanup temp folder
     }
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), \@commands, $index);
@@ -249,6 +235,7 @@ sub bwa_mem {
 
   my $tmp = $options->{'tmp'};
   return 1 if PCAP::Threaded::success_exists(File::Spec->catdir($tmp, 'progress'), $index);
+
 
   my $input_meta = $options->{'meta_set'};
   my $to_map = $options->{'to_map'};
@@ -272,7 +259,7 @@ sub bwa_mem {
       $rg_line = q{'}.$input->rg_header(q{\t}).q{'};
     }
     else {
-      my ($rg) = $split =~ m|/split/[[:digit:]]+/(.+)_i.fq_[[:digit:]]+.gz$|;
+      my ($rg) = $split =~ m{/split/[[:digit:]]+/(.+)_i\.(?:fq_[[:digit:]]+\.)?(?:gz|bam)$};
       ($rg_line, undef) = PCAP::Bam::rg_line_for_output($input->in, $options->{'sample'}, undef, $rg);
       if($rg_line) {
         $rg_line =~ s/('+)/'"$1"'/g;
@@ -293,12 +280,18 @@ sub bwa_mem {
     else {
       if(exists $options->{'bwa_pl'}) {
         $bwa .= 'LD_PRELOAD='.$options->{'bwa_pl'}.' ';
+      } elsif(exists $ENV{GPERF_FOR_BWA}) {
+        $bwa .= 'LD_PRELOAD='.$ENV{GPERF_FOR_BWA}.' ';
       }
       $bwa .= _which('bwa') || die "Unable to find 'bwa' in path";
     }
 
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
-    my $command = 'set -o pipefail; ';
+
+    my %tools;
+    for my $tool(qw(samtools reheadSQ)) {
+      $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
+    }
 
     my $interleaved_fq = q{};
     # uncoverable branch true
@@ -307,41 +300,40 @@ sub bwa_mem {
 
     my $add_options = q{-v 1}; # minimise output
     $add_options = $options->{'bwa'} if(exists $options->{'bwa'});
-    $bwa .= sprintf $BWA_MEM, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
+    $bwa .= sprintf q{ mem %s %s -R %s -t %s %s}, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
 
     # uncoverable branch true
     # uncoverable branch false
-    if($input->paired_fq) {
-      $split =~ s/'/\\'/g;
-      my $split2 = $split;
-      $split2 =~ s/pairedfq1(\.[[:digit:]]+)/pairedfq2$1/;
+    $split =~ s/'/\\'/g;
+    if($input->fastq) {
       $bwa .= ' '.$split;
-      $bwa .= ' '.$split2;
+      if($input->paired_fq) {
+        my $split2 = $split;
+        $split2 =~ s/pairedfq1(\.[[:digit:]]+)/pairedfq2$1/;
+        $bwa .= ' '.$split2;
+      }
     }
     else {
-      $split =~ s/'/\\'/g;
-      $bwa .= ' '.$split;
+      # bam/cram
+      my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
+      $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
     }
-    $command .= $bwa;
-
-    # now add the code for reheadSQ
-    my $rehead_sq = sprintf '%s -d %s', _which('reheadSQ'), $options->{'dict'};
-    $command .= ' | '.$rehead_sq;
-
-    my $helpers = 1;
-    # uncoverable branch true
-    # uncoverable branch false
-    $helpers = $threads - 1 if($threads > 1);
 
     my $sorted_bam_stub = $split;
     $sorted_bam_stub =~ s|/split/([[:digit:]]+)/(.+)$|/sorted/$1_$2|;
     $sorted_bam_stub =~ s/\\'/-/g;
 
     my $ref = exists $options->{'decomp_ref'} ? $options->{'decomp_ref'} : $options->{'reference'};
-    my $sort = _which('bamsort') || die "Unable to find 'bamsort' in path\n";
-    $sort .= sprintf $BAMSORT, File::Spec->catfile($tmp, "bamsort.$index"), $sorted_bam_stub, $helpers, $ref, $helpers;
 
-    $command .= " | $sort";
+    my $rehead_sq = sprintf '%s -d %s',
+                            $tools{reheadSQ}, $options->{'dict'};
+    my $fixmate   = sprintf q{%s fixmate -m --output-fmt bam,level=0 -@ %d - -},
+                            $tools{samtools}, $threads;
+    my $sort      = sprintf q{%s sort -m 2G --output-fmt bam,level=0 -T %s_tmp -@ %d -},
+                            $tools{samtools}, File::Spec->catfile($tmp, "bamsort.$index"), $threads;
+    my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
+                            $tools{samtools}, $threads, $ref, $sorted_bam_stub;
+    my $command .= "set -o pipefail; $bwa | $rehead_sq | $fixmate | $sort | $calmd";
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
     PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), $index);

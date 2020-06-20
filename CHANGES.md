@@ -1,5 +1,14 @@
 # CHANGES
 
+## 5.1.0
+
+* Base image updated to Focal (Ubuntu 20.04).
+* Majority of biobambam2 replaced with samtools functions.
+* Reads undergo full collate when mapping from BAM/CRAM (bwa-mem2 prep).
+* Duplicate marking `samtools markdup --mode` options exposed to `bwa_mem.pl`.
+  * Lanes mapped with earlier versions of PCAP-core cannot be merged without reporocessing to add "mate score tag" via `samtools fixmate`.
+* Scramble option for `bwa_mem.pl` deprecated, relevant option for fast CRAM random access exposed.
+
 ## 5.0.5
 
 * Add `noindex` commandline flag to `merge_or_mark.pl` for bammerge calls. Only permitted alongisde `qnamesort`
