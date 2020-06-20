@@ -29,17 +29,11 @@ Available programs are described in the [wiki][wiki].
 
 ## Docker, Singularity and Dockstore
 
-There are docker and dockstore.org wrappers for this project at [dockstore-cgpmap][dockstore-cgpmap].
+There are dockstore.org CWL and wrappers for this project at [dockstore-cgpmap][dockstore-cgpmap].
 
-The docker image is held on [quay.io][quay-io-cgpmap].
-
-The CWL bindings of `dockstore-cgpmap` specifically target execution of the BWA mem mapping flow,
-however all tools are contained in the image and can be used if you construct the relevant docker
-commands.
+The docker image is held on [quay.io][quay-io-pcap-core].
 
 The docker image is know to work correctly after import into a singularity image.
-
-See the [dockstore-cgpmap][dockstore-cgpmap] documentation for more detail.
 
 ## Dependencies/Install
 
@@ -69,13 +63,10 @@ Please see the respective licence for each before use.
 ### Cutting the release
 
 1. Update `lib/PCAP.pm` to the correct version.
-2. Ensure upgrade path for new version number is added to `lib/PCAP.pm`.
+2. Update `Dockerfile` to the correct version.
 3. Update `CHANGES.md` to show major items.
-4. Run `./prerelease.sh`
-5. Check all tests and coverage reports are acceptable.
-6. Commit the updated docs tree and updated module/version.
-7. Push commits.
-8. Use the GitHub tools to draft a release.
+4. Push commits and verify with Sanger internal CI.
+5. Use the GitHub tools to draft a release.
 
 <!-- References -->
 
@@ -87,7 +78,7 @@ Please see the respective licence for each before use.
 [cancerit_github]: https://github.com/cancerit
 [old_repo]: https://github.com/ICGC-TCGA-PanCancer/PCAP-core
 [dockstore-cgpmap]: https://github.com/cancerit/dockstore-cgpmap
-[quay-io-cgpmap]: https://quay.io/repository/wtsicgp/dockstore-cgpmap
+[quay-io-pcap-core]: https://quay.io/repository/wtsicgp/pcap-core
 
 <!-- Travis -->
 [travis-base]: https://travis-ci.org/cancerit/PCAP-core
