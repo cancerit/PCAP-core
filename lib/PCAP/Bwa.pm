@@ -208,13 +208,16 @@ sub split_in {
     }
     # if bam|cram input
     else {
+      my $fastcollate = q{};
+      $fastcollate = q{-f} if(exists $options->{fastcollate});
+
       my $helpers = $options->{threads_per_split};
       my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
       make_path($collate_folder) unless(-d $collate_folder);
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
       my $mmQcStrip = sprintf '%s --remove -l 0 -@ %d -i %s', _which('mmFlagModifier'), $helpers, $input->in;
       my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d -', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers; # leave
-      my $collate = sprintf '%s collate -Ou -@ %d - %s/collate', $samtools, $helpers, $collate_folder;
+      my $collate = sprintf '%s collate -Ou -@ %d %s - %s/collate', $samtools, $helpers, $fastcollate, $collate_folder;
       my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
       my $cmd = sprintf '%s | %s | %s | %s', $mmQcStrip, $view, $collate, $split;
       # treat as interleaved fastq

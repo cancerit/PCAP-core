@@ -1,5 +1,9 @@
 # CHANGES
 
+## NEXT
+
+* Expose option for "fastcollate" to allow proxy for <=5.0.5 processing methods.
+
 ## 5.1.0
 
 * Base image updated to Focal (Ubuntu 20.04).
