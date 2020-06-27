@@ -136,6 +136,7 @@ sub setup {
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
               'bm2|bwamem2' => \$opts{'bwamem2'},
               'd|dupmode:s' => \$opts{'dupmode'},
+              'fc|fastcollate' => \$opts{'fastcollate'},
               'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
@@ -178,6 +179,11 @@ sub setup {
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
+  delete $opts{'fastcollate'} unless(defined $opts{'fastcollate'});
+
+  if(defined $opts{'bwamem2'} && defined $opts{'fastcollate'}) {
+    pod2usage(-msg  => "\nERROR: Options bwamem2 and fastcollate are incomptible.\n", -verbose => 1,  -output => \*STDERR);
+  }
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
 
@@ -243,7 +249,7 @@ bwa_mem.pl [options] [file(s)...]
     -threads     -t    Number of threads to use. [1]
 
   Optional parameters:
-    -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
+    -bwamem2     -bm2  Use bwa-mem2 instead of bwa (experimental).
     -fragment    -f    Split input into fragments of X million repairs [10]
                         - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]
@@ -261,6 +267,9 @@ bwa_mem.pl [options] [file(s)...]
                         - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
     -dupmode     -d    see "samtools markdup -m" [t]
+    -fastcollate -fc   Paired with `-dupmode t` equivalent to PCAP-core<=5.0.5
+                        - Only relevant to BAM/CRAM input
+                        - not compatible with bwamem2
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
@@ -359,6 +368,18 @@ should not be split.
 =item B<-nomarkdup>
 
 Disables duplicate marking, switching bammarkduplicates2 for bammerge.
+
+=item B<-dupmode>
+
+Switch between template and sequence based marking.  See "samtools markdup" man page for more details
+
+=item B<-fastcollate>
+
+For BAM/CRAM, brings read pairs together but doesn't result in even distribution of read location during input to
+bwa-mem.  This can result in errors in read-pair placement and noise in data.  This was part of the processing in
+versions of PCAP-core <= 5.0.5.
+
+Not compaitible with bwa-mem2.
 
 =item B<-csi>
 
