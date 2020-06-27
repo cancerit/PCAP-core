@@ -1,8 +1,8 @@
 # CHANGES
 
-## NEXT
+## 5.2.0
 
-* Expose option for "fastcollate" to allow proxy for <=5.0.5 processing methods.
+* Expose option for "fastcollate" to allow proxy for <=5.0.5 processing methods when combined with `-dupmode t`.
 
 ## 5.1.0
 
