@@ -325,7 +325,7 @@ sub bwa_mem {
     }
     else {
       # due to legacy processing need to handle bam or fastq input here
-      if($split =~ m/\.fq\.gz$/) {
+      if($split =~ m/\.gz$/) {
         $bwa .= ' '.$split;
       }
       else {
