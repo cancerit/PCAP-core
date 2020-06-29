@@ -182,7 +182,7 @@ sub setup {
   delete $opts{'fastcollate'} unless(defined $opts{'fastcollate'});
 
   if(defined $opts{'bwamem2'} && defined $opts{'fastcollate'}) {
-    pod2usage(-msg  => "\nERROR: Options bwamem2 and fastcollate are incomptible.\n", -verbose => 1,  -output => \*STDERR);
+    warn "WARN: Use of options bwamem2 and fastcollate is suboptimal, proceeding but memory will be excessive.\n");
   }
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
@@ -269,7 +269,7 @@ bwa_mem.pl [options] [file(s)...]
     -dupmode     -d    see "samtools markdup -m" [t]
     -fastcollate -fc   Paired with `-dupmode t` equivalent to PCAP-core<=5.0.5
                         - Only relevant to BAM/CRAM input
-                        - not compatible with bwamem2
+                        - Avoid use with bwamem2 (memory explosion)
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
