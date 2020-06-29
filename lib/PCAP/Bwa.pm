@@ -226,7 +226,7 @@ sub split_in {
         my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
         $collate_split = sprintf '%s | %s', $collate, $split;
       }
-      my $cmd = sprintf '%s | %s | %s | %s', $mmQcStrip, $view, $collate_split;
+      my $cmd = sprintf '%s | %s | %s', $mmQcStrip, $view, $collate_split;
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';
       push @commands, $cmd;
@@ -324,9 +324,15 @@ sub bwa_mem {
       }
     }
     else {
-      # bam/cram
-      my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
-      $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
+      # due to legacy processing need to handle bam or fastq input here
+      if($split =~ m/\.fq\.gz$/) {
+        $bwa .= ' '.$split;
+      }
+      else {
+        # bam/cram
+        my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
+        $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
+      }
     }
 
     my $sorted_bam_stub = $split;
