@@ -217,7 +217,7 @@ sub split_in {
       my $collate_split;
       if(exists $options->{fastcollate}) {
         my $bamtofastq = _which('bamtofastq') || die "Unable to find 'bamtofastq' in path";
-        $collate_split = sprintf '%s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s outputdir=%s split=%s',
+        $collate_split = sprintf '%s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s/bamtofastq outputdir=%s split=%s',
                                  $bamtofastq, $collate_folder, $split_folder,
                                  $fragment_size * $MILLION * $BAM_MULT;
       }
