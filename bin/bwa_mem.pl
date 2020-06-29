@@ -182,7 +182,7 @@ sub setup {
   delete $opts{'fastcollate'} unless(defined $opts{'fastcollate'});
 
   if(defined $opts{'bwamem2'} && defined $opts{'fastcollate'}) {
-    warn "WARN: Use of options bwamem2 and fastcollate is suboptimal, proceeding but memory will be excessive.\n");
+    warn "WARN: Use of options bwamem2 and fastcollate is suboptimal, proceeding but memory will be excessive.\n";
   }
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
