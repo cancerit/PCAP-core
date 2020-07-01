@@ -90,6 +90,7 @@ sub setup {
               'c|cram' => \$opts{'cram'},
               'sc|scramble=s' => \$opts{'scramble'},
               'd|dupmode:s' => \$opts{'dupmode'},
+              'legacy' => \$opts{'legacy'},
               'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
@@ -121,6 +122,7 @@ sub setup {
 
   delete $opts{'process'} unless(defined $opts{'process'});
   delete $opts{'index'} unless(defined $opts{'index'});
+  delete $opts{'legacy'} unless(defined $opts{'legacy'});
   delete $opts{'scramble'};
   delete $opts{'csi'} unless(defined $opts{'csi'});
   if($opts{'qnamesort'} && !$opts{'nomarkdup'}){
@@ -183,7 +185,8 @@ merge_or_mark.pl [options] [file(s)...]
     -cram        -c   Output cram, see '-sc' [flag]
     -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
     -scramble    -sc   DEPRECATED
-    -dupmode     -d    see "samtools markdup -m" [t]
+    -dupmode     -d    See "samtools markdup -m" [t]
+    -legacy            Use legacy bammarkduplicates2, ignores '-dupmode'
 
   Targeted processing:
     -process     -p   Only process this step then exit

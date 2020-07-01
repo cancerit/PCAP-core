@@ -215,7 +215,7 @@ sub split_in {
       my $mmQcStrip = sprintf '%s --remove -l 0 -@ %d -i %s', _which('mmFlagModifier'), $helpers, $input->in;
       my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d -', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers; # leave
       my $collate_split;
-      if(exists $options->{fastcollate}) {
+      if(exists $options->{legacy}) {
         my $bamtofastq = _which('bamtofastq') || die "Unable to find 'bamtofastq' in path";
         $collate_split = sprintf '%s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s/bamtofastq outputdir=%s split=%s',
                                  $bamtofastq, $collate_folder, $split_folder,
