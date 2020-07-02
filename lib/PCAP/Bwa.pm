@@ -208,18 +208,25 @@ sub split_in {
     }
     # if bam|cram input
     else {
-      my $fastcollate = q{};
-      $fastcollate = q{-f} if(exists $options->{fastcollate});
-
       my $helpers = $options->{threads_per_split};
       my $collate_folder = File::Spec->catdir($options->{'tmp'}, 'collate', $index);
       make_path($collate_folder) unless(-d $collate_folder);
       my $samtools = _which('samtools') || die "Unable to find 'samtools' in path";
       my $mmQcStrip = sprintf '%s --remove -l 0 -@ %d -i %s', _which('mmFlagModifier'), $helpers, $input->in;
       my $view = sprintf '%s view %s -bu -T %s -F 2816 -@ %d -', $samtools, $TAG_STRIP, $options->{'reference'}, $helpers; # leave
-      my $collate = sprintf '%s collate -Ou -@ %d %s - %s/collate', $samtools, $helpers, $fastcollate, $collate_folder;
-      my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
-      my $cmd = sprintf '%s | %s | %s | %s', $mmQcStrip, $view, $collate, $split;
+      my $collate_split;
+      if(exists $options->{legacy}) {
+        my $bamtofastq = _which('bamtofastq') || die "Unable to find 'bamtofastq' in path";
+        $collate_split = sprintf '%s exclude=QCFAIL,SECONDARY,SUPPLEMENTARY tryoq=1 gz=1 level=1 outputperreadgroup=1 outputperreadgroupsuffixF=_i.fq outputperreadgroupsuffixF2=_i.fq T=%s/bamtofastq outputdir=%s split=%s',
+                                 $bamtofastq, $collate_folder, $split_folder,
+                                 $fragment_size * $MILLION * $BAM_MULT;
+      }
+      else {
+        my $collate = sprintf '%s collate -Ou -@ %d - %s/collate', $samtools, $helpers, $collate_folder;
+        my $split = sprintf '%s split --output-fmt bam,level=1 -@ %d -u %s/unknown.bam -f %s/%%!_i.bam -', $samtools, $helpers, $split_folder, $split_folder;
+        $collate_split = sprintf '%s | %s', $collate, $split;
+      }
+      my $cmd = sprintf '%s | %s | %s', $mmQcStrip, $view, $collate_split;
       # treat as interleaved fastq
       push @commands, 'set -o pipefail';
       push @commands, $cmd;
@@ -317,9 +324,15 @@ sub bwa_mem {
       }
     }
     else {
-      # bam/cram
-      my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
-      $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
+      # due to legacy processing need to handle bam or fastq input here
+      if($split =~ m/\.gz$/) {
+        $bwa .= ' '.$split;
+      }
+      else {
+        # bam/cram
+        my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
+        $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
+      }
     }
 
     my $sorted_bam_stub = $split;

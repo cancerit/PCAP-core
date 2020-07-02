@@ -154,8 +154,21 @@ sub merge_or_mark_lanes {
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
                            $tools{samtools}, $helper_threads, $input_str;
-    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+    my $markdup;
+    if(exists $options->{legacy}) {
+      my $mmflagmod = _which('mmFlagModifier') || die "Unable to find 'mmFlagModifier' in path";
+      my $bammarkdups = _which('bammarkduplicates2') || die "Unable to find 'bammarkduplicates2' in path";
+
+      my $mmQcRemove = sprintf '%s --remove -l 0 -@ %d', $mmflagmod, $helper_threads;
+      my $bammarkdup = sprintf '%s tmpfile=%s M=%s.met level=0 markthreads=%d', $bammarkdups, $strmd_tmp, $marked, $helper_threads;
+      my $mmQcReplace = sprintf '%s --replace -l 0 -@ %d', $mmflagmod, $helper_threads;
+
+      $markdup = sprintf q{%s | %s | %s}, $mmQcRemove, $bammarkdup, $mmQcReplace;
+    }
+    else {
+      $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+    }
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
     my $idx      = sprintf q{%s index -@ %d %s - %s.%s},
@@ -254,8 +267,21 @@ sub merge_and_mark_dup {
   else {
     my $merge    = sprintf q{%s merge -u -@ %d - %s},
                            $tools{samtools}, $helper_threads, $input_str;
-    my $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+    my $markdup;
+    if(exists $options->{legacy}) {
+      my $mmflagmod = _which('mmFlagModifier') || die "Unable to find 'mmFlagModifier' in path";
+      my $bammarkdups = _which('bammarkduplicates2') || die "Unable to find 'bammarkduplicates2' in path";
+
+      my $mmQcRemove = sprintf '%s --remove -l 0 -@ %d', $mmflagmod, $helper_threads;
+      my $bammarkdup = sprintf '%s tmpfile=%s M=%s.met level=0 markthreads=%d', $bammarkdups, $strmd_tmp, $marked, $helper_threads;
+      my $mmQcReplace = sprintf '%s --replace -l 0 -@ %d', $mmflagmod, $helper_threads;
+
+      $markdup = sprintf q{%s | %s | %s}, $mmQcRemove, $bammarkdup, $mmQcReplace;
+    }
+    else {
+      $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
                            $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+    }
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
     my $idx      = sprintf q{%s index -@ %d %s - %s.%s},

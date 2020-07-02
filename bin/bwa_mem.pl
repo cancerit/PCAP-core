@@ -136,7 +136,7 @@ sub setup {
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
               'bm2|bwamem2' => \$opts{'bwamem2'},
               'd|dupmode:s' => \$opts{'dupmode'},
-              'fc|fastcollate' => \$opts{'fastcollate'},
+              'legacy' => \$opts{'legacy'},
               'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
@@ -179,10 +179,10 @@ sub setup {
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
-  delete $opts{'fastcollate'} unless(defined $opts{'fastcollate'});
+  delete $opts{'legacy'} unless(defined $opts{'legacy'});
 
-  if(defined $opts{'bwamem2'} && defined $opts{'fastcollate'}) {
-    pod2usage(-msg  => "\nERROR: Options bwamem2 and fastcollate are incomptible.\n", -verbose => 1,  -output => \*STDERR);
+  if(defined $opts{'bwamem2'} && defined $opts{'legacy'}) {
+    warn "WARN: Use of options bwamem2 and legacy is suboptimal, proceeding but memory will be excessive.\n";
   }
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
@@ -267,9 +267,10 @@ bwa_mem.pl [options] [file(s)...]
                         - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
     -dupmode     -d    see "samtools markdup -m" [t]
-    -fastcollate -fc   Paired with `-dupmode t` equivalent to PCAP-core<=5.0.5
-                        - Only relevant to BAM/CRAM input
-                        - not compatible with bwamem2
+    -legacy            Equivalent to PCAP-core<=5.0.5
+                        - bamtofastq instead of samtools collate (for BAM/CRAM input)
+                        - dupmode ignored as uses bammarkduplicates2
+                        - Avoid use with bwamem2 (memory explosion)
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
@@ -373,13 +374,11 @@ Disables duplicate marking, switching bammarkduplicates2 for bammerge.
 
 Switch between template and sequence based marking.  See "samtools markdup" man page for more details
 
-=item B<-fastcollate>
+=item B<-legacy>
 
-For BAM/CRAM, brings read pairs together but doesn't result in even distribution of read location during input to
-bwa-mem.  This can result in errors in read-pair placement and noise in data.  This was part of the processing in
-versions of PCAP-core <= 5.0.5.
+Processing equivalent to versions of PCAP-core <= 5.0.5 (bamtofastq + bammarkduplicates2)
 
-Not compaitible with bwa-mem2.
+Not recommended with bwamem2 - memory explosions.
 
 =item B<-csi>
 
