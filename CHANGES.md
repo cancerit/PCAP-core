@@ -1,5 +1,12 @@
 # CHANGES
 
+## 5.2.0
+
+* Expose option for "legacy" to allow for <=5.0.5 processing methods.
+  * `bamtofastq` when pulling reads from BAM/CRAM input.
+  * `bammarkduplicates2` for duplicate marking.
+  * Affects `bwa_mem.pl` and `merge_or_mark.pl`
+
 ## 5.1.0
 
 * Base image updated to Focal (Ubuntu 20.04).

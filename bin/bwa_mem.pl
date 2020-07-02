@@ -136,6 +136,7 @@ sub setup {
               'qf|mmqcfrac:f' => \$opts{'mmqcfrac'},
               'bm2|bwamem2' => \$opts{'bwamem2'},
               'd|dupmode:s' => \$opts{'dupmode'},
+              'legacy' => \$opts{'legacy'},
               'ss|seqslice:i' => $opts{'seqslice'},
   ) or pod2usage(2);
 
@@ -178,6 +179,11 @@ sub setup {
   delete $opts{'mmqc'} unless(defined $opts{'mmqc'});
   delete $opts{'csi'} unless(defined $opts{'csi'});
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
+  delete $opts{'legacy'} unless(defined $opts{'legacy'});
+
+  if(defined $opts{'bwamem2'} && defined $opts{'legacy'}) {
+    warn "WARN: Use of options bwamem2 and legacy is suboptimal, proceeding but memory will be excessive.\n";
+  }
 
   PCAP::Cli::opt_requires_opts('scramble', \%opts, ['cram']);
 
@@ -243,7 +249,7 @@ bwa_mem.pl [options] [file(s)...]
     -threads     -t    Number of threads to use. [1]
 
   Optional parameters:
-    -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
+    -bwamem2     -bm2  Use bwa-mem2 instead of bwa (experimental).
     -fragment    -f    Split input into fragments of X million repairs [10]
                         - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]
@@ -261,6 +267,10 @@ bwa_mem.pl [options] [file(s)...]
                         - Please see 'bwa_mem.pl -m'
     -mmqcfrac    -qf   Mismatch fraction for -mmqc [0.05]
     -dupmode     -d    see "samtools markdup -m" [t]
+    -legacy            Equivalent to PCAP-core<=5.0.5
+                        - bamtofastq instead of samtools collate (for BAM/CRAM input)
+                        - dupmode ignored as uses bammarkduplicates2
+                        - Avoid use with bwamem2 (memory explosion)
 
   Targeted processing:
     -process     -p    Only process this step then exit, optionally set -index
@@ -359,6 +369,16 @@ should not be split.
 =item B<-nomarkdup>
 
 Disables duplicate marking, switching bammarkduplicates2 for bammerge.
+
+=item B<-dupmode>
+
+Switch between template and sequence based marking.  See "samtools markdup" man page for more details
+
+=item B<-legacy>
+
+Processing equivalent to versions of PCAP-core <= 5.0.5 (bamtofastq + bammarkduplicates2)
+
+Not recommended with bwamem2 - memory explosions.
 
 =item B<-csi>
 
