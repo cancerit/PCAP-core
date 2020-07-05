@@ -187,6 +187,7 @@ merge_or_mark.pl [options] [file(s)...]
     -scramble    -sc   DEPRECATED
     -dupmode     -d    See "samtools markdup -m" [t]
     -legacy            Use legacy bammarkduplicates2, ignores '-dupmode'
+                        - not compatible with CRAM input
 
   Targeted processing:
     -process     -p   Only process this step then exit

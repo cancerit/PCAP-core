@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.2.1
+
+* Correct biobambam2 version
+* Fix to merge/mark legacy method to use bammerge instead of samtools merge
+
 ## 5.2.0
 
 * Expose option for "legacy" to allow for <=5.0.5 processing methods.
