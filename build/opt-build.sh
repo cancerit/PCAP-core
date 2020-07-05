@@ -52,9 +52,9 @@ set -u
 ## biobambam2 first
 BB_INST=$INST_PATH/biobambam2
 if [ ! -e $SETUP_DIR/bbb2.sucess ]; then
-  curl -sSL --retry 10 $BBB2_URL > distro.tar.gz
+  curl -sSL --retry 10 $BBB2_URL > distro.tar.xz
   mkdir -p $BB_INST
-  tar --strip-components 3 -C $BB_INST -zxf distro.tar.gz
+  tar --strip-components 3 -C $BB_INST -Jxf distro.tar.xz
   rm -f $BB_INST/bin/curl # don't let this file in SSL doesn't work
   rm -rf distro.* distro/*
   touch $SETUP_DIR/bbb2.success

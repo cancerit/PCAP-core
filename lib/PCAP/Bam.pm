@@ -152,12 +152,16 @@ sub merge_or_mark_lanes {
       push @commands, qq{$merge | pee "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
-    my $merge    = sprintf q{%s merge -u -@ %d - %s},
-                           $tools{samtools}, $helper_threads, $input_str;
+    my $merge;
     my $markdup;
     if(exists $options->{legacy}) {
       my $mmflagmod = _which('mmFlagModifier') || die "Unable to find 'mmFlagModifier' in path";
       my $bammarkdups = _which('bammarkduplicates2') || die "Unable to find 'bammarkduplicates2' in path";
+      my $bammerge = _which('bammerge') || die "Unable to find 'bammerge' in path";
+      my $bm_tmp = File::Spec->catfile($tmp, 'bmTmp');
+
+      $input_str =~ s/ / I=/g;
+      $merge = sprintf '%s SO=%s tmpfile=%s level=0 I=%s', $bammerge, 'coordinate', $bm_tmp, $input_str;
 
       my $mmQcRemove = sprintf '%s --remove -l 0 -@ %d', $mmflagmod, $helper_threads;
       my $bammarkdup = sprintf '%s tmpfile=%s M=%s.met level=0 markthreads=%d', $bammarkdups, $strmd_tmp, $marked, $helper_threads;
@@ -166,8 +170,10 @@ sub merge_or_mark_lanes {
       $markdup = sprintf q{%s | %s | %s}, $mmQcRemove, $bammarkdup, $mmQcReplace;
     }
     else {
-      $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
-                           $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+      $merge   = sprintf q{%s merge -u -@ %d - %s},
+                         $tools{samtools}, $helper_threads, $input_str;
+      $markdup = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+                         $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     }
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
@@ -265,12 +271,16 @@ sub merge_and_mark_dup {
     push @commands, qq{$merge $mismatchQc | pee "$stats" "$compress | pee '$idx' '$md5' 'cat > $marked'"};
   }
   else {
-    my $merge    = sprintf q{%s merge -u -@ %d - %s},
-                           $tools{samtools}, $helper_threads, $input_str;
+    my $merge;
     my $markdup;
     if(exists $options->{legacy}) {
       my $mmflagmod = _which('mmFlagModifier') || die "Unable to find 'mmFlagModifier' in path";
       my $bammarkdups = _which('bammarkduplicates2') || die "Unable to find 'bammarkduplicates2' in path";
+      my $bammerge = _which('bammerge') || die "Unable to find 'bammerge' in path";
+      my $bm_tmp = File::Spec->catfile($tmp, 'bmTmp');
+
+      $input_str =~ s/ / I=/g;
+      $merge = sprintf '%s SO=%s tmpfile=%s level=0 I=%s', $bammerge, 'coordinate', $bm_tmp, $input_str;
 
       my $mmQcRemove = sprintf '%s --remove -l 0 -@ %d', $mmflagmod, $helper_threads;
       my $bammarkdup = sprintf '%s tmpfile=%s M=%s.met level=0 markthreads=%d', $bammarkdups, $strmd_tmp, $marked, $helper_threads;
@@ -279,8 +289,10 @@ sub merge_and_mark_dup {
       $markdup = sprintf q{%s | %s | %s}, $mmQcRemove, $bammarkdup, $mmQcReplace;
     }
     else {
-      $markdup  = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
-                           $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
+      $merge   = sprintf q{%s merge -u -@ %d - %s},
+                         $tools{samtools}, $helper_threads, $input_str;
+      $markdup = sprintf q{%s markdup --mode %s --output-fmt bam,level=0 -S --include-fails -T %s -@ %d -f %s.met - -},
+                         $tools{samtools}, $options->{dupmode}, $strmd_tmp, $helper_threads, $marked;
     }
     my $compress = sprintf q{%s view -T %s --output-fmt %s -@ %d -},
                            $tools{samtools}, $options->{reference}, $out_fmt, $helper_threads;
