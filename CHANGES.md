@@ -1,5 +1,9 @@
 # CHANGES
 
+## NEXT
+
+* Update to bwa-mem2 production release
+
 ## 5.2.2
 
 * Delete files that may remain after an aborted run before resume.
