@@ -339,14 +339,19 @@ sub bwa_mem {
     $sorted_bam_stub =~ s|/split/([[:digit:]]+)/(.+)$|/sorted/$1_$2|;
     $sorted_bam_stub =~ s/\\'/-/g;
 
+    my $sort_tmp = File::Spec->catfile($tmp, 'bamsort.'.$index.'_tmp');
+    for my $to_rm(glob $sort_tmp.'*') {
+      unlink $to_rm;
+    }
+
     my $ref = exists $options->{'decomp_ref'} ? $options->{'decomp_ref'} : $options->{'reference'};
 
     my $rehead_sq = sprintf '%s -d %s',
                             $tools{reheadSQ}, $options->{'dict'};
     my $fixmate   = sprintf q{%s fixmate -m --output-fmt bam,level=0 -@ %d - -},
                             $tools{samtools}, $threads;
-    my $sort      = sprintf q{%s sort -m 2G --output-fmt bam,level=0 -T %s_tmp -@ %d -},
-                            $tools{samtools}, File::Spec->catfile($tmp, "bamsort.$index"), $threads;
+    my $sort      = sprintf q{%s sort -m 2G --output-fmt bam,level=0 -T %s -@ %d -},
+                            $tools{samtools}, $sort_tmp, $threads;
     my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
                             $tools{samtools}, $threads, $ref, $sorted_bam_stub;
     my $command .= "set -o pipefail; $bwa | $rehead_sq | $fixmate | $sort | $calmd";
