@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.2.2
+
+* Delete files that may remain after an aborted run before resume.
+
 ## 5.2.1
 
 * Correct biobambam2 version
