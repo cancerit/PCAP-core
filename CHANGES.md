@@ -1,5 +1,9 @@
 # CHANGES
 
+## NEXT
+
+* Support for paired FASTQ names ending with _R1_001 and _R2_001 in addition to _1 and _2 as before.
+
 ## 5.2.2
 
 * Delete files that may remain after an aborted run before resume.
