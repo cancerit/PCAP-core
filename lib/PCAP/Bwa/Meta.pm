@@ -37,7 +37,7 @@ use YAML qw(LoadFile);
 
 use PCAP::Bam;
 
-const my @INIT_KEYS => qw(in temp fastq paired_fq cram bam);
+const my @INIT_KEYS => qw(in temp fastq paired_fq illumina_fq cram bam);
 const my @REQUIRED_KEYS => qw(in temp);
 const my @REQUIRED_RG_ELEMENTS => qw(SM);
 const my @ALLOWED_RG_ELEMENTS => qw(ID CN DS DT FO KS LB PG PI PL PM PU SM);
@@ -96,6 +96,12 @@ sub paired_fq {
   my $self = shift;
   croak "'paired_fq' can only be set via new()" if(scalar @_ > 0);
   return $self->{'paired_fq'}; # this will create a key but not worth adding overhead to prevent
+}
+
+sub illumina_fq {
+  my $self = shift;
+  croak "'illumina_fq' can only be set via new()" if(scalar @_ > 0);
+  return $self->{'illumina_fq'};
 }
 
 sub bam_or_cram {
@@ -271,10 +277,11 @@ sub files_to_meta {
         # must be paired fq
         next if(exists $seen_paired_stub{$fq_stub});
         $seen_paired_stub{$fq_stub} = 1;
-        die "Unable to find file for read 1, for ${fq_stub}_X.${fq_ext}\n" unless(-e "${fq_stub}_1.$fq_ext");
-        die "Unable to find file for read 2, for ${fq_stub}_X.${fq_ext}\n" unless(-e "${fq_stub}_2.$fq_ext");
-        die "File for read 1 is empty: ${fq_stub}_X.${fq_ext}\n" unless(-s "${fq_stub}_1.$fq_ext");
-        die "File for read 2 is empty: ${fq_stub}_X.${fq_ext}\n" unless(-s "${fq_stub}_2.$fq_ext");
+        die "Unable to find file for read 1, for ${fq_stub}_X.${fq_ext}\n" unless(-e "${fq_stub}_1.$fq_ext" || -e "${fq_stub}_R1_001.$fq_ext");
+        die "Unable to find file for read 2, for ${fq_stub}_X.${fq_ext}\n" unless(-e "${fq_stub}_2.$fq_ext" || -e "${fq_stub}_R2_001.$fq_ext");
+        die "File for read 1 is empty: ${fq_stub}_X.${fq_ext}\n" unless(-s "${fq_stub}_1.$fq_ext" || -s "${fq_stub}_R1_001.$fq_ext");
+        die "File for read 2 is empty: ${fq_stub}_X.${fq_ext}\n" unless(-s "${fq_stub}_2.$fq_ext" || -s "${fq_stub}_R2_001.$fq_ext");
+        $meta->{'illumina_fq'} = ( $end=~m/R[12]_001/ ? 1 : 0 );
         $meta->{'paired_fq'} = 1;
         $are_paired_fq = 1;
       }
@@ -343,7 +350,7 @@ sub is_fastq_ext {
 sub parse_fastq_filename {
   my $fastq = shift; # shouldn't have extension by now
   my $end;
-  if($fastq =~ s/_([12])$//) {
+  if($fastq =~ s/_([12]|R[12]_001)$//) {
     $end = $1;
   }
   return ($fastq, $end);
@@ -419,9 +426,9 @@ Added for future compatibility with files that can be used with 'BWA mem'.
 
 When input is some form of fastq this returns the extension, otherwise undef.
 
-=item paired_fq
+=item illumina_fq
 
-When input is a paired fastq file this returns true.
+If paired FASTQ names end with _R[12]_001, this returns true. Returns false if they end with _[12].
 
 =item rg
 
@@ -488,6 +495,9 @@ Understands the following as fastq files:
 Takes a fastq filename after removal of the extension (see L<is_fastq_ext()/PCAP::Bwa::Meta/is_fastq_ext>
 and determines if file is read1, read2 or interleaved fastq.
 
-Expects file to end '_1' or '_2' for paired, assumed interleaved otherwise.
+Expects paired FASTQ names to end with one the following. Assumes interleaved FASTQ otherwise.
+
+  _1 and _2 - PCAP's original naming requirement
+  _R1_001 and _R2_001 - Illumina's naming requirement; Require 3 digit suffix to be 001 to avoid split FASTQs
 
 =back
