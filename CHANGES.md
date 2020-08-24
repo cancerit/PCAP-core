@@ -1,8 +1,8 @@
 # CHANGES
 
-## NEXT
+## 5.3.0
 
-* Support for paired FASTQ names ending with _R1_001 and _R2_001 in addition to _1 and _2 as before.
+* Support for paired FASTQ names ending with `_R1_001` and `_R2_001` in addition to `_1` and `_2` as before.
 
 ## 5.2.2
 
