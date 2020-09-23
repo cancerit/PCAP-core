@@ -62,7 +62,7 @@ FROM  ubuntu:20.04
 
 LABEL maintainer="cgphelp@sanger.ac.uk"\
       uk.ac.sanger.cgp="Cancer, Ageing and Somatic Mutation, Wellcome Sanger Institute" \
-      version="5.3.0" \
+      version="5.4.0" \
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
