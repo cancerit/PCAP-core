@@ -21,37 +21,6 @@
 #include "minunit.h"
 #include "bam_access.h"
 
-#ifndef KSTRING_T
-#define KSTRING_T kstring_t
-typedef struct __kstring_t {
-    size_t l, m;
-    char *s;
-} kstring_t;
-#endif
-
-static inline int kputsn(const char *p, int l, kstring_t *s)
-{
-	if (s->l + l + 1 >= s->m) {
-		s->m = s->l + l + 2;
-		kroundup32(s->m);
-		s->s = (char*)realloc(s->s, s->m);
-	}
-	memcpy(s->s + s->l, p, l);
-	s->l += l;
-	s->s[s->l] = 0;
-	return l;
-}
-
-
-static inline int kputs(const char *p, kstring_t *s)
-{
-	return kputsn(p, strlen(p), s);
-}
-
-#ifndef kroundup32
-#define kroundup32(x) (--(x), (x)|=(x)>>1, (x)|=(x)>>2, (x)|=(x)>>4, (x)|=(x)>>8, (x)|=(x)>>16, ++(x))
-#endif
-
 char *test_bam = "../t/data/Stats.bam";
 char *exp_plat = "GAII";
 char *exp_sample = "PD1234a";

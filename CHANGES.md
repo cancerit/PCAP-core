@@ -1,5 +1,11 @@
 # CHANGES
 
+## 5.4.0
+
+* Update base image of docker to cgpbigwig 1.5.0
+* Update to htslib 1.11
+* Update to samtools 1.11 - to handle long running markdup issue
+
 ## 5.3.0
 
 * Support for paired FASTQ names ending with `_R1_001` and `_R2_001` in addition to `_1` and `_2` as before.

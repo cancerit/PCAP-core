@@ -1,4 +1,4 @@
-FROM quay.io/wtsicgp/cgpbigwig:1.3.0 as builder
+FROM quay.io/wtsicgp/cgpbigwig:1.5.0 as builder
 
 USER  root
 
@@ -11,8 +11,8 @@ ARG BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
-ARG VER_HTSLIB="1.10.2"
-ARG VER_SAMTOOLS="1.10"
+ARG VER_HTSLIB="1.11"
+ARG VER_SAMTOOLS="1.11"
 
 RUN apt-get -yq update
 RUN apt-get install -yq --no-install-recommends apt-transport-https
@@ -62,7 +62,7 @@ FROM  ubuntu:20.04
 
 LABEL maintainer="cgphelp@sanger.ac.uk"\
       uk.ac.sanger.cgp="Cancer, Ageing and Somatic Mutation, Wellcome Sanger Institute" \
-      version="5.3.0" \
+      version="5.4.0" \
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
