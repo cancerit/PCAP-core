@@ -462,8 +462,8 @@ There are several types of file that the script is able to process.
 =item f[ast]q
 
 A standard uncompressed fastq file.  Requires a pair of inputs with standard suffix of '_1' and '_2'
-immediately prior to '.f[ast]q' or an interleaved f[ast]q file where read 1 and 2 are adjacent
-in the file.
+or 'R1_001' and 'R2_001' immediately prior to '.f[ast]q' or an interleaved f[ast]q file where read 1
+and 2 are adjacent in the file.
 
 
 =item f[ast]q.gz

@@ -175,8 +175,8 @@ sub split_in {
     if($input->fastq) {
       # paired fq input
       if($input->paired_fq) {
-        my $fq1 = $input->in.'_1.'.$input->fastq;
-        my $fq2 = $input->in.'_2.'.$input->fastq;
+        my $fq1 = $input->in.($input->illumina_fq ? '_R1_001.' : '_1.').$input->fastq;
+        my $fq2 = $input->in.($input->illumina_fq ? '_R2_001.' : '_2.').$input->fastq;
         if($input->fastq =~ m/[.]gz$/ || $fragment_size > 5000) {
           symlink $fq1, File::Spec->catfile($split_folder, 'pairedfq1.0.'.$input->fastq);
           symlink $fq2, File::Spec->catfile($split_folder, 'pairedfq2.0.'.$input->fastq);
@@ -415,6 +415,7 @@ sub sampe {
 
   my $pathstub = $input_meta->[$index-1]->tstub;
   my $fastq = $input_meta->[$index-1]->fastq;
+  my $illumina_fq = $input_meta->[$index-1]->illumina_fq;
 
 
   my $command = _which('bwa') || die "Unable to find 'bwa' in path";;
@@ -425,10 +426,10 @@ sub sampe {
   if(defined $fastq) {
     $command .= sprintf $ALN_TO_SORTED, $input_meta->[$index-1]->rg_header(q{\t}),
                                       $ref,
-                                      $pathstub,
-                                      $pathstub,
-                                      $input_meta->[$index-1]->in.'_1', $fastq,
-                                      $input_meta->[$index-1]->in.'_2', $fastq,
+                                      $pathstub.($illumina_fq ? '_R1_001' : '_1'),
+                                      $pathstub.($illumina_fq ? '_R2_001' : '_2'),
+                                      $input_meta->[$index-1]->in.($illumina_fq ? '_R1_001' : '_1'), $fastq,
+                                      $input_meta->[$index-1]->in.($illumina_fq ? '_R2_001' : '_2'), $fastq,
                                       $bamsort,
                                       $pathstub,
                                       $pathstub;
@@ -436,8 +437,8 @@ sub sampe {
   else {
     $command .= sprintf $ALN_TO_SORTED, $input_meta->[$index-1]->rg_header(q{\t}),
                                       $ref,
-                                      $pathstub,
-                                      $pathstub,
+                                      $pathstub.'_1',
+                                      $pathstub.'_2',
                                       $pathstub, 'bam',
                                       $pathstub, 'bam',
                                       $bamsort,
