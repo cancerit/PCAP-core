@@ -52,6 +52,17 @@ set -u
 cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH Const::Fast
 cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH File::Which
 
+## libdeflate
+rm -rf tmp_deflate
+mkdir -p tmp_deflate
+curl -sSL --retry 10 https://github.com/ebiggers/libdeflate/archive/v1.6.tar.gz > distro.tar.gz
+tar --strip-components 1 -C tmp_deflate -zxf distro.tar.gz
+cd tmp_deflate
+make -j$CPU CFLAGS="-fPIC -O3" install
+PREFIX=$INST_PATH make -j$CPU CFLAGS="-fPIC -O3" install
+cd ../
+rm -rf distro.*
+
 # won't build without "development" htslib structure:
 ## HTSLIB (tar.bz2)
 rm -rf tmp_htslib
@@ -59,7 +70,7 @@ mkdir -p tmp_htslib
 curl -sSL --retry 10 https://github.com/samtools/htslib/releases/download/${VER_HTSLIB}/htslib-${VER_HTSLIB}.tar.bz2 > distro.tar.bz2
 tar --strip-components 1 -C tmp_htslib -jxf distro.tar.bz2
 cd tmp_htslib
-./configure --enable-plugins --enable-libcurl --prefix=$INST_PATH
+./configure --enable-plugins --enable-libcurl --with-libdeflate --prefix=$INST_PATH
 make clean
 make -j$CPU
 cd ../
@@ -70,6 +81,7 @@ export REF_CACHE=$PWD/t/data/ref_cache/%2s/%2s/%s
 export REF_PATH=$REF_CACHE
 
 env HTSLIB=$PWD/tmp_htslib make -C c -j$CPU prefix=$INST_PATH
+env DEFLATE=$PWD/tmp_deflate
 cp bin/bam_stats $INST_PATH/bin/.
 cp bin/reheadSQ $INST_PATH/bin/.
 cp bin/diff_bams $INST_PATH/bin/.
@@ -78,6 +90,7 @@ cp bin/mmFlagModifier $INST_PATH/bin/.
 
 rm -rf $REF_CACHE
 rm -rf tmp_htslib
+rm -rf tmp_deflate
 
 cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org --notest -l $INST_PATH --installdeps .
 cpanm -v --no-wget --no-interactive --mirror http://cpan.metacpan.org -l $INST_PATH .
