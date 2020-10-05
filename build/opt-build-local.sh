@@ -55,7 +55,7 @@ cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $
 ## libdeflate
 rm -rf tmp_deflate
 mkdir -p tmp_deflate
-curl -sSL --retry 10 https://github.com/ebiggers/libdeflate/archive/v1.6.tar.gz > distro.tar.gz
+curl -sSL --retry 10 https://github.com/ebiggers/libdeflate/archive/${VER_LIBDEFLATE}.tar.gz > distro.tar.gz
 tar --strip-components 1 -C tmp_deflate -zxf distro.tar.gz
 cd tmp_deflate
 make -j$CPU CFLAGS="-fPIC -O3" install

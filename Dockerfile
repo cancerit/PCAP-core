@@ -11,6 +11,7 @@ ARG BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
+ARG VER_LIBDEFLATE='v1.6'
 ARG VER_HTSLIB="1.11"
 ARG VER_SAMTOOLS="1.11"
 
@@ -62,7 +63,7 @@ FROM  ubuntu:20.04
 
 LABEL maintainer="cgphelp@sanger.ac.uk"\
       uk.ac.sanger.cgp="Cancer, Ageing and Somatic Mutation, Wellcome Sanger Institute" \
-      version="5.4.0" \
+      version="5.4.1" \
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
