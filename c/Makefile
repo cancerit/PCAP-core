@@ -34,10 +34,11 @@ CFLAGS = -Wall
 HTSLOC?=$(HTSLIB)
 
 HTSTMP?=./htslib_tmp
+DEFLATETMP?=./deflate_tmp
 prefix=?/usr/local/
 
 #Define locations of header files
-OPTINC?= -I$(HTSLOC)/
+OPTINC?= -I$(HTSLOC)/ -I/install_tmp/deflate_tmp/
 INCLUDES= -I./ $(OPTINC) -rdynamic
 
 CAT_INCLUDES+= -I$(prefix)/include
@@ -46,12 +47,12 @@ CAT_LFLAGS+= -L$(prefix)/lib
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS?= -L$(HTSTMP)
+LFLAGS?= -L$(HTSTMP) -L$(DEFLATETMP)
 
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS =-lhts -lpthread -lz -lm -ldl -llzma -lbz2
+LIBS =-lhts -lpthread -lz -lm -ldl -llzma -lbz2 -ldeflate
 
 # define the C source files
 SRCS = ./bam_access.c ./bam_stats_output.c ./bam_stats_calcs.c
