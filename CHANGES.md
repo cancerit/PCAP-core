@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.4.1
+
+* Compile htslib with libdeflate (thanks to @mflevine)
+
 ## 5.4.0
 
 * Update base image of docker to cgpbigwig 1.5.0
