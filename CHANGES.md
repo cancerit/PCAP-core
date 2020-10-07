@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.4.2
+
+* use libdeflate /opt installation from cgpbigwig
+* performance now applies to samtools via this modification
+
 ## 5.4.1
 
 * Compile htslib with libdeflate (thanks to @mflevine)
