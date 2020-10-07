@@ -34,11 +34,10 @@ CFLAGS = -Wall
 HTSLOC?=$(HTSLIB)
 
 HTSTMP?=./htslib_tmp
-DEFLATETMP?=./deflate_tmp
 prefix=?/usr/local/
 
 #Define locations of header files
-OPTINC?= -I$(HTSLOC)/ -I/install_tmp/deflate_tmp/
+OPTINC?= -I$(HTSLOC)/
 INCLUDES= -I./ $(OPTINC) -rdynamic
 
 CAT_INCLUDES+= -I$(prefix)/include
@@ -47,7 +46,7 @@ CAT_LFLAGS+= -L$(prefix)/lib
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS?= -L$(HTSTMP) -L$(DEFLATETMP)
+LFLAGS?= -L$(HTSTMP)
 
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname

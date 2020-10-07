@@ -1,4 +1,4 @@
-FROM quay.io/wtsicgp/cgpbigwig:1.5.0 as builder
+FROM quay.io/wtsicgp/cgpbigwig:1.5.1 as builder
 
 USER  root
 
@@ -11,7 +11,6 @@ ARG BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
-ARG VER_LIBDEFLATE='v1.6'
 ARG VER_HTSLIB="1.11"
 ARG VER_SAMTOOLS="1.11"
 
