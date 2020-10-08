@@ -9,7 +9,6 @@ export BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0p
 export STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 export VER_BIODBHTS="3.01"
 export VER_BWA="v0.7.17"
-export VER_LIBDEFLATE='v1.6'
 export VER_HTSLIB="1.11"
 export VER_SAMTOOLS="1.11"
 
