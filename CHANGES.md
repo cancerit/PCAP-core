@@ -2,7 +2,7 @@
 
 ## NEXT
 
-* Update to bwa-mem2 production release
+* Update to bwa-mem2 production release (v2.1)
 
 ## 5.4.2
 

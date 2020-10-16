@@ -5,9 +5,7 @@
 
 # newer gitlab versions do not work
 export BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece96d2201fcd0b5249884c7/biobambam2-2.0.146-release-20191030105216-x86_64-linux-gnu.tar.xz"
-## want to use Source_code_including_submodule.tar.gz from tagged release so can compile with gcc/g++
-#ARG BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0/bwa-mem2-2.0_x64-linux.tar.bz2"
-ARG BWAMEM2_CID="f0d047bbce7ea862f5c18e437f20a109883555e1"
+export BWAMEM2_TAG="v2.1"
 export STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 export VER_BIODBHTS="3.01"
 export VER_BWA="v0.7.17"
