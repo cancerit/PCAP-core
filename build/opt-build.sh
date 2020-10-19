@@ -116,10 +116,12 @@ fi
 
 ## build BWA-mem2 (tar.gz)
 if [ ! -e $SETUP_DIR/bwa2.success ]; then
-  curl -sSL $BWAMEM2_URL > distro.tar.bz2
-  rm -rf distro/*
-  tar --strip-components 1 -C distro -jxf distro.tar.bz2
-  cp distro/bwa-mem2* $INST_PATH/bin/.
+  rm -rf distro
+  git clone --branch v2.1 --recursive --depth 1 https://github.com/bwa-mem2/bwa-mem2.git distro
+  cd distro
+  make -j$CPU multi
+  cp bwa-mem2* $INST_PATH/bin/.
+  cd ../
   rm -rf distro.* distro/*
   touch $SETUP_DIR/bwa2.success
 fi

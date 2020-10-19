@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.5.0
+
+* Update to bwa-mem2 production release (v2.1)
+
 ## 5.4.2
 
 * use libdeflate /opt installation from cgpbigwig

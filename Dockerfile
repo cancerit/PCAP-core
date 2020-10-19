@@ -7,7 +7,7 @@ USER  root
 
 # newer gitlab versions do not work
 ARG BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece96d2201fcd0b5249884c7/biobambam2-2.0.146-release-20191030105216-x86_64-linux-gnu.tar.xz"
-ARG BWAMEM2_URL="https://github.com/bwa-mem2/bwa-mem2/releases/download/v2.0pre2/bwa-mem2-2.0pre2_x64-linux.tar.bz2"
+ARG BWAMEM2_TAG="v2.1"
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
@@ -37,6 +37,8 @@ RUN apt-get install -yq --no-install-recommends libdb-dev
 RUN apt-get install -yq --no-install-recommends libgnutls28-dev
 RUN apt-get install -yq --no-install-recommends xz-utils
 RUN apt-get install -yq --no-install-recommends libexpat1-dev
+RUN apt-get install -yq --no-install-recommends git
+RUN apt-get install -yq --no-install-recommends g++
 
 RUN locale-gen en_US.UTF-8
 RUN update-locale LANG=en_US.UTF-8
@@ -62,7 +64,7 @@ FROM  ubuntu:20.04
 
 LABEL maintainer="cgphelp@sanger.ac.uk"\
       uk.ac.sanger.cgp="Cancer, Ageing and Somatic Mutation, Wellcome Sanger Institute" \
-      version="5.4.2" \
+      version="5.5.0" \
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
