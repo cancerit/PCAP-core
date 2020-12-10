@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.5.1
+
+* `bwa-mem2` increment.
+* `bwa_mem2.pl` correct arg checking to catch failure to provide input files.
+
 ## 5.5.0
 
 * Update to bwa-mem2 production release (v2.1)
