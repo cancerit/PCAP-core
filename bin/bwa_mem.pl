@@ -199,6 +199,7 @@ sub setup {
   $opts{'tmp'} = $tmpdir;
 
   my $cwd = cwd();
+  $opts{'raw_files'} = [];
   for(@ARGV) {
     $_ = "$cwd/$_" unless($_ =~ m|^/|);
     push @{$opts{'raw_files'}}, $_;

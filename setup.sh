@@ -5,7 +5,7 @@
 
 # newer gitlab versions do not work
 export BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece96d2201fcd0b5249884c7/biobambam2-2.0.146-release-20191030105216-x86_64-linux-gnu.tar.xz"
-export BWAMEM2_TAG="v2.1"
+export BWAMEM2_TAG="9cd69b3f383a5cbb5e47b9e08e4c11392e72a510"
 export STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 export VER_BIODBHTS="3.01"
 export VER_BWA="v0.7.17"
