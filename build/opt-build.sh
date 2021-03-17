@@ -117,7 +117,7 @@ fi
 ## build BWA-mem2 (tar.gz)
 if [ ! -e $SETUP_DIR/bwa2.success ]; then
   rm -rf distro
-  git clone --recursive https://github.com/bwa-mem2/bwa-mem2.git distro
+  git clone --recursive $BWAMEM2_GIT distro
   cd distro
   git checkout $BWAMEM2_TAG
   make -j$CPU multi
