@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.6.0
+
+* `bwa-mem2` updated to v2.2.1 following successful large scale testing
+  * [please see here](https://github.com/bwa-mem2/bwa-mem2/issues/109).
+
 ## 5.5.1
 
 * `bwa-mem2` increment.
