@@ -7,7 +7,9 @@ USER  root
 
 # newer gitlab versions do not work
 ARG BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece96d2201fcd0b5249884c7/biobambam2-2.0.146-release-20191030105216-x86_64-linux-gnu.tar.xz"
-ARG BWAMEM2_TAG="9cd69b3f383a5cbb5e47b9e08e4c11392e72a510"
+ARG BWAMEM2_GIT="https://github.com/bwa-mem2/bwa-mem2.git"
+# accepts tags or commmit ids
+ARG BWAMEM2_TAG="v2.2.1"
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 ARG VER_BWA="v0.7.17"
@@ -64,7 +66,6 @@ FROM  ubuntu:20.04
 
 LABEL maintainer="cgphelp@sanger.ac.uk"\
       uk.ac.sanger.cgp="Cancer, Ageing and Somatic Mutation, Wellcome Sanger Institute" \
-      version="5.5.0" \
       description="pcap-core"
 
 ENV OPT /opt/wtsi-cgp
