@@ -11,8 +11,8 @@ export BWAMEM2_TAG="v2.2.1"
 export STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 export VER_BIODBHTS="3.01"
 export VER_BWA="v0.7.17"
-export VER_HTSLIB="1.11"
-export VER_SAMTOOLS="1.11"
+export VER_HTSLIB="1.12"
+export VER_SAMTOOLS="1.12"
 
 
 if [[ ($# -ne 1 && $# -ne 2) ]] ; then

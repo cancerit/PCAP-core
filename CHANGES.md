@@ -1,5 +1,9 @@
 # CHANGES
 
+## 5.6.1
+
+* htslib/samtools 1.12 - came out hours after we released 5.6.0
+
 ## 5.6.0
 
 * `bwa-mem2` updated to v2.2.1 following successful large scale testing
