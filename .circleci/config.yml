@@ -28,20 +28,20 @@ jobs:
             echo "$QUAYIO_PASSWORD" | docker login -u "$QUAYIO_USER" --password-stdin quay.io
             docker build -t $IMAGE_NAME:$CLEAN_BRANCH .
             echo 'Verify program(s) from base image'
-            docker run -t --rm pcap-core bam2bedgraph --version
-            docker run -t --rm pcap-core bwjoin --version
-            docker run -t --rm pcap-core bam2bw --version
-            docker run -t --rm pcap-core bwcat --version
-            docker run -t --rm pcap-core bam2bwbases --version
-            docker run -t --rm pcap-core bg2bw --version
-            docker run -t --rm pcap-core detectExtremeDepth --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bam2bedgraph --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bwjoin --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bam2bw --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bwcat --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bam2bwbases --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bg2bw --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH detectExtremeDepth --version
             echo 'Verify program(s) from this repo'
-            docker run -t --rm pcap-core diff_bams --version
-            docker run -t --rm pcap-core reheadSQ --version
-            docker run -t --rm pcap-core bam_stats --version
-            docker run -t --rm pcap-core mismatchQc --version
-            docker run -t --rm pcap-core bwa_mem.pl --version
-            docker run -t --rm pcap-core merge_or_mark.pl --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH diff_bams --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH reheadSQ --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bam_stats --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH mismatchQc --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH bwa_mem.pl --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH merge_or_mark.pl --version
             if [ "$CIRCLE_TAG" = "$BRANCH_OR_TAG" ]; then
               echo 'Pushing image'
               docker push $IMAGE_NAME:$CLEAN_BRANCH
