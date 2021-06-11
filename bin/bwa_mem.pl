@@ -112,6 +112,7 @@ sub setup {
               'dupmode' => 't',
               'seqslice' => 10000,
               'csi' => undef,
+              'bwakit' => 0,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -139,6 +140,7 @@ sub setup {
               'd|dupmode:s' => \$opts{'dupmode'},
               'legacy' => \$opts{'legacy'},
               'ss|seqslice:i' => $opts{'seqslice'},
+              'k|bwakit' => $opts{'bwakit'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -251,7 +253,8 @@ bwa_mem.pl [options] [file(s)...]
     -threads     -t    Number of threads to use. [1]
 
   Optional parameters:
-    -bwamem2     -bm2  Use bwa-mem2 instead of bwa (experimental).
+    -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
+    -bwakit      -k    Include 'bwa-postalt.js' processing from bwakit.
     -fragment    -f    Split input into fragments of X million repairs [10]
                         - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]

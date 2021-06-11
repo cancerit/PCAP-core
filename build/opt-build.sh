@@ -49,10 +49,30 @@ export MANPATH=`echo $INST_PATH/man:$BB_INST/man:$INST_PATH/share/man:$MANPATH |
 export PERL5LIB=`echo $INST_PATH/lib/perl5:$PERL5LIB | perl -pe 's/:\$//;'`
 set -u
 
-## biobambam2 first
+## k8 javascript client for bwakit
+if [ ! -e $SETUP_DIR/k8.sucess ]; then
+  curl -sSL --retry 10 -o distro.tar.bz2 https://github.com/attractivechaos/k8/releases/download/${VER_K8}/k8-${VER_K8}.tar.bz2
+  rm -rf distro/*
+  tar --strip-components 1 -C distro -xjf distro.tar.bz2
+  cp distro/k8-Linux $INST_PATH/bin/k8
+  chmod ugo+x $INST_PATH/bin/k8
+  rm -rf distro.* distro/*
+  touch $SETUP_DIR/k8.success
+fi
+
+## add relevant script from bwakit
+if [ ! -e $SETUP_DIR/bwakit.sucess ]; then
+  # slight hack to make this executable
+  echo "#!$INST_PATH/bin/k8" > $INST_PATH/bin/bwa-postalt
+  curl -sSL https://raw.githubusercontent.com/lh3/bwa/${VER_BWA}/bwakit/bwa-postalt.js >> $INST_PATH/bin/bwa-postalt
+  chmod ugo+x $INST_PATH/bin/bwa-postalt
+  touch $SETUP_DIR/bwakit.success
+fi
+
+## biobambam2
 BB_INST=$INST_PATH/biobambam2
 if [ ! -e $SETUP_DIR/bbb2.sucess ]; then
-  curl -sSL --retry 10 $BBB2_URL > distro.tar.xz
+  curl -sSL --retry 10 -o distro.tar.xz $BBB2_URL
   mkdir -p $BB_INST
   tar --strip-components 3 -C $BB_INST -Jxf distro.tar.xz
   rm -f $BB_INST/bin/curl # don't let this file in SSL doesn't work
@@ -76,7 +96,7 @@ rm -f $SETUP_DIR/cpanm
 
 ## scramble (from staden)
 if [ ! -e $SETUP_DIR/staden.success ]; then
-  curl -sSL --retry 10 $STADEN > distro.tar.gz
+  curl -sSL --retry 10 -o distro.tar.gz $STADEN
   rm -rf distro/* $OPT/scramble
   mkdir -p $OPT/scramble
   tar --strip-components 1 -C distro -xzf distro.tar.gz
@@ -88,7 +108,7 @@ fi
 
 ## SAMTOOLS (tar.bz2)
 if [ ! -e $SETUP_DIR/samtools.success ]; then
-  curl -sSL --retry 10 https://github.com/samtools/samtools/releases/download/${VER_SAMTOOLS}/samtools-${VER_SAMTOOLS}.tar.bz2 > distro.tar.bz2
+  curl -sSL --retry 10 -o distro.tar.bz2 https://github.com/samtools/samtools/releases/download/${VER_SAMTOOLS}/samtools-${VER_SAMTOOLS}.tar.bz2
   rm -rf distro/*
   tar --strip-components 1 -C distro -xjf distro.tar.bz2
   cd distro
@@ -105,7 +125,7 @@ fi
 
 ## build BWA (tar.gz)
 if [ ! -e $SETUP_DIR/bwa.success ]; then
-  curl -sSL --retry 10 https://github.com/lh3/bwa/archive/${VER_BWA}.tar.gz > distro.tar.gz
+  curl -sSL --retry 10 -o distro.tar.gz https://github.com/lh3/bwa/archive/${VER_BWA}.tar.gz
   rm -rf distro/*
   tar --strip-components 1 -C distro -zxf distro.tar.gz
   make -C distro -j$CPU
@@ -134,7 +154,7 @@ if [ ! -e $SETUP_DIR/Bio-DB-HTS.success ]; then
   cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH XML::Parser
   cpanm --no-wget --no-interactive --notest --mirror http://cpan.metacpan.org -l $INST_PATH Bio::Root::Version
 
-  curl -sSL --retry 10 https://github.com/Ensembl/Bio-DB-HTS/archive/${VER_BIODBHTS}.tar.gz > distro.tar.gz
+  curl -sSL --retry 10 -o distro.tar.gz https://github.com/Ensembl/Bio-DB-HTS/archive/${VER_BIODBHTS}.tar.gz
   rm -rf distro/*
   tar --strip-components 1 -C distro -zxf distro.tar.gz
   cd distro

@@ -300,7 +300,7 @@ sub bwa_mem {
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
 
     my %tools;
-    for my $tool(qw(samtools reheadSQ)) {
+    for my $tool(qw(samtools reheadSQ bwa-postalt)) {
       $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
     }
 
@@ -355,7 +355,12 @@ sub bwa_mem {
                             $tools{samtools}, $sort_tmp, $threads;
     my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
                             $tools{samtools}, $threads, $ref, $sorted_bam_stub;
-    my $command .= "set -o pipefail; $bwa | $rehead_sq | $fixmate | $sort | $calmd";
+    my $bwakit = q{};
+    if($options->{'bwakit'} == 1) {
+      # must be before fixmate as thats where we convert to BAM
+      $bwakit = sprintf q{%s - - |}, $tools{'bwa-postalt'};
+    }
+    my $command .= "set -o pipefail; $bwa | $rehead_sq | $bwakit $fixmate | $sort | $calmd";
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
     PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), $index);

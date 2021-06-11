@@ -5,7 +5,7 @@
 #    - Auto-cancel redundant builds
 #    - Free and Open Source (this should be on already)
 # 3. If existing project with quay.io, remove the quay build triggers.
-#    - as circleci is pusing the image
+#    - as circleci is pushing the image
 #    - reevaluate when/if quay.io adds ability to authenticate pulls
 
 version: 2.1
