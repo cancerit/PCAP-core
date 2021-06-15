@@ -356,9 +356,9 @@ sub bwa_mem {
     my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
                             $tools{samtools}, $threads, $ref, $sorted_bam_stub;
     my $bwakit = q{};
-    if($options->{'bwakit'} == 1) {
+    if(exists $options->{'bwakit'} && defined $options->{'bwakit'}) {
       # must be before fixmate as thats where we convert to BAM
-      $bwakit = sprintf q{%s - - |}, $tools{'bwa-postalt'};
+      $bwakit = sprintf q{%s %s |}, $tools{'bwa-postalt'}, $options->{'reference'};
     }
     my $command .= "set -o pipefail; $bwa | $rehead_sq | $bwakit $fixmate | $sort | $calmd";
 

@@ -112,7 +112,6 @@ sub setup {
               'dupmode' => 't',
               'seqslice' => 10000,
               'csi' => undef,
-              'bwakit' => 0,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -139,8 +138,8 @@ sub setup {
               'bm2|bwamem2' => \$opts{'bwamem2'},
               'd|dupmode:s' => \$opts{'dupmode'},
               'legacy' => \$opts{'legacy'},
-              'ss|seqslice:i' => $opts{'seqslice'},
-              'k|bwakit' => $opts{'bwakit'},
+              'ss|seqslice:i' => \$opts{'seqslice'},
+              'k|bwakit' => \$opts{'bwakit'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -183,6 +182,7 @@ sub setup {
   delete $opts{'csi'} unless(defined $opts{'csi'});
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
   delete $opts{'legacy'} unless(defined $opts{'legacy'});
+  delete $opts{'bwakit'} unless(defined $opts{'bwakit'});
 
   if(defined $opts{'bwamem2'} && defined $opts{'legacy'}) {
     warn "WARN: Use of options bwamem2 and legacy is suboptimal, proceeding but memory will be excessive.\n";
