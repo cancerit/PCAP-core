@@ -358,7 +358,7 @@ sub bwa_mem {
     my $bwakit = q{};
     if(exists $options->{'bwakit'} && defined $options->{'bwakit'}) {
       # must be before fixmate as thats where we convert to BAM
-      $bwakit = sprintf q{%s %s |}, $tools{'bwa-postalt'}, $options->{'reference'};
+      $bwakit = sprintf q{%s %s.alt |}, $tools{'bwa-postalt'}, $options->{'reference'};
     }
     my $command .= "set -o pipefail; $bwa | $rehead_sq | $bwakit $fixmate | $sort | $calmd";
 
