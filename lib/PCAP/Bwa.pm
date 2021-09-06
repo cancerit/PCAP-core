@@ -309,8 +309,9 @@ sub bwa_mem {
     # uncoverable branch false
     $interleaved_fq = q{ -p}, unless($input->paired_fq);
 
-    my $add_options = q{-v 1}; # minimise output
-    $add_options = $options->{'bwa'} if(exists $options->{'bwa'});
+    my $add_options = q{-v 1 }; # minimise output
+    $add_options .= q{-C } if(exists $options->{'tags'});
+    $add_options .= $options->{'bwa'} if(exists $options->{'bwa'});
     $bwa .= sprintf q{ mem %s %s -R %s -t %s %s}, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
 
     # uncoverable branch true
@@ -331,7 +332,11 @@ sub bwa_mem {
       }
       else {
         # bam/cram
-        my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
+        my $tag_opts = q{};
+        if(exists $options->{'tags'}) {
+          $tag_opts = '-T '.$options->{'tags'};
+        }
+        my $tofastq = sprintf '%s fastq -@ %d -N %s %s', $tools{samtools}, $threads, $tag_opts, $split;
         $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
       }
     }

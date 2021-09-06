@@ -112,6 +112,7 @@ sub setup {
               'dupmode' => 't',
               'seqslice' => 10000,
               'csi' => undef,
+              'tags' => undef,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -140,6 +141,7 @@ sub setup {
               'legacy' => \$opts{'legacy'},
               'ss|seqslice:i' => \$opts{'seqslice'},
               'k|bwakit' => \$opts{'bwakit'},
+              'tags:s' => \$opts{'tags'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -183,6 +185,7 @@ sub setup {
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
   delete $opts{'legacy'} unless(defined $opts{'legacy'});
   delete $opts{'bwakit'} unless(defined $opts{'bwakit'});
+  delete $opts{'tags'} unless(defined $opts{'tags'});
 
   if(defined $opts{'bwamem2'} && defined $opts{'legacy'}) {
     warn "WARN: Use of options bwamem2 and legacy is suboptimal, proceeding but memory will be excessive.\n";
@@ -263,8 +266,10 @@ bwa_mem.pl [options] [file(s)...]
     -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
     -scramble    -sc   DEPRECATED
     -bwa         -b    Single quoted string of additional parameters to pass to BWA
-                        - '-t,-p,-R' are used internally and should not be provided.
+                        - '-t,-p,-R,-C' are used internally and should not be provided.
                         - '-v' is set to 1 unless '-bwa' is set.
+    -tags              Propogate these tags from input data into final alignment, e.g.
+                          RG,BC,QT,rb,mb
     -map_threads -mt   Number of cores applied to each parallel BWA job when '-t' exceeds this value
                        and '-i' is not in use [6]
     -groupinfo   -g    Readgroup information metadata file, values are not validated (yaml) [file]
