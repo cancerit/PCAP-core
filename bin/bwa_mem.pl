@@ -268,8 +268,8 @@ bwa_mem.pl [options] [file(s)...]
     -bwa         -b    Single quoted string of additional parameters to pass to BWA
                         - '-t,-p,-R,-C' are used internally and should not be provided.
                         - '-v' is set to 1 unless '-bwa' is set.
-    -tags              Propogate these tags from input data into final alignment, e.g.
-                          RG,BC,QT,rb,mb
+    -tags              Propogate these tags from input data into final alignment, recommend:
+                          BC,QT
     -map_threads -mt   Number of cores applied to each parallel BWA job when '-t' exceeds this value
                        and '-i' is not in use [6]
     -groupinfo   -g    Readgroup information metadata file, values are not validated (yaml) [file]
