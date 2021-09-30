@@ -12,9 +12,11 @@ ARG BWAMEM2_GIT="https://github.com/bwa-mem2/bwa-mem2.git"
 ARG BWAMEM2_TAG="v2.2.1"
 ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
+# needed for bwakit as well as bwa
 ARG VER_BWA="v0.7.17"
 ARG VER_HTSLIB="1.12"
 ARG VER_SAMTOOLS="1.12"
+ARG VER_K8="0.2.5"
 
 RUN apt-get -yq update
 RUN apt-get install -yq --no-install-recommends apt-transport-https

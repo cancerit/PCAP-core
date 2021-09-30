@@ -1,6 +1,7 @@
 /*       LICENCE
 * PCAP - NGS reference implementations and helper code for mapping (originally part of ICGC/TCGA PanCancer)
-# Copyright (C) 2014-2019 Genome Research Ltd.
+# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2018-2021 Cancer, Ageing and Somatic Mutation, Genome Research Limited
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License

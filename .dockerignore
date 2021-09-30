@@ -10,3 +10,4 @@
 /setup.sh
 /prerelease.sh
 /blib
+*.code-workspace

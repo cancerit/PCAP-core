@@ -2,7 +2,8 @@ package PCAP::Bwa;
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2020 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2018-2021 Cancer, Ageing and Somatic Mutation, Genome Research Limited
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -299,7 +300,7 @@ sub bwa_mem {
     $ENV{SHELL} = '/bin/bash'; # ensure bash to allow pipefail
 
     my %tools;
-    for my $tool(qw(samtools reheadSQ)) {
+    for my $tool(qw(samtools reheadSQ bwa-postalt)) {
       $tools{$tool} = _which($tool) || die "Unable to find '$tool' in path";
     }
 
@@ -308,8 +309,9 @@ sub bwa_mem {
     # uncoverable branch false
     $interleaved_fq = q{ -p}, unless($input->paired_fq);
 
-    my $add_options = q{-v 1}; # minimise output
-    $add_options = $options->{'bwa'} if(exists $options->{'bwa'});
+    my $add_options = q{-v 1 }; # minimise output
+    $add_options .= q{-C } if(exists $options->{'tags'});
+    $add_options .= $options->{'bwa'} if(exists $options->{'bwa'});
     $bwa .= sprintf q{ mem %s %s -R %s -t %s %s}, $add_options, $interleaved_fq, $rg_line, $threads, $options->{'reference'};
 
     # uncoverable branch true
@@ -330,7 +332,11 @@ sub bwa_mem {
       }
       else {
         # bam/cram
-        my $tofastq = sprintf '%s fastq -@ %d -N %s', $tools{samtools}, $threads, $split;
+        my $tag_opts = q{};
+        if(exists $options->{'tags'}) {
+          $tag_opts = '-T '.$options->{'tags'};
+        }
+        my $tofastq = sprintf '%s fastq -@ %d -N %s %s', $tools{samtools}, $threads, $tag_opts, $split;
         $bwa = sprintf '%s | %s /dev/stdin', $tofastq, $bwa;
       }
     }
@@ -354,7 +360,12 @@ sub bwa_mem {
                             $tools{samtools}, $sort_tmp, $threads;
     my $calmd     = sprintf q{%s calmd --output-fmt bam,level=1 -Q -@ %d - %s > %s_sorted.bam},
                             $tools{samtools}, $threads, $ref, $sorted_bam_stub;
-    my $command .= "set -o pipefail; $bwa | $rehead_sq | $fixmate | $sort | $calmd";
+    my $bwakit = q{};
+    if(exists $options->{'bwakit'} && defined $options->{'bwakit'}) {
+      # must be before fixmate as thats where we convert to BAM
+      $bwakit = sprintf q{%s %s.alt |}, $tools{'bwa-postalt'}, $options->{'reference'};
+    }
+    my $command .= "set -o pipefail; $bwa | $rehead_sq | $bwakit $fixmate | $sort | $calmd";
 
     PCAP::Threaded::external_process_handler(File::Spec->catdir($tmp, 'logs'), $command, $index);
     PCAP::Threaded::touch_success(File::Spec->catdir($tmp, 'progress'), $index);
