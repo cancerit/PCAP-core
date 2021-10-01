@@ -1,6 +1,6 @@
 # CHANGES
 
-## NEXT
+## 5.7.0
 
 * FASTQ tag preservation during mapping (bam/cram handled unless "-legacy")
 * bwakit option added
