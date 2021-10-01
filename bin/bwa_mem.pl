@@ -2,7 +2,8 @@
 
 ##########LICENCE##########
 # PCAP - NGS reference implementations and helper code for the ICGC/TCGA Pan-Cancer Analysis Project
-# Copyright (C) 2014-2020 ICGC PanCancer Project
+# Copyright (C) 2014-2018 ICGC PanCancer Project
+# Copyright (C) 2018-2021 Cancer, Ageing and Somatic Mutation, Genome Research Limited
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -111,6 +112,7 @@ sub setup {
               'dupmode' => 't',
               'seqslice' => 10000,
               'csi' => undef,
+              'tags' => undef,
              );
 
   GetOptions( 'h|help' => \$opts{'h'},
@@ -137,7 +139,9 @@ sub setup {
               'bm2|bwamem2' => \$opts{'bwamem2'},
               'd|dupmode:s' => \$opts{'dupmode'},
               'legacy' => \$opts{'legacy'},
-              'ss|seqslice:i' => $opts{'seqslice'},
+              'ss|seqslice:i' => \$opts{'seqslice'},
+              'k|bwakit' => \$opts{'bwakit'},
+              'tags:s' => \$opts{'tags'},
   ) or pod2usage(2);
 
   pod2usage(-verbose => 1, -exitval => 0) if(defined $opts{'h'});
@@ -180,6 +184,8 @@ sub setup {
   delete $opts{'csi'} unless(defined $opts{'csi'});
   delete $opts{'bwamem2'} unless(defined $opts{'bwamem2'});
   delete $opts{'legacy'} unless(defined $opts{'legacy'});
+  delete $opts{'bwakit'} unless(defined $opts{'bwakit'});
+  delete $opts{'tags'} unless(defined $opts{'tags'});
 
   if(defined $opts{'bwamem2'} && defined $opts{'legacy'}) {
     warn "WARN: Use of options bwamem2 and legacy is suboptimal, proceeding but memory will be excessive.\n";
@@ -250,7 +256,8 @@ bwa_mem.pl [options] [file(s)...]
     -threads     -t    Number of threads to use. [1]
 
   Optional parameters:
-    -bwamem2     -bm2  Use bwa-mem2 instead of bwa (experimental).
+    -bwamem2     -bm2  Use bwa-mem2 instead of bwa.
+    -bwakit      -k    Include 'bwa-postalt.js' processing from bwakit.
     -fragment    -f    Split input into fragments of X million repairs [10]
                         - only applies to fastq[.gz] input
     -nomarkdup   -n    Don't mark duplicates [flag]
@@ -259,8 +266,10 @@ bwa_mem.pl [options] [file(s)...]
     -seqslice    -ss   seqs_per_slice for CRAM compression [samtools default: 10000]
     -scramble    -sc   DEPRECATED
     -bwa         -b    Single quoted string of additional parameters to pass to BWA
-                        - '-t,-p,-R' are used internally and should not be provided.
+                        - '-t,-p,-R,-C' are used internally and should not be provided.
                         - '-v' is set to 1 unless '-bwa' is set.
+    -tags              Propogate these tags from input data into final alignment, recommend:
+                          BC,QT
     -map_threads -mt   Number of cores applied to each parallel BWA job when '-t' exceeds this value
                        and '-i' is not in use [6]
     -groupinfo   -g    Readgroup information metadata file, values are not validated (yaml) [file]

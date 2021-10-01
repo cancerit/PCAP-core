@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.7.0
+
+* FASTQ tag preservation during mapping (bam/cram handled unless "-legacy")
+* bwakit option added
+
 ## 5.6.1
 
 * htslib/samtools 1.12 - came out hours after we released 5.6.0

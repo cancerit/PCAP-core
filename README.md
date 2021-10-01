@@ -6,9 +6,7 @@ This has been forked from the [ICGC-TCGA-PanCancer/PCAP-core][PCAP-core]
 repository as this codebase was created by [cancerit](cancerit_github) and continues to be developed.
 This version strips out PCAWG related elements and incorporates more efficient code.
 
-| Master                                        | Develop                                         |
-| --------------------------------------------- | ----------------------------------------------- |
-| [![Master Badge][travis-master]][travis-base] | [![Develop Badge][travis-develop]][travis-base] |
+[![CircleCI](https://circleci.com/gh/cancerit/PCAP-core/tree/develop.svg?style=svg)](https://circleci.com/gh/cancerit/PCAP-core/tree/develop)
 
 This repository contains code to run genomic alignments of paired end data
 and subsequent calling algorithms.
@@ -79,8 +77,3 @@ Please see the respective licence for each before use.
 [old_repo]: https://github.com/ICGC-TCGA-PanCancer/PCAP-core
 [dockstore-cgpmap]: https://github.com/cancerit/dockstore-cgpmap
 [quay-io-pcap-core]: https://quay.io/repository/wtsicgp/pcap-core
-
-<!-- Travis -->
-[travis-base]: https://travis-ci.org/cancerit/PCAP-core
-[travis-master]: https://travis-ci.org/cancerit/PCAP-core.svg?branch=master
-[travis-develop]: https://travis-ci.org/cancerit/PCAP-core.svg?branch=develop
