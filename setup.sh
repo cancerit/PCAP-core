@@ -12,8 +12,8 @@ export STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/st
 export VER_BIODBHTS="3.01"
 # needed for bwakit as well as bwa
 export VER_BWA="v0.7.17"
-export VER_HTSLIB="1.12"
-export VER_SAMTOOLS="1.12"
+export VER_HTSLIB="1.20"
+export VER_SAMTOOLS="1.20"
 export VER_K8="0.2.5"
 
 
