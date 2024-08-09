@@ -1,5 +1,8 @@
 # CHANGES
 
+## 5.8.1
+* Fixed dependencies required to build image
+
 ## 5.8.0
 * Update base image of docker to cgpbigwig 1.7.0
 * Update to htslib 1.20
