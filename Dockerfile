@@ -29,6 +29,7 @@ RUN apt-get install -yq --no-install-recommends bzip2
 RUN apt-get install -yq --no-install-recommends gcc
 RUN apt-get install -yq --no-install-recommends psmisc
 RUN apt-get install -yq --no-install-recommends time
+RUN apt-get install -yq --no-install-recommends libnet-ssleay-perl
 RUN apt-get install -yq --no-install-recommends zlib1g-dev
 RUN apt-get install -yq --no-install-recommends libbz2-dev
 RUN apt-get install -yq --no-install-recommends liblzma-dev
@@ -53,6 +54,7 @@ ENV PERL5LIB $OPT/lib/perl5
 ENV LD_LIBRARY_PATH $OPT/lib
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN mkdir -p $OPT/bin
 
