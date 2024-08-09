@@ -1,4 +1,4 @@
-FROM quay.io/wtsicgp/cgpbigwig:1.6.0 as builder
+FROM quay.io/wtsicgp/cgpbigwig:1.7.0 as builder
 
 USER  root
 
@@ -14,8 +14,8 @@ ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/stade
 ARG VER_BIODBHTS="3.01"
 # needed for bwakit as well as bwa
 ARG VER_BWA="v0.7.17"
-ARG VER_HTSLIB="1.12"
-ARG VER_SAMTOOLS="1.12"
+ARG VER_HTSLIB="1.20"
+ARG VER_SAMTOOLS="1.20"
 ARG VER_K8="0.2.5"
 
 RUN apt-get -yq update

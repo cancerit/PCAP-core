@@ -1,5 +1,10 @@
 # CHANGES
 
+## 5.8.0
+* Update base image of docker to cgpbigwig 1.7.0
+* Update to htslib 1.20
+* Update to samtools 1.20
+
 ## 5.7.0
 
 * FASTQ tag preservation during mapping (bam/cram handled unless "-legacy")
