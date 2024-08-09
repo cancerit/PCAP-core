@@ -10,7 +10,7 @@ ARG BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece9
 ARG BWAMEM2_GIT="https://github.com/bwa-mem2/bwa-mem2.git"
 # accepts tags or commmit ids
 ARG BWAMEM2_TAG="v2.2.1"
-ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
+ARG STADEN="https://master.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 # needed for bwakit as well as bwa
 ARG VER_BWA="v0.7.17"
