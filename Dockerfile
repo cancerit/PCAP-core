@@ -10,7 +10,7 @@ ARG BBB2_URL="https://gitlab.com/german.tischler/biobambam2/uploads/178774a8ece9
 ARG BWAMEM2_GIT="https://github.com/bwa-mem2/bwa-mem2.git"
 # accepts tags or commmit ids
 ARG BWAMEM2_TAG="v2.2.1"
-ARG STADEN="https://iweb.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
+ARG STADEN="https://master.dl.sourceforge.net/project/staden/staden/2.0.0b11/staden-2.0.0b11-2016-linux-x86_64.tar.gz"
 ARG VER_BIODBHTS="3.01"
 # needed for bwakit as well as bwa
 ARG VER_BWA="v0.7.17"
@@ -29,6 +29,7 @@ RUN apt-get install -yq --no-install-recommends bzip2
 RUN apt-get install -yq --no-install-recommends gcc
 RUN apt-get install -yq --no-install-recommends psmisc
 RUN apt-get install -yq --no-install-recommends time
+RUN apt-get install -yq --no-install-recommends libnet-ssleay-perl
 RUN apt-get install -yq --no-install-recommends zlib1g-dev
 RUN apt-get install -yq --no-install-recommends libbz2-dev
 RUN apt-get install -yq --no-install-recommends liblzma-dev
@@ -53,6 +54,7 @@ ENV PERL5LIB $OPT/lib/perl5
 ENV LD_LIBRARY_PATH $OPT/lib
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN mkdir -p $OPT/bin
 
