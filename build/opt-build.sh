@@ -50,7 +50,7 @@ export PERL5LIB=`echo $INST_PATH/lib/perl5:$PERL5LIB | perl -pe 's/:\$//;'`
 set -u
 
 ## k8 javascript client for bwakit
-if [ ! -e $SETUP_DIR/k8.sucess ]; then
+if [ ! -e $SETUP_DIR/k8.success ]; then
   curl -sSL --retry 10 -o distro.tar.bz2 https://github.com/attractivechaos/k8/releases/download/${VER_K8}/k8-${VER_K8}.tar.bz2
   rm -rf distro/*
   tar --strip-components 1 -C distro -xjf distro.tar.bz2
@@ -61,7 +61,7 @@ if [ ! -e $SETUP_DIR/k8.sucess ]; then
 fi
 
 ## add relevant script from bwakit
-if [ ! -e $SETUP_DIR/bwakit.sucess ]; then
+if [ ! -e $SETUP_DIR/bwakit.success ]; then
   # slight hack to make this executable
   echo "#!$INST_PATH/bin/k8" > $INST_PATH/bin/bwa-postalt
   curl -sSL https://raw.githubusercontent.com/lh3/bwa/${VER_BWA}/bwakit/bwa-postalt.js >> $INST_PATH/bin/bwa-postalt
@@ -71,7 +71,7 @@ fi
 
 ## biobambam2
 BB_INST=$INST_PATH/biobambam2
-if [ ! -e $SETUP_DIR/bbb2.sucess ]; then
+if [ ! -e $SETUP_DIR/bbb2.success ]; then
   curl -sSL --retry 10 -o distro.tar.xz $BBB2_URL
   mkdir -p $BB_INST
   tar --strip-components 3 -C $BB_INST -Jxf distro.tar.xz
