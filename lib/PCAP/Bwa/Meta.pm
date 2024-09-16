@@ -200,7 +200,6 @@ sub _validate_yaml {
   my $yaml_obj = LoadFile( $meta_yaml );
   # if all ID's aren't unique we generate time based UUID and take the first section as the new ID
   # this will not prevent universal clash but will within a BAM file.
-  my %ids;
   for my $rg_key(keys %{$yaml_obj->{'READGRPS'}}) {
     my $rg_rec = $yaml_obj->{'READGRPS'}->{$rg_key};
 
@@ -224,10 +223,9 @@ sub _validate_yaml {
       $rg_rec->{'PL'} = uc $rg_rec->{'PL'};
     }
 
-    if(! exists $rg_rec->{'ID'} || exists $ids{$rg_rec->{'ID'}} ) {
+    if(! exists $rg_rec->{'ID'}) {
       $rg_rec->{'ID'} = _getuuid_for_rg();
     }
-    $ids{$rg_rec->{'ID'}} = 1;
   }
   return $yaml_obj;
 }
